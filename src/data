@@ -1,0 +1,7 @@
+export const plByMonth = [
+  { name: 'Workers', russell: 10, portfolio: 80 },
+  { name: 'Communities', russell: 30, portfolio: 60},
+  { name: 'Customers', russell: 20, portfolio: 50},
+  { name: 'Shareholders', russell: 70, portfolio: 70},
+  { name: 'Environment', russell: 10, portfolio: 80},
+]
