@@ -69,10 +69,13 @@
               Login/Register
             </v-btn>
           </router-link>
-          <template v-else>
-            <v-btn disabled>{{ useUserStore().getUser.email }}</v-btn>
-            <v-btn @click="useUserStore().logout()">Logout</v-btn>
-          </template>
+
+          <v-btn @click="useUserStore().logout()" v-else
+            ><span class="text-disabled mx-2"
+              >{{ useUserStore().getUser.email }}
+            </span>
+            (Logout)
+          </v-btn>
         </div>
       </v-row>
     </v-container>
