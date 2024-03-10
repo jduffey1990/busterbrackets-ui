@@ -1,15 +1,10 @@
 import axios from 'axios';
 
 export default {
-  install: (app, options = {}) => {
+  install: (app) => {
     const api = axios.create({
-      baseURL: import.meta.env.VITE_URLROOT,
+      baseURL: import.meta.env.VITE_BASE_URL,
       withCredentials: true,
-      ...options,
-
-      // headers: {
-      //   Authorization: options.token ? `Bearer ${options.token}` : '',
-      // },
     });
 
     app.config.globalProperties.$axios = api;
