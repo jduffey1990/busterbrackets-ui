@@ -46,16 +46,12 @@ dev-hosting:
     - <<: *yarn-build-cache
       policy: pull-push
   variables:
-    GOOGLE_APPLICATION_CREDENTIALS: "/builds/inicio3201114/ui/.secure_files/google-service-key.json"
+    GOOGLE_APPLICATION_CREDENTIALS: ".secure_files/google-service-key.json"
   script:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - yarn install
     - yarn build
-    - echo $GOOGLE_APPLICATION_CREDENTIALS
-    - ls /builds/inicio3201114/ui/.secure_files
-    - ls .secure_files
-    - firebase --version
-    - firebase deploy --only hosting --project inicio-test-87421 --debug
+    - firebase deploy --only hosting
   only:
     - development
   artifacts:
