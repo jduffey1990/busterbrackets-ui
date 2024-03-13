@@ -34,7 +34,7 @@ stages:
 image: node:lts-alpine3.18
 
 before_script:
-  - apk --no-cache add curl
+  - apk --no-cache add curl bash
   - npm i -g firebase-tools
   - export GOOGLE_APPLICATION_CREDENTIALS=".secure_files/gcloud-service-key.json"
 
