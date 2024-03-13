@@ -31,7 +31,7 @@ variables:
 stages:
   - deploy
 
-image: node:lts-alpine3.18
+image: node:lts-alpine3.19
 
 before_script:
   - apk --no-cache add curl bash
@@ -46,7 +46,7 @@ dev-hosting:
     - <<: *yarn-build-cache
       policy: pull-push
   variables:
-    GOOGLE_APPLICATION_CREDENTIALS: ".secure_files/gcloud-service-key.json"
+    GOOGLE_APPLICATION_CREDENTIALS: "./.secure_files/gcloud-service-key.json"
   script:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - yarn install
