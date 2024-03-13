@@ -29,13 +29,16 @@ variables:
 # ---- stages ----
 
 stages:
-  - Build
-  # - Test
-  # - Publish
+  - deploy
 
-build-frontend:
-  stage: Build
-  image: node:lts-alpine3.18
+image: node:lts-alpine3.18
+
+before_script:
+  - npm i -g firebase-tools
+  - export GOOGLE_APPLICATION_CREDENTIALS=".secure_files/gcloud-service-key.json"
+
+dev-hosting:
+  stage: deploy
   when: manual
   cache:
     - <<: *node_modules-cache
@@ -43,8 +46,12 @@ build-frontend:
     - <<: *yarn-build-cache
       policy: pull-push
   script:
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - yarn install
     - yarn build
+    - firebase deploy --only hosting
+  only:
+    - development
   artifacts:
     paths:
       - dist/
