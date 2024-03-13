@@ -4,6 +4,7 @@ variables:
   FF_USE_FASTZIP: "true"
   ARTIFACT_COMPRESSION_LEVEL: "fast"
   CACHE_COMPRESSION_LEVEL: "fast"
+  GOOGLE_APPLICATION_CREDENTIALS: ".secure_files/gcloud-service-key.json"
 
 # ---- caches ----
 
@@ -36,7 +37,6 @@ image: node:lts-alpine3.18
 before_script:
   - apk --no-cache add curl bash
   - npm i -g firebase-tools
-  - export GOOGLE_APPLICATION_CREDENTIALS=".secure_files/gcloud-service-key.json"
 
 dev-hosting:
   stage: deploy
@@ -50,7 +50,7 @@ dev-hosting:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - yarn install
     - yarn build
-    - firebase deploy --only hosting --project inicio-test-87421
+    - firebase deploy --only hosting
   only:
     - development
   artifacts:
