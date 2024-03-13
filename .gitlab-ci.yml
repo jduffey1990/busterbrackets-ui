@@ -52,7 +52,7 @@ dev-hosting:
     - yarn install
     - yarn build
     - echo $GOOGLE_APPLICATION_CREDENTIALS
-    - firebase deploy --only hosting --project inicio-test-87421
+    - firebase deploy --only hosting --project inicio-test-87421 --debug
   only:
     - development
   artifacts:
