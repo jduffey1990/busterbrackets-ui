@@ -1,0 +1,49 @@
+# ---- variables ----
+
+variables:
+  FF_USE_FASTZIP: "true"
+  ARTIFACT_COMPRESSION_LEVEL: "fast"
+  CACHE_COMPRESSION_LEVEL: "fast"
+
+# ---- caches ----
+
+.node_modules-cache: &node_modules-cache
+  key:
+    files:
+      - yarn.lock
+  paths:
+    - node_modules
+
+.yarn-cache: &yarn-cache
+  key: yarn-$CI_JOB_IMAGE
+  paths:
+    - .yarn
+
+.yarn-build-cache: &yarn-build-cache
+  key: build-$CI_JOB_IMAGE
+  paths:
+      - .cache
+      - public
+  policy: pull-push
+
+# ---- stages ----
+
+stages:
+  - Build
+  # - Test
+  # - Publish
+
+build-frontend:
+  stage: Build
+  image: node:lts-alpine3.18
+  cache:
+    - <<: *node_modules-cache
+      policy: pull-push
+    - <<: *yarn-build-cache
+      policy: pull-push
+  script:
+    - yarn install
+    - yarn build
+  artifacts:
+    paths:
+      - dist/
