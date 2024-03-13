@@ -53,6 +53,7 @@ dev-hosting:
     - yarn build
     - echo $GOOGLE_APPLICATION_CREDENTIALS
     - ls /builds/inicio3201114/ui/.secure_files
+    - ls .secure_files
     - firebase --version
     - firebase deploy --only hosting --project inicio-test-87421 --debug
   only:
