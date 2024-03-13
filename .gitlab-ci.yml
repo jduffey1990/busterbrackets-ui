@@ -36,6 +36,7 @@ stages:
 build-frontend:
   stage: Build
   image: node:lts-alpine3.18
+  when: manual
   cache:
     - <<: *node_modules-cache
       policy: pull-push
