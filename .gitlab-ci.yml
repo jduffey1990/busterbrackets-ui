@@ -51,6 +51,7 @@ dev-hosting:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - yarn install
     - yarn build
+    - echo $GOOGLE_APPLICATION_CREDENTIALS
     - firebase deploy --only hosting --project inicio-test-87421
   only:
     - development
