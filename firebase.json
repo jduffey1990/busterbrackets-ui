@@ -9,9 +9,7 @@
     "rewrites": [
       {
         "source": "**",
-        "run": {
-          "serviceId": "ui"
-        }
+        "destination": "https://app-i5eetaxlwq-uc.a.run.app"
       }
     ]
   },
