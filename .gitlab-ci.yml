@@ -51,7 +51,7 @@ dev-hosting:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - yarn install
     - yarn build
-    - firebase deploy --only hosting --project inicio-test-87421
+    - firebase deploy --only hosting --project inicio-dev-975fe
   only:
     - development
   artifacts:
