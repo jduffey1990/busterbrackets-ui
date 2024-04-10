@@ -3,7 +3,7 @@ BUILD_DIR="/usr/share/nginx/html/assets"
 
 get_env_value() {
     local VAR_NAME="$1"
-    grep "^${VAR_NAME}=" .env | cut -d '=' -f 2-
+    grep "^${VAR_NAME}=" .env.production | cut -d '=' -f 2-
 }
 while IFS= read -r line || [ -n "$line" ]; do
     if [[ $line != \#* ]]; then
@@ -16,5 +16,5 @@ while IFS= read -r line || [ -n "$line" ]; do
             sed -i "s|__${VAR_NAME}__|${VAR_VALUE}|g" "$file"
         done
     fi
-done < .env
+done < .env.production
 nginx -g "daemon off;"
