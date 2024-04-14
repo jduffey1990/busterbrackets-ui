@@ -5,6 +5,8 @@ import Survey from '@/views/Survey.vue';
 import Portfolio from '@/views/Portfolio.vue';
 import Performance from '@/views/Performance.vue';
 import Dashboard from '@/views/Dashboard.vue';
+import AdvisorPreferences from '@/views/AdvisorPreferences.vue';
+import Account from '@/views/Account.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -38,6 +40,16 @@ const router = createRouter({
       path: '/performance',
       name: 'Performance',
       component: Performance,
+    },
+    {
+      path: '/advisor-preferences',
+      name: 'AdvisorPreferences',
+      component: AdvisorPreferences,
+    },
+    {
+      path: '/account',
+      name: 'Account',
+      component: Account,
     },
   ],
 });

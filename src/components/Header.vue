@@ -75,10 +75,10 @@
               </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="router.push('/survey')">
+              <v-list-item @click="router.push('/account')">
                 <v-list-item-title>Account Settings</v-list-item-title>
               </v-list-item>
-              <v-list-item @click="router.push('/survey')">
+              <v-list-item @click="router.push('/advisor-preferences')">
                 <v-list-item-title>Advisor Preferences</v-list-item-title>
               </v-list-item>
               <v-list-item @click="useUserStore().logout()">
@@ -86,31 +86,7 @@
               </v-list-item>
             </v-list>
           </v-menu>
-
-          <!-- <v-btn @click="useUserStore().logout()"
-            ><span class="text-disabled mx-2"
-              >{{ useUserStore().getUser.email }}
-            </span>
-            (Logout)
-          </v-btn> -->
         </template>
-
-        <div class="mx-3">
-          <!-- <router-link
-            v-if="!useUserStore().isLoggedIn"
-            to="/login"
-            custom
-            v-slot="{ navigate, isActive }"
-          >
-            <v-btn
-              @click="navigate"
-              role="link"
-              :class="{ 'font-weight-black': isActive }"
-            >
-              Login
-            </v-btn>
-          </router-link> -->
-        </div>
       </v-row>
     </v-container>
   </v-app-bar>
