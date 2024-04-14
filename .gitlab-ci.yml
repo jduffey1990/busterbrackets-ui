@@ -97,7 +97,7 @@ deploy-beta:
   script:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - cat .secure_files/beta-google-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
+    - gcloud auth activate-service-account --key-file .secure_files/beta-google-service-account.json
     - gcloud config set project $GOOGLE_CLOUD_BETA_PROJECT
     - gcloud run deploy ui --image us-central1-docker.pkg.dev/pomarium/docker/ui:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
 
