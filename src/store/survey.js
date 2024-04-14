@@ -291,7 +291,7 @@ export const useSurveyStore = defineStore('survey', {
           },
           {
             tag: 'weaponsComponents',
-            name: 'Weapons - Key Componenets',
+            name: 'Weapons - Key Components',
             value: false,
           },
           {
@@ -445,7 +445,7 @@ export const useSurveyStore = defineStore('survey', {
       }
       if (section === 'prioritize.environmentalImpact') {
         Object.values(
-          this.surveyEdit.prioritize.environmentalImpact.items,
+          this.surveyEdit.prioritize.environmentalImpact.items
         ).forEach((item) => {
           if (item.value) {
             notEmpty = true;
@@ -454,7 +454,7 @@ export const useSurveyStore = defineStore('survey', {
       }
       if (section === 'prioritize.employeesAndLaborRelations') {
         Object.values(
-          this.surveyEdit.prioritize.employeesAndLaborRelations.items,
+          this.surveyEdit.prioritize.employeesAndLaborRelations.items
         ).forEach((item) => {
           if (item.value) {
             notEmpty = true;
@@ -463,7 +463,7 @@ export const useSurveyStore = defineStore('survey', {
       }
       if (section === 'prioritize.businessPracticesAndLeadership') {
         Object.values(
-          this.surveyEdit.prioritize.businessPracticesAndLeadership.items,
+          this.surveyEdit.prioritize.businessPracticesAndLeadership.items
         ).forEach((item) => {
           if (item.value) {
             notEmpty = true;
@@ -472,7 +472,7 @@ export const useSurveyStore = defineStore('survey', {
       }
       if (section === 'prioritize.customerProductAndResponsibility') {
         Object.values(
-          this.surveyEdit.prioritize.customerProductAndResponsibility.items,
+          this.surveyEdit.prioritize.customerProductAndResponsibility.items
         ).forEach((item) => {
           if (item.value) {
             notEmpty = true;
@@ -483,7 +483,7 @@ export const useSurveyStore = defineStore('survey', {
       if (section === 'avoidInvestingInSpecificProductsAndOperations') {
         Object.values(
           this.surveyEdit.avoidInvestingInSpecificProductsAndOperations
-            .categories,
+            .categories
         ).forEach((item) => {
           if (item.value) {
             notEmpty = true;
@@ -497,7 +497,7 @@ export const useSurveyStore = defineStore('survey', {
             if (item.value) {
               notEmpty = true;
             }
-          },
+          }
         );
       }
 
@@ -510,9 +510,7 @@ export const useSurveyStore = defineStore('survey', {
         await this.$axios.post('/api/survey/', this.surveyEdit);
         this.surveyEdit.isSubmitted = true;
         usePortfolioStore().regenerate = true;
-      } catch (error) {
-        console.log(error);
-      }
+      } catch (error) {}
     },
     async fetchSurvey() {
       try {
@@ -523,9 +521,7 @@ export const useSurveyStore = defineStore('survey', {
           this.survey = data;
           this.surveyEdit = { ...this.survey };
         }
-      } catch (error) {
-        console.log(error);
-      }
+      } catch (error) {}
     },
   },
 });

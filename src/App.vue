@@ -12,9 +12,4 @@
 
 <script setup>
 import Header from './components/Header.vue';
-import { useUserStore } from './store/user';
-
-(async () => {
-  await useUserStore().getSession();
-})();
 </script>

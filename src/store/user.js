@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import router from '@/router';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -19,11 +20,11 @@ export const useUserStore = defineStore('user', {
       this.user = data;
     },
     async register(credentials) {
-      // await this.$axios({
-      //   method: 'post',
-      //   url: '/api/auth/register',
-      //   data: credentials,
-      // });
+      await this.$axios({
+        method: 'post',
+        url: '/api/auth/register',
+        data: credentials,
+      });
 
       await this.getSession();
     },
@@ -40,6 +41,8 @@ export const useUserStore = defineStore('user', {
       await this.$axios('/api/users/logout/');
 
       await this.getSession();
+
+      router.push('/login');
     },
   },
 });

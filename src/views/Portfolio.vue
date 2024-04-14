@@ -54,7 +54,7 @@
           <div
             v-if="
               useSurveyStore().isNotEmpty(
-                'avoidInvestingInSpecificProductsAndOperations',
+                'avoidInvestingInSpecificProductsAndOperations'
               )
             "
             class="mb-6"
@@ -96,7 +96,7 @@
           <div
             v-if="
               useSurveyStore().isNotEmpty(
-                'prioritize.businessPracticesAndLeadership',
+                'prioritize.businessPracticesAndLeadership'
               )
             "
             class="mb-6"
@@ -121,7 +121,7 @@
           <div
             v-if="
               useSurveyStore().isNotEmpty(
-                'prioritize.employeesAndLaborRelations',
+                'prioritize.employeesAndLaborRelations'
               )
             "
             class="mb-6"
@@ -146,7 +146,7 @@
           <div
             v-if="
               useSurveyStore().isNotEmpty(
-                'prioritize.customerProductAndResponsibility',
+                'prioritize.customerProductAndResponsibility'
               )
             "
             class="mb-6"
@@ -276,9 +276,7 @@ onMounted(async () => {
         ],
       };
     }
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 });
 
 const downloadExport = async () => {
@@ -295,8 +293,6 @@ const downloadExport = async () => {
     link.setAttribute('download', 'portfolio.csv');
     document.body.appendChild(link);
     link.click();
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 </script>

@@ -4,15 +4,15 @@ import Login from '@/views/Login.vue';
 import Survey from '@/views/Survey.vue';
 import Portfolio from '@/views/Portfolio.vue';
 import Performance from '@/views/Performance.vue';
-import Home from '@/views/Home.vue';
+import Dashboard from '@/views/Dashboard.vue';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      name: 'Home',
-      component: Home,
+      name: 'Dashboard',
+      component: Dashboard,
     },
     {
       path: '/register',

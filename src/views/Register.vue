@@ -59,8 +59,6 @@ const registerUser = async () => {
     await useUserStore().login(credentials);
 
     router.push('/');
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 </script>

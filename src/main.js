@@ -7,6 +7,7 @@ import { createPinia } from 'pinia';
 import router from './router';
 import vuetify from './plugins/vuetify';
 import { loadFonts } from './plugins/webfontloader';
+import { useUserStore } from './store/user';
 
 loadFonts();
 
@@ -19,4 +20,30 @@ pinia.use(async ({ store }) => {
 
 app.use(axios).use(pinia).use(router).use(vuetify);
 
-app.mount('#app');
+(async () => {
+  await useUserStore().getSession();
+
+  const loginName = 'Login';
+
+  if (!useUserStore().isLoggedIn) {
+    router.push({
+      name: loginName,
+    });
+  } else {
+    if (router.currentRoute.value.name === loginName) {
+      router.push({
+        name: 'Dashboard',
+      });
+    }
+  }
+
+  router.beforeEach(async (to, from) => {
+    if (!useUserStore().isLoggedIn && to.name !== loginName) {
+      return {
+        name: loginName,
+      };
+    }
+  });
+
+  app.mount('#app');
+})();

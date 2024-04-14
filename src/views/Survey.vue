@@ -200,7 +200,7 @@
             <div
               v-for="itemValue in useSurveyStore().surveyEdit.avoidInvestingInSpecificProductsAndOperations.categories.slice(
                 0,
-                19,
+                19
               )"
             >
               <v-checkbox v-model="itemValue.value">
@@ -213,7 +213,7 @@
           <v-col>
             <div
               v-for="itemValue in useSurveyStore().surveyEdit.avoidInvestingInSpecificProductsAndOperations.categories.slice(
-                20,
+                20
               )"
             >
               <v-checkbox v-model="itemValue.value">
@@ -232,7 +232,7 @@
             <div
               v-for="itemValue in useSurveyStore().surveyEdit.industryExclusions.categories.slice(
                 0,
-                18,
+                18
               )"
             >
               <v-checkbox v-model="itemValue.value">
@@ -245,7 +245,7 @@
           <v-col>
             <div
               v-for="itemValue in useSurveyStore().surveyEdit.industryExclusions.categories.slice(
-                19,
+                19
               )"
             >
               <v-checkbox v-model="itemValue.value">
@@ -361,9 +361,7 @@ const downloadExport = async () => {
     link.setAttribute('download', 'survey.csv');
     document.body.appendChild(link);
     link.click();
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const submit = async () => {

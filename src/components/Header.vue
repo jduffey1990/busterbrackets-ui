@@ -15,47 +15,88 @@
 
         <v-spacer></v-spacer>
 
-        <div class="mx-3">
-          <router-link to="/survey" custom v-slot="{ navigate, isActive }">
-            <v-btn
-              @click="navigate"
-              role="link"
-              :disabled="!useUserStore().isLoggedIn"
-              :class="{ 'font-weight-black': isActive }"
+        <template v-if="useUserStore().isLoggedIn">
+          <div class="mx-3">
+            <router-link to="/" custom v-slot="{ navigate, isActive }">
+              <v-btn
+                @click="navigate"
+                role="link"
+                :class="{ 'font-weight-black': isActive }"
+              >
+                Dashboard
+              </v-btn>
+            </router-link>
+          </div>
+
+          <div class="mx-3">
+            <router-link to="/survey" custom v-slot="{ navigate, isActive }">
+              <v-btn
+                @click="navigate"
+                role="link"
+                :class="{ 'font-weight-black': isActive }"
+              >
+                Survey
+              </v-btn>
+            </router-link>
+          </div>
+
+          <div class="mx-3">
+            <router-link to="/portfolio" custom v-slot="{ navigate, isActive }">
+              <v-btn
+                @click="navigate"
+                role="link"
+                :class="{ 'font-weight-black': isActive }"
+              >
+                Portfolio
+              </v-btn>
+            </router-link>
+          </div>
+
+          <div class="mx-3">
+            <router-link
+              to="/performance"
+              custom
+              v-slot="{ navigate, isActive }"
             >
-              Survey
-            </v-btn>
-          </router-link>
-        </div>
+              <v-btn
+                @click="navigate"
+                role="link"
+                :class="{ 'font-weight-black': isActive }"
+              >
+                Performance
+              </v-btn>
+            </router-link>
+          </div>
+
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn v-bind="props" class="text-disabled">
+                {{ useUserStore().getUser.email }}
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="router.push('/survey')">
+                <v-list-item-title>Account Settings</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="router.push('/survey')">
+                <v-list-item-title>Advisor Preferences</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="useUserStore().logout()">
+                <v-list-item-title>Logout</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+
+          <!-- <v-btn @click="useUserStore().logout()"
+            ><span class="text-disabled mx-2"
+              >{{ useUserStore().getUser.email }}
+            </span>
+            (Logout)
+          </v-btn> -->
+        </template>
 
         <div class="mx-3">
-          <router-link to="/portfolio" custom v-slot="{ navigate, isActive }">
-            <v-btn
-              @click="navigate"
-              role="link"
-              :disabled="!useUserStore().isLoggedIn"
-              :class="{ 'font-weight-black': isActive }"
-            >
-              Portfolio
-            </v-btn>
-          </router-link>
-        </div>
-
-        <div class="mx-3">
-          <router-link to="/performance" custom v-slot="{ navigate, isActive }">
-            <v-btn
-              @click="navigate"
-              role="link"
-              :disabled="!useUserStore().isLoggedIn"
-              :class="{ 'font-weight-black': isActive }"
-            >
-              Performance
-            </v-btn>
-          </router-link>
-        </div>
-
-        <div class="mx-3">
-          <router-link
+          <!-- <router-link
             v-if="!useUserStore().isLoggedIn"
             to="/login"
             custom
@@ -66,16 +107,9 @@
               role="link"
               :class="{ 'font-weight-black': isActive }"
             >
-              Login/Register
+              Login
             </v-btn>
-          </router-link>
-
-          <v-btn @click="useUserStore().logout()" v-else
-            ><span class="text-disabled mx-2"
-              >{{ useUserStore().getUser.email }}
-            </span>
-            (Logout)
-          </v-btn>
+          </router-link> -->
         </div>
       </v-row>
     </v-container>
@@ -83,5 +117,6 @@
 </template>
 
 <script setup>
+import router from '@/router';
 import { useUserStore } from '@/store/user';
 </script>
