@@ -72,7 +72,7 @@ const initialState = {
 const newClient = reactive({ ...initialState });
 
 const resetForm = () => {
-  Object.assign(form, initialState);
+  Object.assign(newClient, initialState);
 };
 
 const clients = ref([]);
