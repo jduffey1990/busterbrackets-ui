@@ -26,6 +26,9 @@ export default createVuetify({
     VTextarea: {
       color: 'primary',
     },
+    VTextField: {
+      color: 'primary',
+    },
   },
   icons: {
     defaultSet: 'mdi',

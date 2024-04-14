@@ -26,27 +26,20 @@
     <v-btn @click="submit()" color="primary">Submit</v-btn>
   </div>
 
-  <v-expansion-panels multiple>
-    <v-expansion-panel>
-      <v-expansion-panel-title>
-        <div>
-          <div class="d-flex align-center text-h5 mb-4">
-            <v-icon icon="mdi-compass-rose"></v-icon>
-            <div class="mx-3">Plant Your Trees</div>
-          </div>
+  <v-stepper
+    :items="['Plant Your Trees', 'Pull Your Weeds', 'Build Your Boundaries']"
+  >
+    <template v-slot:item.1>
+      <v-card title="Plant Your Trees">
+        <p>
+          Make sure that you are building a portfolio that reflects your values,
+          and only includes what you want. Start by entering in specific
+          companies you know you want to invest in (if there are not any you can
+          leave it blank). Then, select the issues that you want to support
+          through your investments. If you are unsure what the issues include,
+          read the metrics below each one.
+        </p>
 
-          <p>
-            Make sure that you are building a portfolio that reflects your
-            values, and only includes what you want. Start by entering in
-            specific companies you know you want to invest in (if there are not
-            any you can leave it blank). Then, select the issues that you want
-            to support through your investments. If you are unsure what the
-            issues include, read the metrics below each one.
-          </p>
-        </div>
-      </v-expansion-panel-title>
-
-      <v-expansion-panel-text>
         <v-textarea
           class="py-6"
           v-model="useSurveyStore().surveyEdit.includedCompanies"
@@ -158,32 +151,23 @@
             </div>
           </v-col>
         </v-row>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
+      </v-card>
+    </template>
 
-    <v-expansion-panel>
-      <v-expansion-panel-title>
-        <div>
-          <div class="d-flex align-center text-h5 mb-4">
-            <v-icon icon="mdi-compass-rose"></v-icon>
-            <div class="mx-3">Pull Your Weeds</div>
-          </div>
+    <template v-slot:item.2>
+      <v-card title="Pull Your Weeds">
+        <p>
+          Take out the companies in your portfolio that do not belong. Start by
+          entering in specific companies you know you do not want to invest in
+          (if there are not any you can leave it blank). Then, add any business
+          types or practices you do not want to invest in. Lastly, you can add
+          broad industries to avoid,
+          <b
+            >but caution that there may be some unintended consequences to
+            taking out whole industries with a broad stroke.
+          </b>
+        </p>
 
-          <p>
-            Take out the companies in your portfolio that do not belong. Start
-            by entering in specific companies you know you do not want to invest
-            in (if there are not any you can leave it blank). Then, add any
-            business types or practices you do not want to invest in. Lastly,
-            you can add broad industries to avoid,
-            <b
-              >but caution that there may be some unintended consequences to
-              taking out whole industries with a broad stroke.
-            </b>
-          </p>
-        </div>
-      </v-expansion-panel-title>
-
-      <v-expansion-panel-text>
         <v-textarea
           class="py-6"
           v-model="useSurveyStore().surveyEdit.excludedCompanies"
@@ -256,27 +240,18 @@
             </div>
           </v-col>
         </v-row>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-    <v-expansion-panel>
-      <v-expansion-panel-title>
-        <div>
-          <div class="d-flex align-center text-h5 mb-4">
-            <v-icon icon="mdi-compass-rose"></v-icon>
-            <div class="mx-3">Build Your Boundaries</div>
-          </div>
+      </v-card>
+    </template>
 
-          <p>
-            Provide some guidance on how you want your portfolio to be managed
-            for you. Enter in how much risk you are okay taking, if you want
-            your portfolio to focus solely on your values versus tracking the
-            overall market-index, and how long you expect to have your money
-            invested.
-          </p>
-        </div>
-      </v-expansion-panel-title>
+    <template v-slot:item.3>
+      <v-card title="Build Your Boundaries">
+        <p>
+          Provide some guidance on how you want your portfolio to be managed for
+          you. Enter in how much risk you are okay taking, if you want your
+          portfolio to focus solely on your values versus tracking the overall
+          market-index, and how long you expect to have your money invested.
+        </p>
 
-      <v-expansion-panel-text>
         <div class="py-8">
           <div class="text-h5 mb-5">
             Risk Tolerance: How compact are you with fluctuations in the value
@@ -333,9 +308,9 @@
             color="primary"
           ></v-slider>
         </div>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+      </v-card>
+    </template>
+  </v-stepper>
 </template>
 
 <script setup>
@@ -361,7 +336,9 @@ const downloadExport = async () => {
     link.setAttribute('download', 'survey.csv');
     document.body.appendChild(link);
     link.click();
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const submit = async () => {

@@ -36,13 +36,15 @@ export const useUserStore = defineStore('user', {
       });
 
       await this.getSession();
+
+      window.location.reload();
     },
     async logout() {
       await this.$axios('/api/users/logout/');
 
       await this.getSession();
 
-      router.push('/login');
+      window.location.reload();
     },
   },
 });

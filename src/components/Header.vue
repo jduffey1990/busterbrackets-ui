@@ -71,7 +71,10 @@
           <v-menu>
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" class="text-disabled">
-                {{ useUserStore().getUser.email }}
+                {{
+                  useUserStore().getUser.full_name ||
+                  useUserStore().getUser.email
+                }}
               </v-btn>
             </template>
             <v-list>

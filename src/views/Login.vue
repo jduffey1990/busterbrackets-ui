@@ -1,13 +1,13 @@
 <template>
-  <v-layout class="justify-center pa-4 mt-10">
+  <v-layout class="justify-center pa-4">
     <v-card width="400px">
-      <v-toolbar color="primary">
+      <v-toolbar>
         <v-toolbar-title>Login</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <router-link to="/register" custom v-slot="{ navigate }">
+          <!-- <router-link to="/register" custom v-slot="{ navigate }">
             <v-btn class="text-caption" @click="navigate()"> Register? </v-btn>
-          </router-link>
+          </router-link> -->
         </v-toolbar-items>
       </v-toolbar>
 
@@ -19,18 +19,13 @@
             v-model="credentials.email"
           ></v-text-field>
           <br />
-          <v-text-field
-            label="Password"
-            :type="showPassword ? 'text' : 'password'"
-            @click:append-inner="toggleShowPassword()"
-            :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-            v-model="credentials.password"
-          ></v-text-field>
+
+          <UiPassword v-model="credentials.password"></UiPassword>
         </v-card-text>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" type="submit">Login</v-btn>
+          <v-btn type="submit">Login</v-btn>
         </v-card-actions>
       </v-form>
     </v-card>
@@ -40,18 +35,13 @@
 <script setup>
 import router from '@/router';
 import { useUserStore } from '@/store/user';
-import { ref } from 'vue';
 import { reactive } from 'vue';
+import UiPassword from '@/components/ui/Password.vue';
 
 const credentials = reactive({
   email: undefined,
   password: undefined,
 });
-
-const showPassword = ref(false);
-const toggleShowPassword = () => {
-  showPassword.value = !showPassword.value;
-};
 
 const loginUser = async () => {
   try {
