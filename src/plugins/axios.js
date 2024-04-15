@@ -2,16 +2,18 @@ import axios from 'axios';
 
 import { useCookies } from 'vue3-cookies';
 
-const { cookies } = useCookies();
-
 export default {
   install: (app) => {
+    const { cookies } = useCookies();
+
     const api = axios.create({
       baseURL: import.meta.env.VITE_BASE_URL,
       withCredentials: true,
-      headers: {
-        'X-CSRFToken': cookies.get('csrftoken'),
-      },
+    });
+
+    api.interceptors.request.use((config) => {
+      config.headers['X-CSRFToken'] = cookies.get('csrftoken');
+      return config;
     });
 
     app.config.globalProperties.$axios = api;
