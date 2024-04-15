@@ -2,10 +2,6 @@
   <v-layout class="justify-center pa-4">
     <v-card class="w-100">
       <v-toolbar>
-        <!-- <v-toolbar-title
-          >Advisor Preferences
-          <v-btn color="primary" variant="elevated"> Save </v-btn>
-        </v-toolbar-title> -->
         <v-toolbar-title> Advisor Preferences </v-toolbar-title>
 
         <v-toolbar-items>
@@ -152,6 +148,7 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 
 const $axios = inject('$axios');
+const { show } = inject('toast');
 
 const preferences = ref({});
 
@@ -174,6 +171,10 @@ getPreferences();
 const savePreferences = async () => {
   try {
     await $axios.put('/api/advisors/preferences/', preferences.value);
-  } catch (error) {}
+
+    show({ message: 'Preferences saved!' });
+  } catch (error) {
+    show({ message: `Couldn't save preferences`, error: true });
+  }
 };
 </script>

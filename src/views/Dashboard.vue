@@ -61,6 +61,7 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRouter } from 'vue-router';
 const $axios = inject('$axios');
+const { show } = inject('toast');
 
 const router = useRouter();
 
@@ -96,7 +97,11 @@ const createNewClient = async () => {
     getClients();
 
     resetForm();
-  } catch (error) {}
+
+    show({ message: 'Client created!' });
+  } catch (error) {
+    show({ message: `Couldn't create client`, error: true });
+  }
 };
 
 const goToClient = (event, client) => {

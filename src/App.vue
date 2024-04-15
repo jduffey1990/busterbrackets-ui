@@ -2,14 +2,17 @@
   <v-app>
     <Header />
 
-    <v-main>
-      <v-container>
-        <router-view></router-view>
-      </v-container>
-    </v-main>
+    <UiToast>
+      <v-main>
+        <v-container>
+          <router-view></router-view>
+        </v-container> </v-main
+    ></UiToast>
   </v-app>
 </template>
 
 <script setup>
 import Header from './components/Header.vue';
+
+import UiToast from '@/components/ui/Toast.vue';
 </script>

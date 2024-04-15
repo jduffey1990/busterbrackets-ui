@@ -39,7 +39,7 @@
           <v-list-item title="Account Number" :subtitle="''"></v-list-item>
           <v-list-item
             title="Account Custodian"
-            :subtitle="client.advisor.full_name"
+            :subtitle="client?.advisor?.full_name"
           ></v-list-item>
           <v-list-item title="Account Type" :subtitle="''"></v-list-item>
           <v-list-item title="Account Status" :subtitle="''"></v-list-item>
