@@ -49,13 +49,18 @@ const router = createRouter({
     },
     {
       path: '/clients/:uuid',
-      name: 'Client',
-      component: Client,
-    },
-    {
-      path: '/clients/:uuid/survey',
-      name: 'Survey',
-      component: Survey,
+      children: [
+        {
+          path: '',
+          name: 'Client',
+          component: Client,
+        },
+        {
+          path: 'survey',
+          name: 'Survey',
+          component: Survey,
+        },
+      ],
     },
   ],
 });

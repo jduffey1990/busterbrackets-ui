@@ -53,6 +53,7 @@ const account = reactive({
 const saveProfile = async () => {
   try {
     await $axios.put('/api/users/me/', account);
+    await useUserStore().getSession();
     show({ message: 'Account saved!' });
   } catch (error) {
     show({ message: `Couldn't save account`, error: true });
