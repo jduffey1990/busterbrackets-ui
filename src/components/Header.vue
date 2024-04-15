@@ -84,7 +84,7 @@
               <v-list-item @click="router.push('/advisor-preferences')">
                 <v-list-item-title>Advisor Preferences</v-list-item-title>
               </v-list-item>
-              <v-list-item @click="useUserStore().logout()">
+              <v-list-item @click="logout()">
                 <v-list-item-title>Logout</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -100,4 +100,9 @@ import { useUserStore } from '@/store/user';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+const logout = async () => {
+  await useUserStore().logout();
+  router.push('/login');
+};
 </script>

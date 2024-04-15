@@ -37,6 +37,8 @@ import { useUserStore } from '@/store/user';
 import { reactive } from 'vue';
 import UiPassword from '@/components/ui/Password.vue';
 import { useRouter } from 'vue-router';
+import { inject } from 'vue';
+const { show } = inject('toast');
 
 const router = useRouter();
 
@@ -49,7 +51,13 @@ const loginUser = async () => {
   try {
     await useUserStore().login(credentials);
 
+    const { full_name, email } = useUserStore().getUser;
+
+    show({ message: `Welcome back ${full_name || email}!` });
+
     router.push('/');
-  } catch (error) {}
+  } catch (error) {
+    show({ message: 'Invalid credentials', error: true });
+  }
 };
 </script>

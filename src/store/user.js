@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 
+import { useCookies } from 'vue3-cookies';
+
 export const useUserStore = defineStore('user', {
   state: () => ({
     user: {},
@@ -35,13 +37,14 @@ export const useUserStore = defineStore('user', {
       });
 
       await this.getSession();
-
-      window.location.reload();
     },
     async logout() {
       await this.$axios('/api/users/logout/');
 
-      await this.getSession();
+      const { cookies } = useCookies();
+
+      cookies.remove('sessionid');
+      cookies.remove('csrftoken');
 
       window.location.reload();
     },
