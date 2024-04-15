@@ -33,10 +33,12 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import { useUserStore } from '@/store/user';
 import { reactive } from 'vue';
 import UiPassword from '@/components/ui/Password.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const credentials = reactive({
   email: undefined,

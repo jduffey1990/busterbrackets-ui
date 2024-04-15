@@ -18,7 +18,7 @@ pinia.use(async ({ store }) => {
   store.$axios = app.config.globalProperties.$axios;
 });
 
-app.use(axios).use(pinia).use(router).use(vuetify);
+app.use(axios).use(pinia).use(vuetify);
 
 (async () => {
   await useUserStore().getSession();
@@ -39,5 +39,5 @@ app.use(axios).use(pinia).use(router).use(vuetify);
     }
   });
 
-  app.mount('#app');
+  app.use(router).mount('#app');
 })();

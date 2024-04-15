@@ -56,11 +56,13 @@
 
 <script setup>
 import { useUserStore } from '@/store/user';
-import router from '@/router';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
+import { useRouter } from 'vue-router';
 const $axios = inject('$axios');
+
+const router = useRouter();
 
 const openCreateNewClientModal = ref(false);
 
