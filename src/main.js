@@ -23,25 +23,19 @@ app.use(axios).use(pinia).use(router).use(vuetify);
 (async () => {
   await useUserStore().getSession();
 
-  const loginName = 'Login';
+  const loginPath = '/login';
 
   if (!useUserStore().isLoggedIn) {
-    router.push({
-      name: loginName,
-    });
+    router.push(loginPath);
   } else {
-    if (router.currentRoute.value.name === loginName) {
-      router.push({
-        name: 'Dashboard',
-      });
+    if (router.currentRoute.value.path === loginPath) {
+      router.push('/');
     }
   }
 
-  router.beforeEach(async (to, from) => {
-    if (!useUserStore().isLoggedIn && to.name !== loginName) {
-      return {
-        name: loginName,
-      };
+  router.beforeEach((to) => {
+    if (!useUserStore().isLoggedIn && to.path !== loginPath) {
+      return loginPath;
     }
   });
 

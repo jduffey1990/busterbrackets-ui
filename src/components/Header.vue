@@ -16,7 +16,7 @@
         <v-spacer></v-spacer>
 
         <template v-if="useUserStore().isLoggedIn">
-          <div class="mx-3">
+          <!-- <div class="mx-3">
             <router-link to="/" custom v-slot="{ navigate, isActive }">
               <v-btn
                 @click="navigate"
@@ -66,7 +66,7 @@
                 Performance
               </v-btn>
             </router-link>
-          </div>
+          </div> -->
 
           <v-menu>
             <template v-slot:activator="{ props }">

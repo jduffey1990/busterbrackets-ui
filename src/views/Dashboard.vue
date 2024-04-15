@@ -15,7 +15,7 @@
       <!-- <v-btn @click="submit()" color="primary">Submit</v-btn> -->
     </div>
 
-    <v-data-table :items="clients"></v-data-table>
+    <v-data-table :items="clients" @click:row="goToClient"></v-data-table>
 
     <v-dialog max-width="500" v-model="openCreateNewClientModal">
       <v-card title="Create New Client">
@@ -56,6 +56,7 @@
 
 <script setup>
 import { useUserStore } from '@/store/user';
+import router from '@/router';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
@@ -94,5 +95,9 @@ const createNewClient = async () => {
 
     resetForm();
   } catch (error) {}
+};
+
+const goToClient = (event, client) => {
+  router.push(`/clients/${client.item.uuid}`);
 };
 </script>

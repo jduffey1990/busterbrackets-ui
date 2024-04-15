@@ -7,6 +7,7 @@ import Performance from '@/views/Performance.vue';
 import Dashboard from '@/views/Dashboard.vue';
 import AdvisorPreferences from '@/views/AdvisorPreferences.vue';
 import Account from '@/views/Account.vue';
+import Client from '@/views/Client.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -16,31 +17,26 @@ const router = createRouter({
       name: 'Dashboard',
       component: Dashboard,
     },
-    {
-      path: '/register',
-      name: 'Register',
-      component: Register,
-    },
+    // {
+    //   path: '/register',
+    //   name: 'Register',
+    //   component: Register,
+    // },
     {
       path: '/login',
       name: 'Login',
       component: Login,
     },
-    {
-      path: '/survey',
-      name: 'Survey',
-      component: Survey,
-    },
-    {
-      path: '/portfolio',
-      name: 'Portfolio',
-      component: Portfolio,
-    },
-    {
-      path: '/performance',
-      name: 'Performance',
-      component: Performance,
-    },
+    // {
+    //   path: '/portfolio',
+    //   name: 'Portfolio',
+    //   component: Portfolio,
+    // },
+    // {
+    //   path: '/performance',
+    //   name: 'Performance',
+    //   component: Performance,
+    // },
     {
       path: '/advisor-preferences',
       name: 'AdvisorPreferences',
@@ -50,6 +46,16 @@ const router = createRouter({
       path: '/account',
       name: 'Account',
       component: Account,
+    },
+    {
+      path: '/clients/:uuid',
+      name: 'Client',
+      component: Client,
+    },
+    {
+      path: '/clients/:uuid/survey',
+      name: 'Survey',
+      component: Survey,
     },
   ],
 });
