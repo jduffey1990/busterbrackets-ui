@@ -21,8 +21,6 @@ Firebase uses a firebase.json file for configuration. Importantly, this has a re
 
 It's also important to make sure this URL is set in the .env.production file in the root folder as VITE_BASE_URL.
 
-## On the roadmap
+## In Progress
 
-1. Move the Firestore database to Postgres in Cloud SQL.
-
-2. Containerize the UI and run it in Cloud Run, like with the backend. This will likely be easier to maintain and deploy into different environments. Some Firebase features might continue to be used, like its CDN functions.
+Containerizing the UI and deploying on Cloud run.
