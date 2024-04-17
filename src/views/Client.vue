@@ -9,6 +9,7 @@
         color="secondary"
         text="Generate Recommendation"
         class="ml-2"
+        @click="generateRecommendation()"
       ></v-btn>
 
       <v-btn
@@ -46,6 +47,14 @@
         </v-list>
       </v-col>
     </v-row>
+
+    <div v-if="values.length">
+      <div class="text-h6">Values</div>
+
+      <ul class="mx-4">
+        <li v-for="v in values">{{ v.question.text }} - {{ v.value }}</li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -54,18 +63,33 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const { uuid } = useRoute().params;
+
 const router = useRouter();
 const $axios = inject('$axios');
+const { show } = inject('toast');
 
 const client = ref({});
 
 const getClient = async () => {
-  const { data } = await $axios.get(
-    `/api/advisors/clients/${useRoute().params.uuid}/`
-  );
+  const { data } = await $axios.get(`/api/advisors/clients/${uuid}/`);
 
   client.value = data;
 };
 
 getClient();
+
+const values = ref([]);
+
+const getValues = async () => {
+  const { data } = await $axios.get(`/api/advisors/clients/${uuid}/responses/`);
+
+  values.value = data;
+};
+
+getValues();
+
+const generateRecommendation = () => {
+  show({ message: 'Generating recommendation will be available shortly...' });
+};
 </script>

@@ -3,7 +3,7 @@
     <div class="text-h4">Portfolio Guidance and Values Survey</div>
     <v-spacer></v-spacer>
     <v-btn class="mx-2">Download as CSV</v-btn>
-    <v-btn color="primary">Submit</v-btn>
+    <v-btn color="primary" @click="submit()">Submit</v-btn>
   </div>
 
   <div v-if="survey">
@@ -71,12 +71,19 @@
 </template>
 
 <script setup>
+import router from '@/router';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
+import { useRoute } from 'vue-router';
 
 const $axios = inject('$axios');
+const { show } = inject('toast');
 
 const survey = ref();
+
+const {
+  params: { uuid },
+} = useRoute();
 
 onMounted(async () => {
   const { data } = await $axios.get('/api/surveys/');
@@ -101,6 +108,31 @@ onMounted(async () => {
 //     console.log(error);
 //   }
 // };
+
+const submit = async () => {
+  try {
+    const questionPayload = [];
+    for (let section of survey.value.survey_sections) {
+      for (let group of section.survey_groups) {
+        for (let q of group.survey_questions) {
+          if (q.question.default_value) {
+            questionPayload.push(q.question);
+          }
+        }
+      }
+    }
+
+    await $axios.post(
+      `/api/advisors/clients/${uuid}/responses/`,
+      questionPayload
+    );
+
+    show({ message: 'Survey saved!' });
+    router.push(`/clients/${uuid}`);
+  } catch (error) {
+    show({ message: 'Failed to save survey', error: true });
+  }
+};
 
 const getTicks = (ticks) => {
   const tickObj = {};
