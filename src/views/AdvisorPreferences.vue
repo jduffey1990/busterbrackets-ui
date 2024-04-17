@@ -12,26 +12,26 @@
       </v-toolbar>
 
       <v-card-text>
+        <div class="text-h6 mb-3">Factor Levers</div>
+        <v-checkbox v-model="preferences.momentum">
+          <template v-slot:label> Momentum </template>
+        </v-checkbox>
+
+        <v-checkbox v-model="preferences.quality">
+          <template v-slot:label> Quality </template>
+        </v-checkbox>
+
+        <v-checkbox v-model="preferences.value">
+          <template v-slot:label> Value </template>
+        </v-checkbox>
+
+        <v-checkbox v-model="preferences.volatility">
+          <template v-slot:label> Volatility </template>
+        </v-checkbox>
+
+        <br />
+
         <v-row>
-          <v-col cols="6">
-            <div class="text-h6 mb-3">Factor Levers</div>
-            <v-checkbox v-model="preferences.momentum">
-              <template v-slot:label> Momentum </template>
-            </v-checkbox>
-
-            <v-checkbox v-model="preferences.quality">
-              <template v-slot:label> Quality </template>
-            </v-checkbox>
-
-            <v-checkbox v-model="preferences.value">
-              <template v-slot:label> Value </template>
-            </v-checkbox>
-
-            <v-checkbox v-model="preferences.volatility">
-              <template v-slot:label> Volatility </template>
-            </v-checkbox>
-          </v-col>
-
           <v-col cols="6">
             <div class="mb-10">
               <div class="text-h6">US Large Cap</div>
@@ -84,7 +84,9 @@
                 color="primary"
               ></v-slider>
             </div>
+          </v-col>
 
+          <v-col cols="6">
             <div class="mb-10">
               <div class="text-h6">Fixed Income</div>
               <v-slider
