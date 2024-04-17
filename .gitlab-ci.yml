@@ -59,13 +59,11 @@ deploy-dev:
     - development
   image: google/cloud-sdk:467.0.0-alpine
   script:
-    # - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    # - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    # - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
-    # - gcloud config set project $GOOGLE_CLOUD_DEV_PROJECT
-    - export GOOGLE_APPLICATION_CREDENTIALS=./credentials.json
-    - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-    - gcloud run deploy ui --project $GOOGLE_CLOUD_DEV_PROJECT --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
+    - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
+    - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
+    - gcloud config set project $GOOGLE_CLOUD_DEV_PROJECT
+    - gcloud run deploy ui --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
 
 # ---- Cloud Run Beta ----
 
