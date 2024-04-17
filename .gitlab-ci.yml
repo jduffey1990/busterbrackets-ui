@@ -47,7 +47,7 @@ build-dev:
   # variables:
   #   DOCKER_TLS_CERTDIR: "/certs"
   script:
-    - apk add --update bash curl
+    - apt add --update bash curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
     - cat .secure_files/google-ui-service-account.json > $GOOGLE_APPLICATION_CREDENTIALS
