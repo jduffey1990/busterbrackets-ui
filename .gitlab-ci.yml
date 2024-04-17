@@ -47,10 +47,8 @@ build-dev:
   # variables:
   #   DOCKER_TLS_CERTDIR: "/certs"
   script:
-    - apt add --update bash curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
-    - cat .secure_files/google-ui-service-account.json > $GOOGLE_APPLICATION_CREDENTIALS
+    - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 > $GOOGLE_APPLICATION_CREDENTIALS
      - /kaniko/executor --context . --dockerfile ./Dockerfile --destination $UI_IMAGE:$CI_COMMIT_SHORT_SHA
 
     # - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
