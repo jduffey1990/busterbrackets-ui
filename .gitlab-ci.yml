@@ -63,7 +63,7 @@ deploy-dev:
     # - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
     # - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
     # - gcloud config set project $GOOGLE_CLOUD_DEV_PROJECT
-    - export GOOGLE_APPLICATION_CREDENTIALS=$(echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d)
+    - export GOOGLE_APPLICATION_CREDENTIALS=$(echo $GOOGLE_BETA_APPLICATION_CREDENTIALS_BASE64 | base64 -d)
     - gcloud run deploy ui --project $GOOGLE_CLOUD_DEV_PROJECT --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
 
 # ---- Cloud Run Beta ----
