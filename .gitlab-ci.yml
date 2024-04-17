@@ -49,7 +49,7 @@ build-dev:
   script:
     - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
     - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-    - /kaniko/executor --context . --dockerfile ./Dockerfile --destination $UI_IMAGE:$CI_COMMIT_SHORT_SHA
+    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $UI_IMAGE:$CI_COMMIT_SHORT_SHA
 
     # - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
     # - docker build -t $UI_IMAGE:$CI_COMMIT_SHORT_SHA -t $UI_IMAGE:latest .
