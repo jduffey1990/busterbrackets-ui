@@ -41,18 +41,22 @@ build-dev:
   stage: build-dev
   only:
     - development
-  image: docker:25.0.4
-  services:
-    - docker:25.0.4-dind
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  # variables:
+  #   DOCKER_TLS_CERTDIR: "/certs"
   script:
     - apk add --update bash curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    - docker build -t $UI_IMAGE:$CI_COMMIT_SHORT_SHA -t $UI_IMAGE:latest .
-    - docker push $UI_IMAGE:$CI_COMMIT_SHORT_SHA
-    - docker push $UI_IMAGE:latest
+    - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
+    - cat .secure_files/google-ui-service-account.json > $GOOGLE_APPLICATION_CREDENTIALS
+     - /kaniko/executor --context . --dockerfile ./Dockerfile --destination $UI_IMAGE:$CI_COMMIT_SHORT_SHA
+
+    # - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
+    # - docker build -t $UI_IMAGE:$CI_COMMIT_SHORT_SHA -t $UI_IMAGE:latest .
+    # - docker push $UI_IMAGE:$CI_COMMIT_SHORT_SHA
+    # - docker push $UI_IMAGE:latest
 
 deploy-dev:
   stage: deploy-dev
