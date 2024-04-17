@@ -72,27 +72,27 @@ deploy-dev:
 
 # ---- Cloud Run Beta ----
 
-build-beta:
-  stage: build-beta
-  only:
-    - main
-  when: manual
-  image: docker:25.0.4
-  services:
-    - docker:25.0.4-dind
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
-  script:
-    - apk add --update bash curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - cat .secure_files/beta-google-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    - docker build -t us-central1-docker.pkg.dev/pomarium/docker/ui:$CI_COMMIT_SHORT_SHA .
-    - docker push us-central1-docker.pkg.dev/pomarium/docker/ui:$CI_COMMIT_SHORT_SHA
+# build-beta:
+#   stage: build-beta
+#   only:
+#     - main
+#   when: manual
+#   image: docker:25.0.4
+#   services:
+#     - docker:25.0.4-dind
+#   variables:
+#     DOCKER_TLS_CERTDIR: "/certs"
+#   script:
+#     - apk add --update bash curl
+#     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
+#     - cat .secure_files/beta-google-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
+#     - docker build -t us-central1-docker.pkg.dev/pomarium/docker/ui:$CI_COMMIT_SHORT_SHA .
+#     - docker push us-central1-docker.pkg.dev/pomarium/docker/ui:$CI_COMMIT_SHORT_SHA
 
 deploy-beta:
   stage: deploy-beta
-  needs:
-    - build-beta
+  # needs:
+  #   - build-beta
   only:
     - main
   when: manual
@@ -102,7 +102,7 @@ deploy-beta:
     - cat .secure_files/beta-google-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
     - gcloud auth activate-service-account --key-file .secure_files/beta-google-service-account.json
     - gcloud config set project $GOOGLE_CLOUD_BETA_PROJECT
-    - gcloud run deploy ui --image us-central1-docker.pkg.dev/pomarium/docker/ui:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
+    - gcloud run deploy ui --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
 
 # ---- firebase ----
 
