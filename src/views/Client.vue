@@ -9,6 +9,7 @@
         color="secondary"
         text="Generate Recommendation"
         class="ml-2"
+        @click="generateRecommendation()"
       ></v-btn>
 
       <v-btn
@@ -47,7 +48,7 @@
       </v-col>
     </v-row>
 
-    <div>
+    <div v-if="values.length">
       <div class="text-h6">Values</div>
 
       <ul class="mx-4">
@@ -66,6 +67,7 @@ const { uuid } = useRoute().params;
 
 const router = useRouter();
 const $axios = inject('$axios');
+const { show } = inject('toast');
 
 const client = ref({});
 
@@ -86,4 +88,8 @@ const getValues = async () => {
 };
 
 getValues();
+
+const generateRecommendation = () => {
+  show({ message: 'Generating recommendation will be available shortly...' });
+};
 </script>
