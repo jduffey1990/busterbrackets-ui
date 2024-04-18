@@ -45,9 +45,11 @@ const credentials = reactive({
 });
 
 const registerUser = async () => {
+  const { login, register } = useUserStore();
+
   try {
-    await useUserStore().register(credentials);
-    await useUserStore().login(credentials);
+    await register(credentials);
+    await login(credentials);
 
     router.push('/');
   } catch (error) {}

@@ -3,12 +3,6 @@
     <v-card width="400px">
       <v-toolbar>
         <v-toolbar-title>Login</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <!-- <router-link to="/register" custom v-slot="{ navigate }">
-            <v-btn class="text-caption" @click="navigate()"> Register? </v-btn>
-          </router-link> -->
-        </v-toolbar-items>
       </v-toolbar>
 
       <v-form @submit.prevent="loginUser()">
@@ -38,7 +32,11 @@ import { reactive } from 'vue';
 import UiPassword from '@/components/ui/Password.vue';
 import { useRouter } from 'vue-router';
 import { inject } from 'vue';
+import { storeToRefs } from 'pinia';
 const { show } = inject('toast');
+
+const { user } = storeToRefs(useUserStore());
+const { login } = useUserStore();
 
 const router = useRouter();
 
@@ -49,14 +47,15 @@ const credentials = reactive({
 
 const loginUser = async () => {
   try {
-    await useUserStore().login(credentials);
+    await login(credentials);
 
-    const { full_name, email } = useUserStore().getUser;
-
-    show({ message: `Welcome back ${full_name || email}!` });
+    show({
+      message: `Welcome back ${user.value.full_name || user.value.email}!`,
+    });
 
     router.push('/');
   } catch (error) {
+    console.log(error);
     show({ message: 'Invalid credentials', error: true });
   }
 };

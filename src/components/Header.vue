@@ -15,7 +15,7 @@
 
         <v-spacer></v-spacer>
 
-        <template v-if="useUserStore().isLoggedIn">
+        <template v-if="isLoggedIn">
           <div class="mx-3">
             <router-link to="/" custom v-slot="{ navigate, isActive }">
               <v-btn
@@ -27,55 +27,11 @@
               </v-btn>
             </router-link>
           </div>
-          <!-- 
-
-          <div class="mx-3">
-            <router-link to="/survey" custom v-slot="{ navigate, isActive }">
-              <v-btn
-                @click="navigate"
-                role="link"
-                :class="{ 'font-weight-black': isActive }"
-              >
-                Survey
-              </v-btn>
-            </router-link>
-          </div>
-
-          <div class="mx-3">
-            <router-link to="/portfolio" custom v-slot="{ navigate, isActive }">
-              <v-btn
-                @click="navigate"
-                role="link"
-                :class="{ 'font-weight-black': isActive }"
-              >
-                Portfolio
-              </v-btn>
-            </router-link>
-          </div>
-
-          <div class="mx-3">
-            <router-link
-              to="/performance"
-              custom
-              v-slot="{ navigate, isActive }"
-            >
-              <v-btn
-                @click="navigate"
-                role="link"
-                :class="{ 'font-weight-black': isActive }"
-              >
-                Performance
-              </v-btn>
-            </router-link>
-          </div> -->
 
           <v-menu>
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" class="text-disabled">
-                {{
-                  useUserStore().getUser.full_name ||
-                  useUserStore().getUser.email
-                }}
+                {{ user.full_name || user.email }}
               </v-btn>
             </template>
             <v-list>
@@ -98,7 +54,10 @@
 
 <script setup>
 import { useUserStore } from '@/store/user';
+import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
+
+const { user, isLoggedIn } = storeToRefs(useUserStore());
 
 const router = useRouter();
 

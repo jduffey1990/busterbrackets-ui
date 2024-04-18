@@ -2,8 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Register from '@/views/Register.vue';
 import Login from '@/views/Login.vue';
 import Survey from '@/views/Survey.vue';
-import Portfolio from '@/views/Portfolio.vue';
-import Performance from '@/views/Performance.vue';
 import Dashboard from '@/views/Dashboard.vue';
 import AdvisorPreferences from '@/views/AdvisorPreferences.vue';
 import Account from '@/views/Account.vue';
@@ -27,16 +25,6 @@ const router = createRouter({
       name: 'Login',
       component: Login,
     },
-    // {
-    //   path: '/portfolio',
-    //   name: 'Portfolio',
-    //   component: Portfolio,
-    // },
-    // {
-    //   path: '/performance',
-    //   name: 'Performance',
-    //   component: Performance,
-    // },
     {
       path: '/advisor-preferences',
       name: 'AdvisorPreferences',

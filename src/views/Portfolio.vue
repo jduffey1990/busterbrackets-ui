@@ -242,8 +242,6 @@
 </template>
 
 <script setup>
-import { usePortfolioStore } from '@/store/portfolio';
-import { useSurveyStore } from '@/store/survey';
 import BarChart from '@/components/BarChart.vue';
 import { ref } from 'vue';
 import { onMounted } from 'vue';

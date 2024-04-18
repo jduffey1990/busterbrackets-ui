@@ -1,9 +1,7 @@
 <template>
   <div>
     <div class="d-flex my-6">
-      <div class="text-h4">
-        {{ useUserStore().getUser.full_name }}'s Dashboard
-      </div>
+      <div class="text-h4">{{ user.full_name }}'s Dashboard</div>
       <v-spacer></v-spacer>
 
       <v-btn
@@ -11,8 +9,6 @@
         color="primary"
         text="Create New Client"
       ></v-btn>
-
-      <!-- <v-btn @click="submit()" color="primary">Submit</v-btn> -->
     </div>
 
     <v-data-table :items="clients" @click:row="goToClient"></v-data-table>
@@ -56,6 +52,7 @@
 
 <script setup>
 import { useUserStore } from '@/store/user';
+import { storeToRefs } from 'pinia';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
@@ -64,6 +61,8 @@ const $axios = inject('$axios');
 const { show } = inject('toast');
 
 const router = useRouter();
+
+const { user } = storeToRefs(useUserStore());
 
 const openCreateNewClientModal = ref(false);
 

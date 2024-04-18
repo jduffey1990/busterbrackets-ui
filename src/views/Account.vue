@@ -27,8 +27,6 @@
           type="email"
           v-model="account.email"
         ></v-text-field>
-        <!-- <br />
-          <UiPassword v-model="account.password"></UiPassword> -->
       </v-card-text>
     </v-card>
   </v-layout>
@@ -37,12 +35,11 @@
 <script setup>
 import { useUserStore } from '@/store/user';
 import { reactive } from 'vue';
-// import UiPassword from '@/components/ui/Password.vue';
 import { inject } from 'vue';
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
-const { first_name, last_name, email } = useUserStore().getUser;
+const { first_name, last_name, email } = useUserStore().user;
 
 const account = reactive({
   first_name,
@@ -53,7 +50,9 @@ const account = reactive({
 const saveProfile = async () => {
   try {
     await $axios.put('/api/users/me/', account);
+
     await useUserStore().getSession();
+
     show({ message: 'Account saved!' });
   } catch (error) {
     show({ message: `Couldn't save account`, error: true });
