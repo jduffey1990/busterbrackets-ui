@@ -64,6 +64,8 @@ const router = useRouter();
 
 const { user } = storeToRefs(useUserStore());
 
+const { uuid: advisor_uuid } = user.value;
+
 const openCreateNewClientModal = ref(false);
 
 const initialState = {
@@ -80,7 +82,7 @@ const resetForm = () => {
 
 const clients = ref([]);
 const getClients = async () => {
-  const { data } = await $axios.get('/api/advisors/clients/');
+  const { data } = await $axios.get(`/api/advisors/${advisor_uuid}/clients/`);
 
   clients.value = data;
 };
@@ -89,7 +91,7 @@ getClients();
 
 const createNewClient = async () => {
   try {
-    await $axios.post('/api/advisors/clients/', newClient);
+    await $axios.post(`/api/advisors/${advisor_uuid}/clients/`, newClient);
 
     openCreateNewClientModal.value = false;
 

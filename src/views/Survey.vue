@@ -72,9 +72,14 @@
 
 <script setup>
 import router from '@/router';
+import { useUserStore } from '@/store/user';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
+
+const {
+  user: { uuid: advisor_uuid },
+} = useUserStore();
 
 const $axios = inject('$axios');
 const { show } = inject('toast');
@@ -82,7 +87,7 @@ const { show } = inject('toast');
 const survey = ref();
 
 const {
-  params: { uuid },
+  params: { client_uuid },
 } = useRoute();
 
 onMounted(async () => {
@@ -123,12 +128,12 @@ const submit = async () => {
     }
 
     await $axios.post(
-      `/api/advisors/clients/${uuid}/responses/`,
+      `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`,
       questionPayload
     );
 
     show({ message: 'Survey saved!' });
-    router.push(`/clients/${uuid}`);
+    router.push(`/clients/${client_uuid}`);
   } catch (error) {
     show({ message: 'Failed to save survey', error: true });
   }

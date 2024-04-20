@@ -36,7 +36,7 @@ const router = createRouter({
       component: Account,
     },
     {
-      path: '/clients/:uuid',
+      path: '/clients/:client_uuid',
       children: [
         {
           path: '',

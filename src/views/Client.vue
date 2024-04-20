@@ -59,11 +59,18 @@
 </template>
 
 <script setup>
+import { useUserStore } from '@/store/user';
 import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const { uuid } = useRoute().params;
+const {
+  user: { uuid: advisor_uuid },
+} = useUserStore();
+
+const {
+  params: { client_uuid },
+} = useRoute();
 
 const router = useRouter();
 const $axios = inject('$axios');
@@ -72,7 +79,9 @@ const { show } = inject('toast');
 const client = ref({});
 
 const getClient = async () => {
-  const { data } = await $axios.get(`/api/advisors/clients/${uuid}/`);
+  const { data } = await $axios.get(
+    `/api/advisors/${advisor_uuid}/clients/${client_uuid}/`
+  );
 
   client.value = data;
 };
@@ -82,7 +91,9 @@ getClient();
 const values = ref([]);
 
 const getValues = async () => {
-  const { data } = await $axios.get(`/api/advisors/clients/${uuid}/responses/`);
+  const { data } = await $axios.get(
+    `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`
+  );
 
   values.value = data;
 };
