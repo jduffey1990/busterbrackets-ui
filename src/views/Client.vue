@@ -14,7 +14,7 @@
 
       <v-btn
         color="primary"
-        text="Create Survey"
+        :text="`${valuesProfile.length ? 'Edit' : 'Start'} Values Profile`"
         class="ml-2"
         @click="router.push(`/clients/${client.uuid}/survey`)"
       ></v-btn>
@@ -48,11 +48,13 @@
       </v-col>
     </v-row>
 
-    <div v-if="values.length">
+    <div v-if="valuesProfile.length">
       <div class="text-h6">Values</div>
 
       <ul class="mx-4">
-        <li v-for="v in values">{{ v.question.text }} - {{ v.value }}</li>
+        <li v-for="v in valuesProfile">
+          {{ v.question.text }} - {{ v.value }}
+        </li>
       </ul>
     </div>
   </div>
@@ -66,6 +68,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const {
   user: { uuid: advisor_uuid },
+  getValuesProfile,
 } = useUserStore();
 
 const {
@@ -88,14 +91,15 @@ const getClient = async () => {
 
 getClient();
 
-const values = ref([]);
+const valuesProfile = ref([]);
 
 const getValues = async () => {
-  const { data } = await $axios.get(
-    `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`
-  );
-
-  values.value = data;
+  valuesProfile.value = (
+    await getValuesProfile({
+      advisor_uuid,
+      client_uuid,
+    })
+  ).filter((v) => JSON.parse(v.value) !== false);
 };
 
 getValues();

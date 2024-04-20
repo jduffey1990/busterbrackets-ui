@@ -6,10 +6,7 @@ import axios from './plugins/axios';
 import { createPinia } from 'pinia';
 import router from './router';
 import vuetify from './plugins/vuetify';
-import { loadFonts } from './plugins/webfontloader';
 import { useUserStore } from './store/user';
-
-loadFonts();
 
 const app = createApp(App);
 

@@ -15,15 +15,12 @@
     "chart.js": "^4.3.0",
     "core-js": "^3.8.3",
     "dotenv-webpack": "^8.0.1",
-    "firebase": "^9.20.0",
     "pinia": "^2.0.23",
-    "roboto-fontface": "*",
     "vue": "^3.2.13",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.0.0",
     "vue3-cookies": "^1.0.6",
-    "vuetify": "^3.0.0",
-    "webfontloader": "^1.0.0"
+    "vuetify": "^3.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",

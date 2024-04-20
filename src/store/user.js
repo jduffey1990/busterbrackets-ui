@@ -5,6 +5,7 @@ import { useCookies } from 'vue3-cookies';
 export const useUserStore = defineStore('user', {
   state: () => ({
     user: {},
+    valuesProfile: [],
   }),
   getters: {
     isLoggedIn(state) {
@@ -12,6 +13,19 @@ export const useUserStore = defineStore('user', {
     },
   },
   actions: {
+    async getValuesProfile({ advisor_uuid, client_uuid, dontRefresh }) {
+      if (this.valuesProfile.length && dontRefresh) {
+        return this.valuesProfile;
+      }
+
+      const { data } = await this.$axios.get(
+        `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`
+      );
+
+      this.valuesProfile = data;
+
+      return data;
+    },
     async getSession() {
       const { data } = await this.$axios('/api/users/session/');
 

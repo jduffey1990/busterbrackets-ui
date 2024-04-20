@@ -40,6 +40,7 @@
                 <v-checkbox
                   v-if="q.question.response_type === 'checkbox'"
                   v-model="q.question.default_value"
+                  @input="updateResponse(q)"
                 >
                   <template v-slot:label>
                     {{ q.question.text }}
@@ -57,6 +58,7 @@
                     :max="q.question.slider_ticks.length - 1"
                     :step="1.0"
                     :ticks="getTicks(q.question.slider_ticks)"
+                    @end="updateResponse(q)"
                     show-ticks="always"
                     color="primary"
                   ></v-slider>
@@ -79,6 +81,7 @@ import { useRoute } from 'vue-router';
 
 const {
   user: { uuid: advisor_uuid },
+  getValuesProfile,
 } = useUserStore();
 
 const $axios = inject('$axios');
@@ -90,9 +93,37 @@ const {
   params: { client_uuid },
 } = useRoute();
 
+const surveyResponses = [];
+
 onMounted(async () => {
-  const { data } = await $axios.get('/api/surveys/');
-  survey.value = data;
+  const { data: surveyData } = await $axios.get('/api/surveys/');
+  survey.value = surveyData;
+
+  const valuesProfile = await getValuesProfile({
+    advisor_uuid,
+    client_uuid,
+    dontRefresh: true,
+  });
+
+  for (let section of survey.value.survey_sections) {
+    for (let group of section.survey_groups) {
+      for (let q of group.survey_questions) {
+        const foundQuestion = valuesProfile.find((d) => d.question.id === q.id);
+
+        if (foundQuestion) {
+          q.question.default_value = JSON.parse(foundQuestion.value);
+        }
+
+        if (q.question.response_type === 'slider') {
+          if (q.question.default_value === undefined) {
+            q.question.default_value = 0;
+
+            updateResponse(q);
+          }
+        }
+      }
+    }
+  }
 });
 
 // const downloadExport = async () => {
@@ -105,34 +136,36 @@ onMounted(async () => {
 //     });
 
 //     const link = document.createElement('a');
-//     link.href = window.URL.createObjectURL(new Blob([data]));
+//     link.href = window.URL.createObjectURL(new Blob([surveyData]));
 //     link.setAttribute('download', 'survey.csv');
 //     document.body.appendChild(link);
 //     link.click();
 //   } catch (error) {
-//     console.log(error);
+
 //   }
 // };
 
+const updateResponse = (q) => {
+  const position = surveyResponses.findIndex(
+    (s) => s.question.id === q.question.id
+  );
+
+  if (position > -1) {
+    surveyResponses.splice(position, 1);
+  }
+
+  surveyResponses.push(q);
+};
+
 const submit = async () => {
   try {
-    const questionPayload = [];
-    for (let section of survey.value.survey_sections) {
-      for (let group of section.survey_groups) {
-        for (let q of group.survey_questions) {
-          if (q.question.default_value) {
-            questionPayload.push(q.question);
-          }
-        }
-      }
-    }
-
     await $axios.post(
       `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`,
-      questionPayload
+      surveyResponses.map((sr) => sr.question)
     );
 
     show({ message: 'Survey saved!' });
+
     router.push(`/clients/${client_uuid}`);
   } catch (error) {
     show({ message: 'Failed to save survey', error: true });
