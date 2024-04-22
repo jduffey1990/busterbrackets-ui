@@ -19,13 +19,35 @@
             v-html="section.description"
           ></div>
 
-          <v-textarea
-            v-if="section.notes_placeholder"
-            v-model="section.notes"
-            class="pb-10"
-            :label="section.notes_placeholder"
-            variant="outlined"
-          ></v-textarea>
+          <v-row>
+            <v-col cols="8">
+              <v-autocomplete
+                v-if="section.show_companies"
+                class="pb-6"
+                v-model="section.company_preferences"
+                :items="companies"
+                color="blue-grey-lighten-2"
+                item-title="name"
+                item-value="ticker"
+                label="Search for a company"
+                chips
+                closable-chips
+                multiple
+                clear-on-select
+              >
+                <template v-slot:chip="{ props, item }">
+                  <v-chip v-bind="props" :text="item.raw.name"></v-chip>
+                </template>
+
+                <template v-slot:item="{ props, item }">
+                  <v-list-item
+                    v-bind="props"
+                    :title="item.raw.name"
+                  ></v-list-item>
+                </template>
+              </v-autocomplete>
+            </v-col>
+          </v-row>
 
           <v-row>
             <v-col
@@ -82,16 +104,17 @@ import { useRoute } from 'vue-router';
 const {
   user: { uuid: advisor_uuid },
   getValuesProfile,
+  getCompanyPreferences,
 } = useUserStore();
+
+const {
+  params: { client_uuid },
+} = useRoute();
 
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
 const survey = ref();
-
-const {
-  params: { client_uuid },
-} = useRoute();
 
 const surveyResponses = [];
 
@@ -105,10 +128,27 @@ onMounted(async () => {
     dontRefresh: true,
   });
 
+  const companyPreferences = await getCompanyPreferences({
+    advisor_uuid,
+    client_uuid,
+    dontRefresh: true,
+  });
+
   for (let section of survey.value.survey_sections) {
+    if (section.show_companies) {
+      section.company_preferences =
+        companyPreferences
+          .filter(
+            (cp) => cp.is_preferred === section.companies_preference_value
+          )
+          .map((cp) => cp.company.ticker) || [];
+    }
+
     for (let group of section.survey_groups) {
       for (let q of group.survey_questions) {
-        const foundQuestion = valuesProfile.find((d) => d.question.id === q.id);
+        const foundQuestion = valuesProfile.find(
+          (vp) => vp.question.id === q.id
+        );
 
         if (foundQuestion) {
           q.question.default_value = JSON.parse(foundQuestion.value);
@@ -145,6 +185,21 @@ onMounted(async () => {
 //   }
 // };
 
+const companies = ref([]);
+
+const getCompanies = async () => {
+  try {
+    const { data } = await $axios.get('/api/companies/');
+
+    companies.value = data.map((s) => ({
+      ...s,
+      name: `${s.name} (${s.ticker})`,
+    }));
+  } catch (error) {}
+};
+
+getCompanies();
+
 const updateResponse = (q) => {
   const position = surveyResponses.findIndex(
     (s) => s.question.id === q.question.id
@@ -162,6 +217,21 @@ const submit = async () => {
     await $axios.post(
       `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`,
       surveyResponses.map((sr) => sr.question)
+    );
+
+    await $axios.post(
+      `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/`,
+      {
+        preferences: survey.value.survey_sections
+          .filter((section) => section.company_preferences)
+          .map((section) =>
+            section.company_preferences.map((p) => ({
+              ...companies.value.find((c) => c.ticker === p),
+              is_preferred: section.companies_preference_value,
+            }))
+          )
+          .flat(),
+      }
     );
 
     show({ message: 'Survey saved!' });

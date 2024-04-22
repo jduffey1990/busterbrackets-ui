@@ -6,6 +6,7 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     user: {},
     valuesProfile: [],
+    companyPreferences: [],
   }),
   getters: {
     isLoggedIn(state) {
@@ -23,6 +24,19 @@ export const useUserStore = defineStore('user', {
       );
 
       this.valuesProfile = data;
+
+      return data;
+    },
+    async getCompanyPreferences({ advisor_uuid, client_uuid, dontRefresh }) {
+      if (this.companyPreferences.length && dontRefresh) {
+        return this.companyPreferences;
+      }
+
+      const { data } = await this.$axios.get(
+        `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/`
+      );
+
+      this.companyPreferences = data;
 
       return data;
     },

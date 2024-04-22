@@ -48,20 +48,52 @@
       </v-col>
     </v-row>
 
-    <div v-if="valuesProfile.length">
-      <div class="text-h6">Values</div>
+    <v-row>
+      <v-col cols="6">
+        <div class="text-h6">Values</div>
 
-      <ul class="mx-4">
-        <li v-for="v in valuesProfile">
-          {{ v.question.text }} - {{ v.value }}
-        </li>
-      </ul>
-    </div>
+        <ul class="mx-4">
+          <li v-for="v in valuesProfile">
+            {{ v.question.text }} - {{ v.value }}
+          </li>
+        </ul>
+      </v-col>
+
+      <v-col cols="6">
+        <div class="text-h6">Companies</div>
+
+        <v-row>
+          <v-col cols="6">
+            <div>Likes</div>
+
+            <ul class="mx-4">
+              <li v-for="c in companyPreferences.filter((c) => c.is_preferred)">
+                {{ c.company.name }} ({{ c.company.ticker }})
+              </li>
+            </ul>
+          </v-col>
+
+          <v-col cols="6">
+            <div>Dislikes</div>
+
+            <ul class="mx-4">
+              <li
+                v-for="c in companyPreferences.filter((c) => !c.is_preferred)"
+              >
+                {{ c.company.name }} ({{ c.company.ticker }})
+              </li>
+            </ul>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
 <script setup>
 import { useUserStore } from '@/store/user';
+import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -69,7 +101,10 @@ import { useRoute, useRouter } from 'vue-router';
 const {
   user: { uuid: advisor_uuid },
   getValuesProfile,
+  getCompanyPreferences,
 } = useUserStore();
+
+const { valuesProfile, companyPreferences } = storeToRefs(useUserStore());
 
 const {
   params: { client_uuid },
@@ -91,18 +126,17 @@ const getClient = async () => {
 
 getClient();
 
-const valuesProfile = ref([]);
+onMounted(async () => {
+  await getValuesProfile({
+    advisor_uuid,
+    client_uuid,
+  });
 
-const getValues = async () => {
-  valuesProfile.value = (
-    await getValuesProfile({
-      advisor_uuid,
-      client_uuid,
-    })
-  ).filter((v) => JSON.parse(v.value) !== false);
-};
-
-getValues();
+  await getCompanyPreferences({
+    advisor_uuid,
+    client_uuid,
+  });
+});
 
 const generateRecommendation = () => {
   show({ message: 'Generating recommendation will be available shortly...' });
