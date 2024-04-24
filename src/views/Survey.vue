@@ -22,7 +22,7 @@
           <v-row>
             <v-col cols="8">
               <v-autocomplete
-                v-if="section.show_companies"
+                v-if="section.companies_preference_value !== null"
                 class="pb-6"
                 v-model="section.company_preferences"
                 :items="companies"
@@ -100,6 +100,7 @@ import { useUserStore } from '@/store/user';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
+import { difference, cloneDeep } from 'lodash';
 
 const {
   user: { uuid: advisor_uuid },
@@ -135,14 +136,14 @@ onMounted(async () => {
   });
 
   for (let section of survey.value.survey_sections) {
-    if (section.show_companies) {
-      section.company_preferences =
-        companyPreferences
-          .filter(
-            (cp) => cp.is_preferred === section.companies_preference_value
-          )
-          .map((cp) => cp.company.ticker) || [];
-    }
+    section.company_preferences =
+      companyPreferences
+        .filter((cp) => cp.is_preferred === section.companies_preference_value)
+        .map((cp) => cp.company.ticker) || [];
+
+    section.original_company_preferences = cloneDeep(
+      section.company_preferences
+    );
 
     for (let group of section.survey_groups) {
       for (let q of group.survey_questions) {
@@ -219,24 +220,37 @@ const submit = async () => {
       surveyResponses.map((sr) => sr.question)
     );
 
-    await $axios.post(
-      `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/`,
-      {
-        preferences: survey.value.survey_sections
-          .filter((section) => section.company_preferences)
-          .map((section) =>
-            section.company_preferences.map((p) => ({
-              ...companies.value.find((c) => c.ticker === p),
-              is_preferred: section.companies_preference_value,
-            }))
-          )
-          .flat(),
+    for (let section of survey.value.survey_sections) {
+      const added_companies = difference(
+        section.company_preferences,
+        section.original_company_preferences
+      );
+
+      if (added_companies.length) {
+        await $axios.post(
+          `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/`,
+          {
+            is_preferred: section.companies_preference_value,
+            companies: added_companies,
+          }
+        );
       }
-    );
+
+      const deleted_preferences = difference(
+        section.original_company_preferences,
+        section.company_preferences
+      );
+
+      for (let d of deleted_preferences) {
+        await $axios.delete(
+          `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/${d}/`
+        );
+      }
+    }
 
     show({ message: 'Survey saved!' });
 
-    router.push(`/clients/${client_uuid}`);
+    // router.push(`/clients/${client_uuid}`);
   } catch (error) {
     show({ message: 'Failed to save survey', error: true });
   }
