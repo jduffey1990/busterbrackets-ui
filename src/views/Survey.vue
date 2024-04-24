@@ -26,7 +26,6 @@
                 class="pb-6"
                 v-model="section.company_preferences"
                 :items="companies"
-                color="blue-grey-lighten-2"
                 item-title="name"
                 item-value="ticker"
                 label="Search for a company"
