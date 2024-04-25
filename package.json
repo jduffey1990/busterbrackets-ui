@@ -15,7 +15,6 @@
     "chart.js": "^4.3.0",
     "core-js": "^3.8.3",
     "dotenv-webpack": "^8.0.1",
-    "lodash": "^4.17.21",
     "pinia": "^2.0.23",
     "vue": "^3.2.13",
     "vue-chartjs": "^5.3.1",
