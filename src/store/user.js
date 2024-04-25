@@ -6,7 +6,6 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     user: {},
     valuesProfile: [],
-    companyPreferences: [],
   }),
   getters: {
     isLoggedIn(state) {

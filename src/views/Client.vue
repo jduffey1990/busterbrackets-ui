@@ -58,34 +58,6 @@
           </li>
         </ul>
       </v-col>
-
-      <v-col cols="6">
-        <div class="text-h6">Companies</div>
-
-        <v-row>
-          <v-col cols="6">
-            <div>Likes</div>
-
-            <ul class="mx-4">
-              <li v-for="c in companyPreferences.filter((c) => c.is_preferred)">
-                {{ c.company.name }} ({{ c.company.ticker }})
-              </li>
-            </ul>
-          </v-col>
-
-          <v-col cols="6">
-            <div>Dislikes</div>
-
-            <ul class="mx-4">
-              <li
-                v-for="c in companyPreferences.filter((c) => !c.is_preferred)"
-              >
-                {{ c.company.name }} ({{ c.company.ticker }})
-              </li>
-            </ul>
-          </v-col>
-        </v-row>
-      </v-col>
     </v-row>
   </div>
 </template>
@@ -103,7 +75,7 @@ const {
   getValuesProfile,
 } = useUserStore();
 
-const { valuesProfile, companyPreferences } = storeToRefs(useUserStore());
+const { valuesProfile } = storeToRefs(useUserStore());
 
 const {
   params: { client_uuid },
