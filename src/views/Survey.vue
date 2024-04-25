@@ -20,35 +20,6 @@
           ></div>
 
           <v-row>
-            <v-col cols="8">
-              <v-autocomplete
-                v-if="section.companies_preference_value !== null"
-                class="pb-6"
-                v-model="section.company_preferences"
-                :items="companies"
-                item-title="name"
-                item-value="ticker"
-                label="Search for a company"
-                chips
-                closable-chips
-                multiple
-                clear-on-select
-              >
-                <template v-slot:chip="{ props, item }">
-                  <v-chip v-bind="props" :text="item.raw.name"></v-chip>
-                </template>
-
-                <template v-slot:item="{ props, item }">
-                  <v-list-item
-                    v-bind="props"
-                    :title="item.raw.name"
-                  ></v-list-item>
-                </template>
-              </v-autocomplete>
-            </v-col>
-          </v-row>
-
-          <v-row>
             <v-col
               :cols="section.survey_groups.length > 1 ? 6 : 12"
               v-for="group in section.survey_groups"
@@ -58,6 +29,32 @@
               </div>
 
               <div v-for="q in group.survey_questions">
+                <v-autocomplete
+                  v-if="q.question.response_type === 'multi_select'"
+                  class="pb-6"
+                  v-model="q.question.default_value"
+                  :items="companies"
+                  item-title="name"
+                  item-value="ticker"
+                  :label="q.question.text"
+                  chips
+                  closable-chips
+                  multiple
+                  clear-on-select
+                  @update:model-value="updateResponse(q)"
+                >
+                  <template v-slot:chip="{ props, item }">
+                    <v-chip v-bind="props" :text="item.raw.name"></v-chip>
+                  </template>
+
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item
+                      v-bind="props"
+                      :title="item.raw.name"
+                    ></v-list-item>
+                  </template>
+                </v-autocomplete>
+
                 <v-checkbox
                   v-if="q.question.response_type === 'checkbox'"
                   v-model="q.question.default_value"
@@ -99,12 +96,10 @@ import { useUserStore } from '@/store/user';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
-import { difference, cloneDeep } from 'lodash';
 
 const {
   user: { uuid: advisor_uuid },
   getValuesProfile,
-  getCompanyPreferences,
 } = useUserStore();
 
 const {
@@ -119,35 +114,19 @@ const survey = ref();
 const surveyResponses = [];
 
 onMounted(async () => {
-  const { data: surveyData } = await $axios.get('/api/surveys/');
-  survey.value = surveyData;
-
   const valuesProfile = await getValuesProfile({
     advisor_uuid,
     client_uuid,
     dontRefresh: true,
   });
 
-  const companyPreferences = await getCompanyPreferences({
-    advisor_uuid,
-    client_uuid,
-    dontRefresh: true,
-  });
+  const { data: surveyData } = await $axios.get('/api/surveys/');
 
-  for (let section of survey.value.survey_sections) {
-    section.company_preferences =
-      companyPreferences
-        .filter((cp) => cp.is_preferred === section.companies_preference_value)
-        .map((cp) => cp.company.ticker) || [];
-
-    section.original_company_preferences = cloneDeep(
-      section.company_preferences
-    );
-
+  for (let section of surveyData.survey_sections) {
     for (let group of section.survey_groups) {
       for (let q of group.survey_questions) {
         const foundQuestion = valuesProfile.find(
-          (vp) => vp.question.id === q.id
+          (vp) => vp.question.id === q.question.id
         );
 
         if (foundQuestion) {
@@ -164,6 +143,8 @@ onMounted(async () => {
       }
     }
   }
+
+  survey.value = surveyData;
 });
 
 // const downloadExport = async () => {
@@ -216,36 +197,11 @@ const submit = async () => {
   try {
     await $axios.post(
       `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`,
-      surveyResponses.map((sr) => sr.question)
+      surveyResponses.map((sr) => ({
+        ...sr.question,
+        default_value: JSON.stringify(sr.question.default_value),
+      }))
     );
-
-    for (let section of survey.value.survey_sections) {
-      const added_companies = difference(
-        section.company_preferences,
-        section.original_company_preferences
-      );
-
-      if (added_companies.length) {
-        await $axios.post(
-          `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/`,
-          {
-            is_preferred: section.companies_preference_value,
-            companies: added_companies,
-          }
-        );
-      }
-
-      const deleted_preferences = difference(
-        section.original_company_preferences,
-        section.company_preferences
-      );
-
-      for (let d of deleted_preferences) {
-        await $axios.delete(
-          `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/${d}/`
-        );
-      }
-    }
 
     show({ message: 'Survey saved!' });
 

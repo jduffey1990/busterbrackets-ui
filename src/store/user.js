@@ -27,19 +27,6 @@ export const useUserStore = defineStore('user', {
 
       return data;
     },
-    async getCompanyPreferences({ advisor_uuid, client_uuid, dontRefresh }) {
-      if (this.companyPreferences.length && dontRefresh) {
-        return this.companyPreferences;
-      }
-
-      const { data } = await this.$axios.get(
-        `/api/advisors/${advisor_uuid}/clients/${client_uuid}/company-preferences/`
-      );
-
-      this.companyPreferences = data;
-
-      return data;
-    },
     async getSession() {
       const { data } = await this.$axios('/api/users/session/');
 

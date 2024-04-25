@@ -101,7 +101,6 @@ import { useRoute, useRouter } from 'vue-router';
 const {
   user: { uuid: advisor_uuid },
   getValuesProfile,
-  getCompanyPreferences,
 } = useUserStore();
 
 const { valuesProfile, companyPreferences } = storeToRefs(useUserStore());
@@ -128,11 +127,6 @@ getClient();
 
 onMounted(async () => {
   await getValuesProfile({
-    advisor_uuid,
-    client_uuid,
-  });
-
-  await getCompanyPreferences({
     advisor_uuid,
     client_uuid,
   });
