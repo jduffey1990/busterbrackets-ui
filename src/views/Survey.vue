@@ -50,7 +50,7 @@
 
           <v-row>
             <v-col
-              :cols="section.survey_groups.length > 1 ? '6' : '12'"
+              :cols="section.survey_groups.length > 1 ? 6 : 12"
               v-for="group in section.survey_groups"
             >
               <div class="text-h6">
@@ -249,7 +249,7 @@ const submit = async () => {
 
     show({ message: 'Survey saved!' });
 
-    // router.push(`/clients/${client_uuid}`);
+    router.push(`/clients/${client_uuid}`);
   } catch (error) {
     show({ message: 'Failed to save survey', error: true });
   }
