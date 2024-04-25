@@ -21,8 +21,8 @@
 
           <v-row>
             <v-col
-              :cols="section.survey_groups.length > 1 ? 6 : 12"
               v-for="group in section.survey_groups"
+              :cols="group.column_width"
             >
               <div class="text-h6">
                 {{ group.name }}
