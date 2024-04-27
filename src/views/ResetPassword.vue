@@ -31,6 +31,7 @@ import UiPassword from '@/components/ui/Password.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/store/user';
 const $axios = inject('$axios');
+const { show } = inject('toast');
 
 const { login } = useUserStore();
 
