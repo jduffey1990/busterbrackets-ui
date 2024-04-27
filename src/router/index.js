@@ -20,7 +20,7 @@ const router = createRouter({
         const { isLoggedIn } = useUserStore();
 
         if (!isLoggedIn) {
-          return next('/survey');
+          return next();
         }
 
         next('/dashboard');
