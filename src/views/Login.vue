@@ -19,6 +19,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
+          <v-btn @click="resetPassword()">Reset Password</v-btn>
           <v-btn type="submit">Login</v-btn>
         </v-card-actions>
       </v-form>
@@ -34,6 +35,7 @@ import { useRouter } from 'vue-router';
 import { inject } from 'vue';
 import { storeToRefs } from 'pinia';
 const { show } = inject('toast');
+const $axios = inject('$axios');
 
 const { user } = storeToRefs(useUserStore());
 const { login } = useUserStore();
@@ -53,10 +55,31 @@ const loginUser = async () => {
       message: `Welcome back ${user.value.full_name || user.value.email}!`,
     });
 
-    router.push('/');
+    router.push('/dashboard');
   } catch (error) {
     console.log(error);
     show({ message: 'Invalid credentials', error: true });
+  }
+};
+
+const resetPassword = async () => {
+  if (!credentials.email) {
+    show({
+      message: 'Please enter in email asssociated to account',
+      error: true,
+    });
+  } else {
+    try {
+      await $axios.put('/api/users/reset-password/', {
+        email: credentials.email,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+
+    show({
+      message: 'Password reset! Please check your email.',
+    });
   }
 };
 </script>

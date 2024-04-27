@@ -16,7 +16,14 @@
         color="primary"
         :text="`${valuesProfile.length ? 'Edit' : 'Start'} Values Profile`"
         class="ml-2"
-        @click="router.push(`/clients/${client.uuid}/survey`)"
+        @click="
+          router.push({
+            path: '/survey',
+            query: {
+              user_uuid: client.uuid,
+            },
+          })
+        "
       ></v-btn>
     </div>
 
@@ -78,7 +85,7 @@ const {
 const { valuesProfile } = storeToRefs(useUserStore());
 
 const {
-  params: { client_uuid },
+  params: { user_uuid },
 } = useRoute();
 
 const router = useRouter();
@@ -89,7 +96,7 @@ const client = ref({});
 
 const getClient = async () => {
   const { data } = await $axios.get(
-    `/api/advisors/${advisor_uuid}/clients/${client_uuid}/`
+    `/api/advisors/${advisor_uuid}/clients/${user_uuid}/`
   );
 
   client.value = data;
@@ -100,7 +107,7 @@ getClient();
 onMounted(async () => {
   await getValuesProfile({
     advisor_uuid,
-    client_uuid,
+    user_uuid,
   });
 });
 

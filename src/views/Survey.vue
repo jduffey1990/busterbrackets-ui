@@ -2,8 +2,12 @@
   <div class="d-flex my-6">
     <div class="text-h4">Portfolio Guidance and Values Survey</div>
     <v-spacer></v-spacer>
-    <v-btn class="mx-2">Download as CSV</v-btn>
-    <v-btn color="primary" @click="submit()">Submit</v-btn>
+    <v-btn class="mx-2" v-if="isFirmAdminOrGreater">Download as CSV</v-btn>
+    <v-btn
+      color="primary"
+      @click="isLoggedIn ? submit() : (showEmailModal = true)"
+      >Submit
+    </v-btn>
   </div>
 
   <div v-if="survey">
@@ -87,12 +91,52 @@
         </v-container>
       </template>
     </v-stepper>
+
+    <v-dialog max-width="500" v-model="showEmailModal">
+      <v-card title="Register">
+        <v-card-text>
+          <v-text-field
+            v-model="newProspect.first_name"
+            label="First name"
+          ></v-text-field>
+          <br />
+          <v-text-field
+            v-model="newProspect.last_name"
+            label="Last name"
+          ></v-text-field>
+          <br />
+          <v-text-field
+            label="Email"
+            type="email"
+            v-model="newProspect.email"
+          ></v-text-field>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            text="Cancel"
+            @click="
+              showEmailModal = false;
+              resetForm();
+            "
+          ></v-btn>
+          <v-btn
+            text="Save"
+            color="primary"
+            @click="createNewProspect()"
+          ></v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
 import router from '@/router';
 import { useUserStore } from '@/store/user';
+import { reactive } from 'vue';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
@@ -100,10 +144,12 @@ import { useRoute } from 'vue-router';
 const {
   user: { uuid: advisor_uuid },
   getValuesProfile,
+  isLoggedIn,
+  isFirmAdminOrGreater,
 } = useUserStore();
 
 const {
-  params: { client_uuid },
+  query: { user_uuid },
 } = useRoute();
 
 const $axios = inject('$axios');
@@ -114,13 +160,17 @@ const survey = ref();
 const surveyResponses = [];
 
 onMounted(async () => {
-  const valuesProfile = await getValuesProfile({
-    advisor_uuid,
-    client_uuid,
-    dontRefresh: true,
-  });
-
   const { data: surveyData } = await $axios.get('/api/surveys/');
+
+  let valuesProfile = [];
+
+  if (isLoggedIn) {
+    valuesProfile = await getValuesProfile({
+      advisor_uuid,
+      user_uuid,
+      dontRefresh: true,
+    });
+  }
 
   for (let section of surveyData.survey_sections) {
     for (let group of section.survey_groups) {
@@ -193,10 +243,15 @@ const updateResponse = (q) => {
   surveyResponses.push(q);
 };
 
-const submit = async () => {
+const submit = async (prospect_uuid) => {
   try {
+    // if saving for a client
+    const url = prospect_uuid
+      ? `/api/prospects/${prospect_uuid}/responses/`
+      : `/api/advisors/${advisor_uuid}/clients/${user_uuid}/responses/`;
+
     await $axios.post(
-      `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`,
+      url,
       surveyResponses.map((sr) => ({
         ...sr.question,
         default_value: JSON.stringify(sr.question.default_value),
@@ -205,7 +260,8 @@ const submit = async () => {
 
     show({ message: 'Survey saved!' });
 
-    router.push(`/clients/${client_uuid}`);
+    const redirect = prospect_uuid ? '/' : `/clients/${user_uuid}`;
+    router.push(redirect);
   } catch (error) {
     show({ message: 'Failed to save survey', error: true });
   }
@@ -219,5 +275,34 @@ const getTicks = (ticks) => {
   }
 
   return tickObj;
+};
+
+const showEmailModal = ref(false);
+
+const initialState = {
+  first_name: undefined,
+  last_name: undefined,
+  email: undefined,
+};
+
+const newProspect = reactive({ ...initialState });
+
+const resetForm = () => {
+  Object.assign(newProspect, initialState);
+};
+
+resetForm();
+
+const createNewProspect = async () => {
+  try {
+    const {
+      data: { uuid },
+    } = await $axios.post('/api/prospects/', newProspect);
+
+    await submit(uuid);
+  } catch (error) {
+    console.log(error.response);
+    show({ message: 'Failed to save', error: true });
+  }
 };
 </script>

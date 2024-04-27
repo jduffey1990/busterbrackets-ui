@@ -20,17 +20,17 @@ app.use(axios).use(pinia).use(vuetify);
 (async () => {
   await useUserStore().getSession();
 
-  const loginPath = '/login';
+  // const loginPath = '/login';
 
-  router.beforeEach((to) => {
-    if (to.path !== loginPath && !useUserStore().isLoggedIn) {
-      return loginPath;
-    }
+  // router.beforeEach((to) => {
+  //   if (to.path !== loginPath && !useUserStore().isLoggedIn) {
+  //     return loginPath;
+  //   }
 
-    if (to.path === loginPath && useUserStore().isLoggedIn) {
-      return '/';
-    }
-  });
+  //   if (to.path === loginPath && useUserStore().isLoggedIn) {
+  //     return '/';
+  //   }
+  // });
 
   app.use(router).mount('#app');
 })();

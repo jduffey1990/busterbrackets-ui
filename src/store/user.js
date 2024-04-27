@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia';
 
 import { useCookies } from 'vue3-cookies';
+import { Role } from '@/enums/user';
+
+const firmAdminPermissions = [Role.FIRM_ADMIN, Role.SUPER];
+const advisorPermissions = [...firmAdminPermissions, Role.ADVISOR];
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -8,18 +12,24 @@ export const useUserStore = defineStore('user', {
     valuesProfile: [],
   }),
   getters: {
+    isFirmAdminOrGreater(state) {
+      return firmAdminPermissions.includes(state.user.role);
+    },
+    isAdvisorOrGreater(state) {
+      return advisorPermissions.includes(state.user.role);
+    },
     isLoggedIn(state) {
       return !!state.user.email;
     },
   },
   actions: {
-    async getValuesProfile({ advisor_uuid, client_uuid, dontRefresh }) {
+    async getValuesProfile({ advisor_uuid, user_uuid, dontRefresh }) {
       if (this.valuesProfile.length && dontRefresh) {
         return this.valuesProfile;
       }
 
       const { data } = await this.$axios.get(
-        `/api/advisors/${advisor_uuid}/clients/${client_uuid}/responses/`
+        `/api/advisors/${advisor_uuid}/clients/${user_uuid}/responses/`
       );
 
       this.valuesProfile = data;

@@ -17,7 +17,7 @@
 
         <template v-if="isLoggedIn">
           <div class="mx-3">
-            <router-link to="/" custom v-slot="{ navigate, isActive }">
+            <router-link to="/dashboard" custom v-slot="{ navigate, isActive }">
               <v-btn
                 @click="navigate"
                 role="link"
@@ -46,6 +46,20 @@
               </v-list-item>
             </v-list>
           </v-menu>
+        </template>
+
+        <template v-else>
+          <div class="mx-3">
+            <router-link to="/login" custom v-slot="{ navigate, isActive }">
+              <v-btn
+                @click="navigate"
+                role="link"
+                :class="{ 'font-weight-black': isActive }"
+              >
+                Log In
+              </v-btn>
+            </router-link>
+          </div>
         </template>
       </v-row>
     </v-container>
