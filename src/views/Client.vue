@@ -10,7 +10,8 @@
         text="Generate Recommendation"
         class="ml-2"
         @click="generateRecommendation()"
-        :disabled="!valuesProfile.length"
+        :readonly="!valuesProfile.length"
+        :variant="valuesProfile.length ? 'elevated' : 'tonal'"
       ></v-btn>
 
       <v-btn
@@ -29,10 +30,12 @@
     </div>
 
     <v-tabs v-model="currentTab">
-      <v-tab>Profile</v-tab>
-      <v-tab>Values</v-tab>
-      <v-tab>Recommendations</v-tab>
-      <v-tab>Portfolios</v-tab>
+      <v-tab
+        ref="tab"
+        :href="`#${v.toLowerCase()}`"
+        v-for="v in ['Profile', 'Values', 'Recommendations', 'Portfolios']"
+        >{{ v }}</v-tab
+      >
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
@@ -109,15 +112,21 @@ const { valuesProfile } = storeToRefs(useUserStore());
 
 const {
   params: { user_uuid },
+  hash,
 } = useRoute();
 
 const router = useRouter();
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
-const currentTab = ref();
+const tab = ref();
 
 const client = ref({});
+
+const currentTab = ref();
+onMounted(() => {
+  currentTab.value = tab.value.findIndex((t) => t.href === hash);
+});
 
 const getClient = async () => {
   try {
