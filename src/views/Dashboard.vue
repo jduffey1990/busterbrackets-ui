@@ -7,7 +7,7 @@
       <v-btn
         @click="copyText()"
         text="Get Survey Link"
-        color="secondary"
+        color="info"
         class="ml-2"
       ></v-btn>
 
