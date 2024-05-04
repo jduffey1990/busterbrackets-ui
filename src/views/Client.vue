@@ -95,11 +95,15 @@ const { show } = inject('toast');
 const client = ref({});
 
 const getClient = async () => {
-  const { data } = await $axios.get(
-    `/api/advisors/${advisor_uuid}/clients/${user_uuid}/`
-  );
+  try {
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/`
+    );
 
-  client.value = data;
+    client.value = data;
+  } catch (error) {
+    show({ message: `Couldn't retrieve client information`, error: true });
+  }
 };
 
 getClient();
@@ -111,7 +115,16 @@ onMounted(async () => {
   });
 });
 
-const generateRecommendation = () => {
-  show({ message: 'Generating recommendation will be available shortly...' });
+const portfolio = ref();
+const generateRecommendation = async () => {
+  try {
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/`
+    );
+
+    portfolio.value = data;
+  } catch (error) {
+    show({ message: `Couldn't retrieve client information`, error: true });
+  }
 };
 </script>

@@ -149,7 +149,7 @@ const {
 } = useUserStore();
 
 const {
-  query: { user_uuid },
+  query: { user_uuid, advisor },
 } = useRoute();
 
 const $axios = inject('$axios');
@@ -297,11 +297,13 @@ const createNewProspect = async () => {
   try {
     const {
       data: { uuid },
-    } = await $axios.post('/api/prospects/', newProspect);
+    } = await $axios.post('/api/prospects/', {
+      ...newProspect,
+      advisor,
+    });
 
     await submit(uuid);
   } catch (error) {
-    console.log(error.response);
     show({ message: 'Failed to save', error: true });
   }
 };
