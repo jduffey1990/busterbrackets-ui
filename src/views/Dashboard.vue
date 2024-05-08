@@ -193,7 +193,7 @@ const createNewClient = async () => {
 };
 
 const goToClient = (event, client) => {
-  router.push(`/clients/${client.item.uuid}`);
+  router.push(`/clients/${client.item.uuid}/#profile`);
 };
 
 const copyText = () => {
