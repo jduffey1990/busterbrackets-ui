@@ -34,8 +34,8 @@
         ref="tab"
         :href="`#${v.toLowerCase()}`"
         v-for="v in ['Profile', 'Values', 'Recommendations', 'Portfolios']"
-        >{{ v }}</v-tab
-      >
+        >{{ v }}
+      </v-tab>
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
@@ -149,18 +149,31 @@ onMounted(async () => {
   });
 });
 
-const portfolio = ref();
 const generateRecommendation = async () => {
   try {
-    const { data } = await $axios.get(
+    await $axios.post(
       `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/`
     );
 
-    portfolio.value = data;
+    getPortfolio();
 
     currentTab.value = 3;
   } catch (error) {
     show({ message: `Couldn't retrieve client information`, error: true });
   }
 };
+
+const portfolio = ref();
+
+const getPortfolio = async () => {
+  try {
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/`
+    );
+
+    portfolio.value = data;
+  } catch (error) {}
+};
+
+getPortfolio();
 </script>
