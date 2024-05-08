@@ -197,10 +197,9 @@ const goToClient = (event, client) => {
 };
 
 const copyText = () => {
-  const domain =
-    import.meta.env.VITE_DOMAIN_URL || 'https://dev.getpomarium.com';
-
-  navigator.clipboard.writeText(`${domain}/survey?advisor=${advisor_uuid}`);
+  navigator.clipboard.writeText(
+    `${location.origin}/survey?advisor=${advisor_uuid}`
+  );
 
   show({ message: 'Link copied to clipboard!' });
 };
