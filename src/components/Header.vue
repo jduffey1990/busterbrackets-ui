@@ -35,6 +35,12 @@
               </v-btn>
             </template>
             <v-list>
+              <v-list-item
+                @click="router.push('/admin')"
+                v-if="isFirmAdminOrGreater"
+              >
+                <v-list-item-title>Firm Admin</v-list-item-title>
+              </v-list-item>
               <v-list-item @click="router.push('/account')">
                 <v-list-item-title>Account Settings</v-list-item-title>
               </v-list-item>
@@ -71,7 +77,7 @@ import { useUserStore } from '@/store/user';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 
-const { user, isLoggedIn } = storeToRefs(useUserStore());
+const { user, isLoggedIn, isFirmAdminOrGreater } = storeToRefs(useUserStore());
 
 const router = useRouter();
 

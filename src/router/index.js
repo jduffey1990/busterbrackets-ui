@@ -8,6 +8,7 @@ import Client from '@/views/Client.vue';
 import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import { useUserStore } from '@/store/user';
+import Admin from '@/views/Admin.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -49,6 +50,20 @@ const router = createRouter({
       path: '/login',
       name: 'Login',
       component: Login,
+    },
+    {
+      path: '/admin',
+      name: 'Admin',
+      component: Admin,
+      beforeEnter: (to, from, next) => {
+        const { isFirmAdminOrGreater } = useUserStore();
+
+        if (isFirmAdminOrGreater) {
+          return next();
+        }
+
+        next('/');
+      },
     },
     {
       path: '/advisor-preferences',
