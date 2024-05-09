@@ -1,44 +1,88 @@
 <template>
   <div>
-    <div class="d-flex my-6">
-      <div class="text-h4">{{ client.full_name }}</div>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        color="info"
-        text="Generate Recommendation"
-        class="ml-2"
-        @click="generateRecommendation()"
-        :readonly="!valuesProfile.length"
-        :variant="valuesProfile.length ? 'elevated' : 'tonal'"
-      ></v-btn>
-
-      <v-btn
-        color="primary"
-        :text="`${valuesProfile.length ? 'Edit' : 'Start'} Values Profile`"
-        class="ml-2"
-        @click="
-          router.push({
-            path: '/survey',
-            query: {
-              user_uuid: client.uuid,
-            },
-          })
-        "
-      ></v-btn>
-    </div>
+    <div class="text-h4 my-6">{{ client.full_name }}</div>
 
     <v-tabs v-model="currentTab">
       <v-tab
         ref="tab"
         :href="`#${v.toLowerCase()}`"
-        v-for="v in ['Profile', 'Values', 'Recommendations', 'Portfolios']"
+        v-for="v in ['Values', 'Recommendations', 'Accounts', 'Profile']"
         >{{ v }}
       </v-tab>
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
+      <v-tabs-window-item class="py-4">
+        <div class="d-flex justify-end mb-4">
+          <v-btn
+            color="primary"
+            :text="`${valuesProfile.length ? 'Edit' : 'Start'} Values Profile`"
+            class=""
+            @click="
+              router.push({
+                path: '/survey',
+                query: {
+                  user_uuid: client.uuid,
+                },
+              })
+            "
+          ></v-btn>
+        </div>
+
+        <v-alert
+          title="No values profile yet..."
+          type="info"
+          v-if="!valuesProfile.length"
+          >Please click "Start Values Profile" to fill out the survey!
+        </v-alert>
+
+        <v-row v-else>
+          <v-col cols="6">
+            <ul class="mx-4">
+              <li v-for="v in valuesProfile">
+                {{ v.question.text }} - {{ v.value }}
+              </li>
+            </ul>
+          </v-col>
+        </v-row>
+      </v-tabs-window-item>
+
+      <v-tabs-window-item class="py-4">
+        <div class="d-flex justify-end mb-4">
+          <v-btn
+            color="primary"
+            text="Generate Recommendation"
+            @click="generateRecommendation()"
+            :readonly="!valuesProfile.length"
+            :variant="valuesProfile.length ? 'elevated' : 'tonal'"
+          ></v-btn>
+        </div>
+
+        <v-alert
+          title="No recommendations yet..."
+          type="info"
+          v-if="!portfolio.length"
+          >No recommendations have been generated yet. Please click "Generate
+          Recommendation" to do so.
+        </v-alert>
+
+        <pre v-else>{{ portfolio }}</pre>
+      </v-tabs-window-item>
+
+      <v-tabs-window-item class="py-4">
+        <div class="d-flex justify-end mb-4">
+          <v-btn
+            color="primary"
+            text="Create New Account"
+            @click="createNewAccount()"
+          ></v-btn>
+        </div>
+        <v-alert title="No accounts yet..." type="info"
+          >No accounts have been created yet. Please click "Create New Account"
+          to do so.
+        </v-alert>
+      </v-tabs-window-item>
+
       <v-tabs-window-item class="py-4">
         <v-row>
           <v-col cols="6">
@@ -67,29 +111,6 @@
             </v-list>
           </v-col>
         </v-row>
-      </v-tabs-window-item>
-
-      <v-tabs-window-item class="py-4">
-        <v-row>
-          <v-col cols="6">
-            <ul class="mx-4">
-              <li v-for="v in valuesProfile">
-                {{ v.question.text }} - {{ v.value }}
-              </li>
-            </ul>
-          </v-col>
-        </v-row>
-      </v-tabs-window-item>
-
-      <v-tabs-window-item class="py-4"> Recommendations </v-tabs-window-item>
-
-      <v-tabs-window-item class="py-4">
-        <v-alert title="No Portfolios" type="info" v-if="!portfolio"
-          >No portfolios have been generated. Please click "Generate
-          Recommendation" to do so.
-        </v-alert>
-
-        <pre v-else>{{ portfolio }}</pre>
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
@@ -156,8 +177,6 @@ const generateRecommendation = async () => {
     );
 
     getPortfolio();
-
-    currentTab.value = 3;
   } catch (error) {
     show({ message: `Couldn't retrieve client information`, error: true });
   }
@@ -176,4 +195,8 @@ const getPortfolio = async () => {
 };
 
 getPortfolio();
+
+const createNewAccount = async () => {
+  show({ message: `Create new account coming soon...` });
+};
 </script>
