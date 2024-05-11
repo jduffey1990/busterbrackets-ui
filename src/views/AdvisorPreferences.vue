@@ -13,21 +13,19 @@
 
       <v-card-text>
         <div class="text-h6 mb-3">Factor Levers</div>
-        <v-checkbox v-model="preferences.momentum">
-          <template v-slot:label> Momentum </template>
-        </v-checkbox>
+        <v-checkbox
+          v-model="preferences.momentum"
+          label="Momentum"
+        ></v-checkbox>
 
-        <v-checkbox v-model="preferences.quality">
-          <template v-slot:label> Quality </template>
-        </v-checkbox>
+        <v-checkbox v-model="preferences.quality" label="Quality"> </v-checkbox>
 
-        <v-checkbox v-model="preferences.value">
-          <template v-slot:label> Value </template>
-        </v-checkbox>
+        <v-checkbox v-model="preferences.value" label="Value"> </v-checkbox>
 
-        <v-checkbox v-model="preferences.volatility">
-          <template v-slot:label> Volatility </template>
-        </v-checkbox>
+        <v-checkbox
+          v-model="preferences.volatility"
+          label="Volatility"
+        ></v-checkbox>
 
         <br />
 
@@ -150,9 +148,9 @@ import { useUserStore } from '@/store/user';
 import { ref } from 'vue';
 import { inject } from 'vue';
 
-const { user } = useUserStore();
-
-const { uuid: advisor_uuid } = user.value;
+const {
+  user: { uuid: advisor_uuid },
+} = useUserStore();
 
 const $axios = inject('$axios');
 const { show } = inject('toast');
@@ -169,7 +167,7 @@ const ticks = {
 
 const getPreferences = async () => {
   const { data } = await $axios.get(
-    `/api/advisors/${advisor_uuid}preferences/`
+    `/api/advisors/${advisor_uuid}/preferences/`
   );
 
   preferences.value = data;

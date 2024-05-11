@@ -20,7 +20,6 @@
             <router-link to="/dashboard" custom v-slot="{ navigate, isActive }">
               <v-btn
                 @click="navigate"
-                role="link"
                 :class="{ 'font-weight-black': isActive }"
               >
                 Dashboard
@@ -36,17 +35,21 @@
             </template>
             <v-list>
               <v-list-item
-                @click="router.push('/admin')"
                 v-if="isFirmAdminOrGreater"
+                link
+                :to="{ name: 'Admin' }"
               >
-                <v-list-item-title>Firm Admin</v-list-item-title>
+                <v-list-item-title>Firm Admin </v-list-item-title>
               </v-list-item>
-              <v-list-item @click="router.push('/account')">
-                <v-list-item-title>Account Settings</v-list-item-title>
+
+              <v-list-item link :to="{ name: 'AccountSettings' }">
+                <v-list-item-title>Account Settings </v-list-item-title>
               </v-list-item>
-              <v-list-item @click="router.push('/advisor-preferences')">
-                <v-list-item-title>Advisor Preferences</v-list-item-title>
+
+              <v-list-item link :to="{ name: 'AdvisorPreferences' }">
+                <v-list-item-title>Advisor Preferences </v-list-item-title>
               </v-list-item>
+
               <v-list-item @click="logout()">
                 <v-list-item-title>Logout</v-list-item-title>
               </v-list-item>
@@ -83,6 +86,6 @@ const router = useRouter();
 
 const logout = async () => {
   await useUserStore().logout();
-  router.push('/login');
+  router.push({ name: 'Login' });
 };
 </script>

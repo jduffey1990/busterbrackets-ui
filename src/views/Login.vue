@@ -55,7 +55,7 @@ const loginUser = async () => {
       message: `Welcome back ${user.value.full_name || user.value.email}!`,
     });
 
-    router.push('/dashboard');
+    router.push({ name: 'Dashboard' });
   } catch (error) {
     console.log(error);
     show({ message: 'Invalid credentials', error: true });

@@ -60,7 +60,7 @@ const resetPassword = async () => {
 
     show({ message: 'Password reset!' });
 
-    router.push('/dashboard');
+    router.push({ name: 'Dashboard' });
   } catch (error) {
     show({ message: `Couldn't reset password.`, error: true });
   }

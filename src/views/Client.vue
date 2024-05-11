@@ -14,19 +14,21 @@
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item class="py-4">
         <div class="d-flex justify-end mb-4">
-          <v-btn
-            color="primary"
-            :text="`${valuesProfile.length ? 'Edit' : 'Start'} Values Profile`"
-            class=""
-            @click="
-              router.push({
-                path: '/survey',
-                query: {
-                  user_uuid: client.uuid,
-                },
-              })
-            "
-          ></v-btn>
+          <router-link
+            :to="{ name: 'Survey', query: { user_uuid: client.uuid } }"
+            custom
+            v-slot="{ navigate }"
+          >
+            <v-btn
+              color="primary"
+              :text="`${
+                valuesProfile.length ? 'Edit' : 'Start'
+              } Values Profile`"
+              @click="navigate"
+            >
+              Dashboard
+            </v-btn>
+          </router-link>
         </div>
 
         <v-alert
@@ -72,16 +74,19 @@
 
       <v-tabs-window-item class="py-4">
         <div class="d-flex justify-end mb-4">
-          <v-btn
-            color="primary"
-            text="Create New Account"
-            @click="createNewAccount()"
-          ></v-btn>
+          <router-link :to="`../${user_uuid}/accounts`" v-slot="{ navigate }">
+            <v-btn @click="navigate" role="link" color="primary">
+              Create New Account
+            </v-btn>
+          </router-link>
         </div>
-        <v-alert title="No accounts yet..." type="info"
+
+        <v-alert title="No accounts yet..." type="info" v-if="!accounts.length"
           >No accounts have been created yet. Please click "Create New Account"
           to do so.
         </v-alert>
+
+        <v-data-table v-else :items="accounts"> </v-data-table>
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-4">
@@ -199,8 +204,15 @@ const getPortfolioSectors = async () => {
   } catch (error) {}
 };
 
-const createNewAccount = async () => {
-  show({ message: `Create new account coming soon...` });
+const accounts = ref([]);
+const getAccounts = async () => {
+  try {
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/accounts/`
+    );
+
+    accounts.value = data;
+  } catch (error) {}
 };
 
 const currentTab = ref();
@@ -209,9 +221,11 @@ const tab = ref();
 onMounted(async () => {
   getClient();
 
+  getAccounts();
+
   currentTab.value = tab.value.findIndex((t) => t.href === hash);
 
-  await getValuesProfile({
+  getValuesProfile({
     advisor_uuid,
     user_uuid,
   });

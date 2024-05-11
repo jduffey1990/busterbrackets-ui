@@ -193,7 +193,11 @@ const createNewClient = async () => {
 };
 
 const goToClient = (event, client) => {
-  router.push(`/clients/${client.item.uuid}/#values`);
+  router.push({
+    name: 'Client',
+    params: { user_uuid: client.item.uuid },
+    hash: '#values',
+  });
 };
 
 const copyText = () => {

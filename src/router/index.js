@@ -3,12 +3,14 @@ import Login from '@/views/Login.vue';
 import Survey from '@/views/Survey.vue';
 import Dashboard from '@/views/Dashboard.vue';
 import AdvisorPreferences from '@/views/AdvisorPreferences.vue';
-import Account from '@/views/Account.vue';
+
 import Client from '@/views/Client.vue';
 import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import { useUserStore } from '@/store/user';
 import Admin from '@/views/Admin.vue';
+import AccountSettings from '@/views/AccountSettings.vue';
+import Accounts from '@/views/Accounts.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -80,9 +82,9 @@ const router = createRouter({
       },
     },
     {
-      path: '/account',
-      name: 'Account',
-      component: Account,
+      path: '/account-settings',
+      name: 'AccountSettings',
+      component: AccountSettings,
     },
     {
       path: '/survey',
@@ -96,6 +98,11 @@ const router = createRouter({
           path: '',
           name: 'Client',
           component: Client,
+        },
+        {
+          path: 'accounts',
+          name: 'Accounts',
+          component: Accounts,
         },
       ],
       beforeEnter: (to, from, next) => {

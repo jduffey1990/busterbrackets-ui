@@ -78,10 +78,8 @@
                       v-if="q.question.response_type === 'checkbox'"
                       v-model="q.question.default_value"
                       @input="updateResponse(q)"
+                      :label="q.question.text"
                     >
-                      <template v-slot:label>
-                        {{ q.question.text }}
-                      </template>
                     </v-checkbox>
 
                     <div
