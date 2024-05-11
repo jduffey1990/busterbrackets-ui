@@ -100,17 +100,17 @@ const account = reactive({
 });
 
 const {
-  user: { uuid: advisor_uuid },
+  user: { id: advisor_id },
 } = useUserStore();
 
 const {
-  params: { user_uuid },
+  params: { user_id },
 } = useRoute();
 
 const createAccount = async () => {
   try {
     await $axios.post(
-      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/accounts/`,
+      `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`,
       account
     );
 

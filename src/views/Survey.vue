@@ -165,14 +165,14 @@ import { ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
 
 const {
-  user: { uuid: advisor_uuid },
+  user: { id: advisor_id },
   getValuesProfile,
   isLoggedIn,
   isFirmAdminOrGreater,
 } = useUserStore();
 
 const {
-  query: { user_uuid, advisor },
+  query: { user_id, advisor },
 } = useRoute();
 
 const $axios = inject('$axios');
@@ -191,8 +191,8 @@ onMounted(async () => {
 
   if (isLoggedIn) {
     valuesProfile = await getValuesProfile({
-      advisor_uuid,
-      user_uuid,
+      advisor_id,
+      user_id,
       dontRefresh: true,
     });
   }
@@ -268,12 +268,12 @@ const updateResponse = (q) => {
   surveyResponses.push(q);
 };
 
-const submit = async (prospect_uuid) => {
+const submit = async (prospect_id) => {
   try {
     // if saving for a client
-    const url = prospect_uuid
-      ? `/api/prospects/${prospect_uuid}/responses/`
-      : `/api/advisors/${advisor_uuid}/clients/${user_uuid}/responses/`;
+    const url = prospect_id
+      ? `/api/prospects/${prospect_id}/responses/`
+      : `/api/advisors/${advisor_id}/clients/${user_id}/responses/`;
 
     await $axios.post(
       url,
@@ -285,7 +285,7 @@ const submit = async (prospect_uuid) => {
 
     show({ message: 'Survey saved!' });
 
-    const redirect = prospect_uuid ? '/' : `/clients/${user_uuid}#values`;
+    const redirect = prospect_id ? '/' : `/clients/${user_id}#values`;
     router.push(redirect);
   } catch (error) {
     show({ message: 'Failed to save survey', error: true });
@@ -321,13 +321,13 @@ resetForm();
 const createNewProspect = async () => {
   try {
     const {
-      data: { uuid },
+      data: { id },
     } = await $axios.post('/api/prospects/', {
       ...newProspect,
       advisor,
     });
 
-    await submit(uuid);
+    await submit(id);
   } catch (error) {
     show({ message: 'Failed to save', error: true });
   }

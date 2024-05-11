@@ -101,7 +101,7 @@ const router = useRouter();
 
 const { user } = storeToRefs(useUserStore());
 
-const { uuid: advisor_uuid } = user.value;
+const { id: advisor_id } = user.value;
 
 const openCreateNewClientModal = ref(false);
 
@@ -141,7 +141,7 @@ const baseHeaders = [
 const clients = ref([]);
 const clientHeaders = [...baseHeaders];
 const getClients = async () => {
-  const { data } = await $axios.get(`/api/advisors/${advisor_uuid}/clients/`);
+  const { data } = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
 
   clients.value = data.map((d) => ({
     ...d,
@@ -164,7 +164,7 @@ const prospectHeaders = [
 ];
 const prospects = ref([]);
 const getProspects = async () => {
-  const { data } = await $axios.get(`/api/advisors/${advisor_uuid}/prospects/`);
+  const { data } = await $axios.get(`/api/advisors/${advisor_id}/prospects/`);
 
   prospects.value = data.map((d) => ({
     ...d,
@@ -178,7 +178,7 @@ getProspects();
 
 const createNewClient = async () => {
   try {
-    await $axios.post(`/api/advisors/${advisor_uuid}/clients/`, newClient);
+    await $axios.post(`/api/advisors/${advisor_id}/clients/`, newClient);
 
     openCreateNewClientModal.value = false;
 
@@ -195,23 +195,23 @@ const createNewClient = async () => {
 const goToClient = (event, client) => {
   router.push({
     name: 'Client',
-    params: { user_uuid: client.item.uuid },
+    params: { user_id: client.item.id },
     hash: '#values',
   });
 };
 
 const copyText = () => {
   navigator.clipboard.writeText(
-    `${location.origin}/survey?advisor=${advisor_uuid}`
+    `${location.origin}/survey?advisor=${advisor_id}`
   );
 
   show({ message: 'Link copied to clipboard!' });
 };
 
-const acceptProspect = async ({ uuid }) => {
+const acceptProspect = async ({ id }) => {
   if (confirm('Are you sure you want to accept this prospect as a client?')) {
     try {
-      await $axios.patch(`/api/advisors/${advisor_uuid}/prospects/${uuid}/`, {
+      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {
         role: 'client',
       });
 
@@ -225,10 +225,10 @@ const acceptProspect = async ({ uuid }) => {
   }
 };
 
-const archiveProspect = async ({ uuid }) => {
+const archiveProspect = async ({ id }) => {
   if (confirm('Are you sure you want to archive this prospect?')) {
     try {
-      await $axios.patch(`/api/advisors/${advisor_uuid}/prospects/${uuid}/`, {
+      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {
         is_archived: true,
       });
 

@@ -148,9 +148,9 @@ import { useUserStore } from '@/store/user';
 import { ref } from 'vue';
 import { inject } from 'vue';
 
-const {
-  user: { uuid: advisor_uuid },
-} = useUserStore();
+const { user } = useUserStore();
+
+const { id: advisor_id } = user.value;
 
 const $axios = inject('$axios');
 const { show } = inject('toast');
@@ -166,9 +166,7 @@ const ticks = {
 };
 
 const getPreferences = async () => {
-  const { data } = await $axios.get(
-    `/api/advisors/${advisor_uuid}/preferences/`
-  );
+  const { data } = await $axios.get(`/api/advisors/${advisor_id}preferences/`);
 
   preferences.value = data;
 };
@@ -178,7 +176,7 @@ getPreferences();
 const savePreferences = async () => {
   try {
     await $axios.put(
-      `/api/advisors/${advisor_uuid}/preferences/`,
+      `/api/advisors/${advisor_id}/preferences/`,
       preferences.value
     );
 
