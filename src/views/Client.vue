@@ -89,13 +89,18 @@
               </div>
             </v-col>
             <v-col cols="6">
-              <v-data-table
-                :items="latestPortfolioTable"
-                :items-per-page="-1"
-                :style="{ maxHeight: `${pieWrapper?.clientHeight}px` }"
-              >
-                <template #bottom> </template>
-              </v-data-table>
+              <v-card width="99.9%">
+                <v-card-text>
+                  <v-data-table
+                    fixed-header
+                    :items="latestPortfolioTable"
+                    :items-per-page="-1"
+                    :style="{ maxHeight: `${pieWrapper?.clientHeight}px` }"
+                  >
+                    <template #bottom> </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
             </v-col>
           </v-row>
         </div>
