@@ -70,24 +70,34 @@
         </v-alert>
 
         <div v-else>
-          <div v-if="latestPortfolioChart">
-            <PieChart
-              :data="latestPortfolioChart"
-              :options="{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
-              }"
-            />
-          </div>
+          <v-row>
+            <v-col cols="6">
+              <div ref="pieWrapper">
+                <PieChart
+                  v-if="latestPortfolioChart"
+                  :data="latestPortfolioChart"
+                  :options="{
+                    responsive: true,
 
-          <v-data-table :items="latestPortfolioTable" :items-per-page="-1">
-            <template #bottom> </template>
-          </v-data-table>
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
+                    },
+                  }"
+                />
+              </div>
+            </v-col>
+            <v-col cols="6">
+              <v-data-table
+                :items="latestPortfolioTable"
+                :items-per-page="-1"
+                :style="{ maxHeight: `${pieWrapper?.clientHeight}px` }"
+              >
+                <template #bottom> </template>
+              </v-data-table>
+            </v-col>
+          </v-row>
         </div>
       </v-tabs-window-item>
 
@@ -195,6 +205,7 @@ const generateRecommendation = async () => {
 
 const latestPortfolioTable = ref();
 const latestPortfolioChart = ref();
+const pieWrapper = ref();
 const getPortfolios = async () => {
   try {
     const { data } = await $axios.get(
