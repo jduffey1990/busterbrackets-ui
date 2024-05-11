@@ -219,6 +219,10 @@ const getPortfolios = async () => {
 
     const { pomarium } = data[0].allocations;
 
+    for (let i in pomarium) {
+      pomarium[i] = Math.round(pomarium[i] * 100 * 100) / 100;
+    }
+
     const labels = Object.keys(pomarium);
 
     latestPortfolioChart.value = {
@@ -228,7 +232,7 @@ const getPortfolios = async () => {
           backgroundColor: labels.map(
             (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
           ),
-          data: Object.values(pomarium).map((v) => v * 100),
+          data: Object.values(pomarium),
         },
       ],
     };
@@ -236,7 +240,7 @@ const getPortfolios = async () => {
     latestPortfolioTable.value = labels
       .map((p) => ({
         ticker: p,
-        allocation: pomarium[p] * 100,
+        allocation: pomarium[p],
       }))
       .sort((a, b) => b.allocation - a.allocation);
   } catch (error) {}
