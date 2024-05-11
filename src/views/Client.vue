@@ -22,7 +22,7 @@
               router.push({
                 path: '/survey',
                 query: {
-                  user_uuid: client.uuid,
+                  user_id: client.id,
                 },
               })
             "
@@ -126,14 +126,14 @@ import { inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const {
-  user: { uuid: advisor_uuid },
+  user: { id: advisor_id },
   getValuesProfile,
 } = useUserStore();
 
 const { valuesProfile } = storeToRefs(useUserStore());
 
 const {
-  params: { user_uuid },
+  params: { user_id },
   hash,
 } = useRoute();
 
@@ -145,7 +145,7 @@ const client = ref({});
 const getClient = async () => {
   try {
     const { data } = await $axios.get(
-      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/`
+      `/api/advisors/${advisor_id}/clients/${user_id}/`
     );
 
     client.value = data;
@@ -157,7 +157,7 @@ const getClient = async () => {
 const generateRecommendation = async () => {
   try {
     await $axios.post(
-      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/`
+      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
     );
 
     getPortfolios();
@@ -170,7 +170,7 @@ const portfolios = ref([]);
 const getPortfolios = async () => {
   try {
     const { data } = await $axios.get(
-      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/`
+      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
     );
 
     portfolios.value = data;
@@ -181,7 +181,7 @@ const portfolioValues = ref();
 const getPortfolioValues = async () => {
   try {
     const { data } = await $axios.get(
-      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/values/`
+      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
     );
 
     portfolioValues.value = data;
@@ -192,7 +192,7 @@ const portfolioSectors = ref();
 const getPortfolioSectors = async () => {
   try {
     const { data } = await $axios.get(
-      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/sectors/`
+      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/sectors/`
     );
 
     portfolioSectors.value = data;
@@ -212,8 +212,8 @@ onMounted(async () => {
   currentTab.value = tab.value.findIndex((t) => t.href === hash);
 
   await getValuesProfile({
-    advisor_uuid,
-    user_uuid,
+    advisor_id,
+    user_id,
   });
 
   await getPortfolios();

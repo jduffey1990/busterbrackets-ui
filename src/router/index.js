@@ -90,7 +90,7 @@ const router = createRouter({
       component: Survey,
     },
     {
-      path: '/clients/:user_uuid',
+      path: '/clients/:user_id',
       children: [
         {
           path: '',

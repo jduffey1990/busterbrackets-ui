@@ -23,13 +23,13 @@ export const useUserStore = defineStore('user', {
     },
   },
   actions: {
-    async getValuesProfile({ advisor_uuid, user_uuid, dontRefresh }) {
+    async getValuesProfile({ advisor_id, user_id, dontRefresh }) {
       if (this.valuesProfile.length && dontRefresh) {
         return this.valuesProfile;
       }
 
       const { data } = await this.$axios.get(
-        `/api/advisors/${advisor_uuid}/clients/${user_uuid}/responses/`
+        `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
       );
 
       this.valuesProfile = data;
