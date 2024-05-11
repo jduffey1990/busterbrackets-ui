@@ -61,12 +61,13 @@
         <v-alert
           title="No recommendations yet..."
           type="info"
-          v-if="!portfolio.length"
+          v-if="!portfolios.length"
           >No recommendations have been generated yet. Please click "Generate
-          Recommendation" to do so.
+          Recommendation" to do so. If you already haven't taken the survey,
+          please do that before you can generate the recommendation.
         </v-alert>
 
-        <pre v-else>{{ portfolio }}</pre>
+        <pre v-else>{{ portfolios }}</pre>
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-4">
@@ -140,15 +141,7 @@ const router = useRouter();
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
-const tab = ref();
-
 const client = ref({});
-
-const currentTab = ref();
-onMounted(() => {
-  currentTab.value = tab.value.findIndex((t) => t.href === hash);
-});
-
 const getClient = async () => {
   try {
     const { data } = await $axios.get(
@@ -161,42 +154,73 @@ const getClient = async () => {
   }
 };
 
-getClient();
-
-onMounted(async () => {
-  await getValuesProfile({
-    advisor_uuid,
-    user_uuid,
-  });
-});
-
 const generateRecommendation = async () => {
   try {
     await $axios.post(
       `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/`
     );
 
-    getPortfolio();
+    getPortfolios();
   } catch (error) {
     show({ message: `Couldn't retrieve client information`, error: true });
   }
 };
 
-const portfolio = ref();
-
-const getPortfolio = async () => {
+const portfolios = ref([]);
+const getPortfolios = async () => {
   try {
     const { data } = await $axios.get(
       `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/`
     );
 
-    portfolio.value = data;
+    portfolios.value = data;
   } catch (error) {}
 };
 
-getPortfolio();
+const portfolioValues = ref();
+const getPortfolioValues = async () => {
+  try {
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/values/`
+    );
+
+    portfolioValues.value = data;
+  } catch (error) {}
+};
+
+const portfolioSectors = ref();
+const getPortfolioSectors = async () => {
+  try {
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_uuid}/clients/${user_uuid}/portfolio/sectors/`
+    );
+
+    portfolioSectors.value = data;
+  } catch (error) {}
+};
 
 const createNewAccount = async () => {
   show({ message: `Create new account coming soon...` });
 };
+
+const currentTab = ref();
+const tab = ref();
+
+onMounted(async () => {
+  getClient();
+
+  currentTab.value = tab.value.findIndex((t) => t.href === hash);
+
+  await getValuesProfile({
+    advisor_uuid,
+    user_uuid,
+  });
+
+  await getPortfolios();
+
+  if (portfolios.value.length) {
+    getPortfolioValues();
+    getPortfolioSectors();
+  }
+});
 </script>
