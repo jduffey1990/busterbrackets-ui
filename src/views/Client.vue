@@ -26,7 +26,7 @@
               } Values Profile`"
               @click="navigate"
             >
-              Dashboard
+              Start Values Profile
             </v-btn>
           </router-link>
         </div>
