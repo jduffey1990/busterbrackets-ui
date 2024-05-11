@@ -63,13 +63,32 @@
         <v-alert
           title="No recommendations yet..."
           type="info"
-          v-if="!portfolios.length"
+          v-if="!latestPortfolioTable"
           >No recommendations have been generated yet. Please click "Generate
           Recommendation" to do so. If you already haven't taken the survey,
           please do that before you can generate the recommendation.
         </v-alert>
 
-        <pre v-else>{{ portfolios }}</pre>
+        <div v-else>
+          <div v-if="latestPortfolioChart">
+            <PieChart
+              :data="latestPortfolioChart"
+              :options="{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                },
+              }"
+            />
+          </div>
+
+          <v-data-table :items="latestPortfolioTable" :items-per-page="-1">
+            <template #bottom> </template>
+          </v-data-table>
+        </div>
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-4">
@@ -131,7 +150,8 @@ import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import PieChart from '../components/PieChart.vue';
 
 const {
   user: { id: advisor_id },
@@ -145,7 +165,6 @@ const {
   hash,
 } = useRoute();
 
-const router = useRouter();
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
@@ -174,14 +193,36 @@ const generateRecommendation = async () => {
   }
 };
 
-const portfolios = ref([]);
+const latestPortfolioTable = ref();
+const latestPortfolioChart = ref();
 const getPortfolios = async () => {
   try {
     const { data } = await $axios.get(
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
     );
 
-    portfolios.value = data;
+    const { pomarium } = data[0].allocations;
+
+    const labels = Object.keys(pomarium);
+
+    latestPortfolioChart.value = {
+      labels,
+      datasets: [
+        {
+          backgroundColor: labels.map(
+            (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
+          ),
+          data: Object.values(pomarium).map((v) => v * 100),
+        },
+      ],
+    };
+
+    latestPortfolioTable.value = labels
+      .map((p) => ({
+        ticker: p,
+        allocation: pomarium[p] * 100,
+      }))
+      .sort((a, b) => b.allocation - a.allocation);
   } catch (error) {}
 };
 
@@ -235,7 +276,7 @@ onMounted(async () => {
 
   await getPortfolios();
 
-  if (portfolios.value.length) {
+  if (latestPortfolioTable.value) {
     getPortfolioValues();
     getPortfolioSectors();
   }

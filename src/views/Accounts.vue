@@ -70,12 +70,6 @@ const $axios = inject('$axios');
 
 const { show } = inject('toast');
 
-// const accountTypes = [
-//   { value: 'individual', title: 'Individual' },
-//   { value: 'jtbe', title: 'Joint Tenants by the Entirety (JTBE)' },
-//   { value: 'jtic', title: 'Joint Tenants in Common (JTIC)' },
-// ];
-
 const custodians = [
   { value: 'altruist', title: 'Altruist' },
   { value: 'schwab', title: 'Schwab' },
