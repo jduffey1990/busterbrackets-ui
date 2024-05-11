@@ -22,6 +22,7 @@
         ></v-text-field>
 
         <v-select
+          v-if="accountTypes"
           label="Account Type"
           class="mb-4"
           v-model="account.account_type"
@@ -69,11 +70,11 @@ const $axios = inject('$axios');
 
 const { show } = inject('toast');
 
-const accountTypes = [
-  { value: 'individual', title: 'Individual' },
-  { value: 'jtbe', title: 'Joint Tenants by the Entirety (JTBE)' },
-  { value: 'jtic', title: 'Joint Tenants in Common (JTIC)' },
-];
+// const accountTypes = [
+//   { value: 'individual', title: 'Individual' },
+//   { value: 'jtbe', title: 'Joint Tenants by the Entirety (JTBE)' },
+//   { value: 'jtic', title: 'Joint Tenants in Common (JTIC)' },
+// ];
 
 const custodians = [
   { value: 'altruist', title: 'Altruist' },
@@ -124,4 +125,6 @@ const createAccount = async () => {
     show({ message: `Couldn't create account`, error: true });
   }
 };
+
+const { data: accountTypes } = await $axios.get('/api/accounts/types/');
 </script>

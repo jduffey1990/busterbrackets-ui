@@ -75,8 +75,6 @@ import moment from 'moment';
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
-const router = useRouter();
-
 const { user } = storeToRefs(useUserStore());
 
 const openCreateNewAdvisorModal = ref(false);
@@ -113,6 +111,8 @@ const baseHeaders = [
 const advisors = ref([]);
 
 const getAdvisors = async () => {
+  console.log(user.value);
+
   const { data } = await $axios.get(
     `/api/firms/${user.value.firm.id}/advisors/`
   );
