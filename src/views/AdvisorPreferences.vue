@@ -11,8 +11,8 @@
         </v-toolbar-items>
       </v-toolbar>
 
-      <v-card-text>
-        <div class="text-h6 mb-3">Factor Levers</div>
+      <v-card-text class="pa-8">
+        <div class="text-h5 mb-3">Factor Levers</div>
         <v-checkbox
           v-model="preferences.momentum"
           label="Momentum"
@@ -27,117 +27,13 @@
           label="Volatility"
         ></v-checkbox>
 
-        <br />
+        <hr class="my-10" />
 
-        <v-row>
-          <v-col cols="6">
-            <div class="mb-10">
-              <div class="text-h6">US Large Cap</div>
-              <v-slider
-                v-model="preferences.large_cap"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
+        <div class="text-h5 mb-3">Asset Allocation Guidelines</div>
 
-            <div class="mb-10">
-              <div class="text-h6">International Large Cap</div>
-              <v-slider
-                v-model="preferences.intl_large_cap"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
-
-            <div class="mb-10">
-              <div class="text-h6">Small Cap</div>
-              <v-slider
-                v-model="preferences.small_cap"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
-
-            <div class="mb-10">
-              <div class="text-h6">Emerging Markets</div>
-              <v-slider
-                v-model="preferences.emerging_markets"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
-          </v-col>
-
-          <v-col cols="6">
-            <div class="mb-10">
-              <div class="text-h6">Fixed Income</div>
-              <v-slider
-                v-model="preferences.fixed_income"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
-
-            <div class="mb-10">
-              <div class="text-h6">Commodities</div>
-              <v-slider
-                v-model="preferences.commodities"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
-
-            <div class="mb-10">
-              <div class="text-h6">Bitcoin</div>
-              <v-slider
-                v-model="preferences.bitcoin"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
-
-            <div class="mb-10">
-              <div class="text-h6">Cash</div>
-              <v-slider
-                v-model="preferences.cash"
-                :ticks="ticks"
-                :min="0"
-                :max="4"
-                :step="1.0"
-                show-ticks="always"
-                color="primary"
-              ></v-slider>
-            </div>
-          </v-col>
-        </v-row>
+        <v-data-table :items="allocationGuidelines" :items-per-page="-1">
+          <template #bottom> </template>
+        </v-data-table>
       </v-card-text>
     </v-card>
   </v-layout>
@@ -156,14 +52,6 @@ const $axios = inject('$axios');
 const { show } = inject('toast');
 
 const preferences = ref({});
-
-const ticks = {
-  0: 'Ignore',
-  1: 'Low',
-  2: 'Medium',
-  3: 'High',
-  4: 'Maximum',
-};
 
 const getPreferences = async () => {
   const { data } = await $axios.get(`/api/advisors/${advisor_id}/preferences/`);
@@ -185,4 +73,14 @@ const savePreferences = async () => {
     show({ message: `Couldn't save preferences`, error: true });
   }
 };
+
+const allocationGuidelines = ref([]);
+
+const getaAllocationGuidelines = async () => {
+  const { data } = await $axios.get(`/api/advisors/allocation-guidelines/`);
+
+  allocationGuidelines.value = data;
+};
+
+getaAllocationGuidelines();
 </script>

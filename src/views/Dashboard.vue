@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-flex my-6">
+    <div class="d-flex my-4">
       <div class="text-h4">{{ user.full_name || user.email }}'s Dashboard</div>
       <v-spacer></v-spacer>
 
@@ -20,11 +20,19 @@
     </div>
 
     <v-tabs v-model="currentTab">
-      <v-tab>Prospects ({{ prospects.length }})</v-tab>
       <v-tab>Clients ({{ clients.length }})</v-tab>
+      <v-tab>Prospects ({{ prospects.length }})</v-tab>
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
+      <v-tabs-window-item>
+        <v-data-table
+          :headers="clientHeaders"
+          :items="clients"
+          @click:row="goToClient"
+        ></v-data-table>
+      </v-tabs-window-item>
+
       <v-tabs-window-item>
         <v-data-table :items="prospects" :headers="prospectHeaders">
           <template v-slot:item.actions="{ item }">
@@ -37,14 +45,6 @@
             </v-btn>
           </template>
         </v-data-table>
-      </v-tabs-window-item>
-
-      <v-tabs-window-item>
-        <v-data-table
-          :headers="clientHeaders"
-          :items="clients"
-          @click:row="goToClient"
-        ></v-data-table>
       </v-tabs-window-item>
     </v-tabs-window>
 

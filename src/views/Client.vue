@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="text-h4 my-6">{{ client.full_name }}</div>
+    <div class="text-h4 my-4">{{ client.full_name }}</div>
 
     <v-tabs v-model="currentTab">
       <v-tab
@@ -12,7 +12,7 @@
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
-      <v-tabs-window-item class="py-4">
+      <v-tabs-window-item class="py-2">
         <div class="d-flex justify-end mb-4">
           <router-link
             :to="{ name: 'Survey', query: { user_id: client.id } }"
@@ -48,7 +48,7 @@
         </v-row>
       </v-tabs-window-item>
 
-      <v-tabs-window-item class="py-4">
+      <v-tabs-window-item class="py-2">
         <div class="d-flex justify-end mb-4">
           <v-btn
             color="primary"
@@ -59,16 +59,26 @@
           ></v-btn>
         </div>
 
-        <v-alert
-          title="No recommendations yet..."
-          type="info"
-          v-if="!latestPortfolioTable"
+        <v-alert title="No recommendations yet..." type="info"
           >No recommendations have been generated yet. Please click "Generate
           Recommendation" to do so. If you already haven't taken the survey,
           please do that before you can generate the recommendation.
         </v-alert>
 
-        <div v-else>
+        <div>
+          <div>Portfolio Values - Portfolio</div>
+          <pre>{{ portfolioValues?.portfolio }}</pre>
+        </div>
+        <div>
+          <div>Portfolio Values - Market</div>
+          <pre>{{ portfolioValues?.market }}</pre>
+        </div>
+        <div>
+          <div>Portfolio Sectors - Portfolio</div>
+          <pre>{{ portfolioSectors?.portfolio }}</pre>
+        </div>
+
+        <!-- <div v-else>
           <v-row>
             <v-col cols="6">
               <div ref="pieWrapper">
@@ -102,10 +112,10 @@
               </v-card>
             </v-col>
           </v-row>
-        </div>
+        </div> -->
       </v-tabs-window-item>
 
-      <v-tabs-window-item class="py-4">
+      <v-tabs-window-item class="py-2">
         <div class="d-flex justify-end mb-4">
           <router-link
             :to="{ name: 'Accounts', params: { user_id } }"
@@ -125,7 +135,7 @@
         <v-data-table v-else :items="accounts"> </v-data-table>
       </v-tabs-window-item>
 
-      <v-tabs-window-item class="py-4">
+      <v-tabs-window-item class="py-2">
         <v-row>
           <v-col cols="6">
             <v-list>
@@ -207,63 +217,55 @@ const generateRecommendation = async () => {
   }
 };
 
-const latestPortfolioTable = ref();
-const latestPortfolioChart = ref();
 const pieWrapper = ref();
-const getPortfolios = async () => {
-  try {
-    const { data } = await $axios.get(
-      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
-    );
-
-    const { pomarium } = data[0].allocations;
-
-    for (let i in pomarium) {
-      pomarium[i] = Math.round(pomarium[i] * 100 * 100) / 100;
-    }
-
-    const labels = Object.keys(pomarium);
-
-    latestPortfolioChart.value = {
-      labels,
-      datasets: [
-        {
-          backgroundColor: labels.map(
-            (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
-          ),
-          data: Object.values(pomarium),
-        },
-      ],
-    };
-
-    latestPortfolioTable.value = labels
-      .map((p) => ({
-        ticker: p,
-        allocation: pomarium[p],
-      }))
-      .sort((a, b) => b.allocation - a.allocation);
-  } catch (error) {}
-};
-
 const portfolioValues = ref();
-const getPortfolioValues = async () => {
+const portfolioSectors = ref();
+const getPortfolios = async () => {
+  // try {
+  //   const { data } = await $axios.get(
+  //     `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
+  //   );
+
+  //   const { pomarium } = data[0].allocations;
+
+  //   for (let i in pomarium) {
+  //     pomarium[i] = Math.round(pomarium[i] * 100 * 100) / 100;
+  //   }
+
+  //   const labels = Object.keys(pomarium);
+
+  //   latestPortfolioChart.value = {
+  //     labels,
+  //     datasets: [
+  //       {
+  //         backgroundColor: labels.map(
+  //           (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
+  //         ),
+  //         data: Object.values(pomarium),
+  //       },
+  //     ],
+  //   };
+
+  //   latestPortfolioTable.value = labels
+  //     .map((p) => ({
+  //       ticker: p,
+  //       allocation: pomarium[p],
+  //     }))
+  //     .sort((a, b) => b.allocation - a.allocation);
+  // } catch (error) {}
+
   try {
-    const { data } = await $axios.get(
+    const { data: values } = await $axios.get(
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
     );
 
-    portfolioValues.value = data;
-  } catch (error) {}
-};
+    portfolioValues.value = values;
 
-const portfolioSectors = ref();
-const getPortfolioSectors = async () => {
-  try {
-    const { data } = await $axios.get(
+    const { data: sectors } = await $axios.get(
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/sectors/`
     );
 
-    portfolioSectors.value = data;
+    portfolioSectors.value = sectors;
   } catch (error) {}
 };
 
@@ -280,24 +282,18 @@ const getAccounts = async () => {
 
 const currentTab = ref();
 const tab = ref();
-
-onMounted(async () => {
+onMounted(() => {
   getClient();
 
   getAccounts();
 
   currentTab.value = tab.value.findIndex((t) => t.href === hash);
 
-  await getValuesProfile({
+  getValuesProfile({
     advisor_id,
     user_id,
   });
 
-  await getPortfolios();
-
-  if (latestPortfolioTable.value) {
-    getPortfolioValues();
-    getPortfolioSectors();
-  }
+  getPortfolios();
 });
 </script>

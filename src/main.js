@@ -2,6 +2,7 @@ import 'vuetify/styles';
 import App from './App.vue';
 import { createApp } from 'vue';
 import './assets/scss/typography.scss';
+import './assets/scss/misc.scss';
 import axios from './plugins/axios';
 import { createPinia } from 'pinia';
 import router from './router';

@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex my-6">
+  <div class="d-flex my-4">
     <div class="text-h4">Portfolio Guidance and Values Survey</div>
     <v-spacer></v-spacer>
     <!-- <v-btn class="mx-2" v-if="isFirmAdminOrGreater">Download as CSV</v-btn> -->

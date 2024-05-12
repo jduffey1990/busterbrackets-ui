@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-flex my-6">
+    <div class="d-flex my-4">
       <div class="text-h4">{{ user.firm?.name }} Admin Dashboard</div>
       <v-spacer></v-spacer>
 

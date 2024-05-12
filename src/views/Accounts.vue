@@ -1,7 +1,7 @@
 <template>
   <v-form @submit.prevent="createAccount()">
-    <div class="d-flex my-6 align-center">
-      <div class="text-h4 my-6">Create New Account</div>
+    <div class="d-flex my-4 align-center">
+      <div class="text-h4 my-4">Create New Account</div>
       <v-spacer></v-spacer>
 
       <v-checkbox class="ml-4" v-model="account.active" label="Active?">
