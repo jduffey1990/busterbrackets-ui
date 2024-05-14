@@ -21,9 +21,7 @@
           >
             <v-btn
               color="primary"
-              :text="`${
-                valuesProfile.length ? 'Edit' : 'Start'
-              } Values Profile`"
+              :text="`${valuesProfile ? 'Edit' : 'Start'} Values Profile`"
               @click="navigate"
             >
             </v-btn>
@@ -33,29 +31,31 @@
         <v-alert
           title="No values profile yet..."
           type="info"
-          v-if="!valuesProfile.length"
+          v-if="!valuesProfile"
           >Please click "Start Values Profile" to fill out the survey!
         </v-alert>
 
-        <v-data-table
-          :items="valuesProfile"
-          :headers="valuesHeaders"
-          :items-per-page="-1"
-          v-else
-        >
-          <template v-slot:item.question="{ value }">
-            {{ value.text }}
-          </template>
+        <div v-for="(value, i) in valuesProfile" class="mb-4">
+          <div class="text-h6 mb-2">{{ i }}</div>
 
-          <template v-slot:item.value="{ item }">
-            <v-chip v-for="v in getValue(item)" :color="v?.color">
-              <v-icon :icon="v.icon" v-if="v.icon"></v-icon>
-              <span v-else-if="v.text">{{ v.text }}</span>
-            </v-chip>
-          </template>
-
-          <template #bottom> </template>
-        </v-data-table>
+          <v-table>
+            <tbody>
+              <tr v-for="val in value">
+                <td class="text-no-wrap">{{ val.question.text }}</td>
+                <td class="w-100">
+                  <v-chip
+                    v-for="v in getValue(val)"
+                    :color="v?.color"
+                    class="mr-2"
+                  >
+                    <v-icon :icon="v.icon" v-if="v.icon"></v-icon>
+                    <span v-else-if="v.text">{{ v.text }}</span>
+                  </v-chip>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
@@ -64,8 +64,8 @@
             color="primary"
             text="Generate Recommendation"
             @click="generateRecommendation()"
-            :readonly="!valuesProfile.length"
-            :variant="valuesProfile.length ? 'elevated' : 'tonal'"
+            :readonly="!valuesProfile"
+            :variant="valuesProfile ? 'elevated' : 'tonal'"
           ></v-btn>
         </div>
 
@@ -186,45 +186,12 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRoute } from 'vue-router';
 import PieChart from '../components/PieChart.vue';
+import groupBy from 'lodash/groupBy';
 
 const {
   user: { id: advisor_id },
   getValuesProfile,
 } = useUserStore();
-
-const valuesHeaders = [
-  { title: 'Question', key: 'question', width: 0, nowrap: true },
-  { key: 'value' },
-];
-
-const getValue = (response) => {
-  let color;
-  let icon;
-
-  if (response.sections.tag === 'plantYourTrees') {
-    color = 'green';
-    icon = 'mdi-check';
-  }
-
-  if (response.sections.tag === 'pullYourWeeds') {
-    color = 'red';
-    icon = 'mdi-close';
-  }
-
-  if (response.question.response_type === 'checkbox') {
-    return [{ icon, color }];
-  }
-
-  if (response.question.response_type === 'multi_select') {
-    return response.value.map((v) => ({ text: v, color }));
-  }
-
-  if (response.question.response_type === 'slider') {
-    return [{ text: response.question.slider_ticks[response.value] }];
-  }
-};
-
-const { valuesProfile } = storeToRefs(useUserStore());
 
 const {
   params: { user_id },
@@ -324,17 +291,49 @@ const getAccounts = async () => {
 
 const currentTab = ref();
 const tab = ref();
-onMounted(() => {
+
+const getValue = (response) => {
+  let color;
+  let icon;
+
+  if (response.sections.tag === 'plantYourTrees') {
+    color = 'green';
+    icon = 'mdi-check';
+  }
+
+  if (response.sections.tag === 'pullYourWeeds') {
+    color = 'red';
+    icon = 'mdi-close';
+  }
+
+  if (response.question.response_type === 'checkbox') {
+    return [{ icon, color }];
+  }
+
+  if (response.question.response_type === 'multi_select') {
+    return response.value.map((v) => ({ text: v, color }));
+  }
+
+  if (response.question.response_type === 'slider') {
+    return [{ text: response.question.slider_ticks[response.value] }];
+  }
+};
+
+const valuesProfile = ref();
+onMounted(async () => {
   getClient();
 
   getAccounts();
 
   currentTab.value = tab.value.findIndex((t) => t.href === hash);
 
-  getValuesProfile({
-    advisor_id,
-    user_id,
-  });
+  valuesProfile.value = groupBy(
+    await getValuesProfile({
+      advisor_id,
+      user_id,
+    }),
+    'sections.name'
+  );
 
   getPortfolios();
 });
