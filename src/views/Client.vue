@@ -69,87 +69,92 @@
           ></v-btn>
         </div>
 
-        <v-alert title="No recommendations yet..." type="info"
+        <v-alert
+          title="No recommendations yet..."
+          type="info"
+          v-if="!valuesProfile"
           >No recommendations have been generated yet. Please click "Generate
           Recommendation" to do so. If you already haven't taken the survey,
           please do that before you can generate the recommendation.
         </v-alert>
 
-        <div class="my-8" v-if="portfolioValuesPortfolio">
-          <div>Portfolio Values - Portfolio</div>
+        <div v-else>
+          <div class="my-8" v-if="portfolioValuesPortfolio">
+            <div>Portfolio Values - Portfolio</div>
 
-          <v-row>
-            <v-col cols="6">
-              <BarChart
-                :data="getChartData(portfolioValuesPortfolio)"
-                :options="chartOptions"
-              />
-            </v-col>
-            <v-col cols="6">
-              <v-table>
-                <tbody>
-                  <tr v-for="p in portfolioValuesPortfolio">
-                    <td class="text-no-wrap">{{ p.title }}</td>
-                    <td class="w-100">
-                      {{ p.value }}
-                    </td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </v-col>
-          </v-row>
-        </div>
-        <hr />
+            <v-row>
+              <v-col cols="6">
+                <BarChart
+                  :data="getChartData(portfolioValuesPortfolio)"
+                  :options="chartOptions"
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-table>
+                  <tbody>
+                    <tr v-for="p in portfolioValuesPortfolio">
+                      <td class="text-no-wrap">{{ p.title }}</td>
+                      <td class="w-100">
+                        {{ p.value }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-col>
+            </v-row>
+          </div>
+          <hr />
 
-        <div class="my-8" v-if="portfolioValuesMarket">
-          <div>Portfolio Values - Market</div>
+          <div class="my-8" v-if="portfolioValuesMarket">
+            <div>Portfolio Values - Market</div>
 
-          <v-row>
-            <v-col cols="6">
-              <BarChart
-                :data="getChartData(portfolioValuesMarket)"
-                :options="chartOptions"
-              />
-            </v-col>
-            <v-col cols="6">
-              <v-table>
-                <tbody>
-                  <tr v-for="p in portfolioValuesMarket">
-                    <td class="text-no-wrap">{{ p.title }}</td>
-                    <td class="w-100">
-                      {{ p.value }}
-                    </td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </v-col>
-          </v-row>
-        </div>
-        <hr />
+            <v-row>
+              <v-col cols="6">
+                <BarChart
+                  :data="getChartData(portfolioValuesMarket)"
+                  :options="chartOptions"
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-table>
+                  <tbody>
+                    <tr v-for="p in portfolioValuesMarket">
+                      <td class="text-no-wrap">{{ p.title }}</td>
+                      <td class="w-100">
+                        {{ p.value }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-col>
+            </v-row>
+          </div>
+          <hr />
 
-        <div class="my-8" v-if="portfolioSectors">
-          <div>Portfolio Sectors - Portfolio</div>
+          <div class="my-8" v-if="portfolioSectors">
+            <div>Portfolio Sectors - Portfolio</div>
 
-          <v-row>
-            <v-col cols="6">
-              <PieChart
-                :data="getChartData(portfolioSectors)"
-                :options="chartOptions"
-              />
-            </v-col>
-            <v-col cols="6">
-              <v-table>
-                <tbody>
-                  <tr v-for="p in portfolioSectors">
-                    <td class="text-no-wrap">{{ p.title }}</td>
-                    <td class="w-100">
-                      {{ p.value }}
-                    </td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </v-col>
-          </v-row>
+            <v-row>
+              <v-col cols="6">
+                <PieChart
+                  :data="getChartData(portfolioSectors)"
+                  :options="chartOptions"
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-table>
+                  <tbody>
+                    <tr v-for="p in portfolioSectors">
+                      <td class="text-no-wrap">{{ p.title }}</td>
+                      <td class="w-100">
+                        {{ p.value }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-col>
+            </v-row>
+          </div>
         </div>
       </v-tabs-window-item>
 
