@@ -37,15 +37,25 @@
           >Please click "Start Values Profile" to fill out the survey!
         </v-alert>
 
-        <v-row v-else>
-          <v-col cols="6">
-            <ul class="mx-4">
-              <li v-for="v in valuesProfile">
-                {{ v.question.text }} - {{ v.value }}
-              </li>
-            </ul>
-          </v-col>
-        </v-row>
+        <v-data-table
+          :items="valuesProfile"
+          :headers="valuesHeaders"
+          :items-per-page="-1"
+          v-else
+        >
+          <template v-slot:item.question="{ value }">
+            {{ value.text }}
+          </template>
+
+          <template v-slot:item.value="{ item }">
+            <v-chip v-for="v in getValue(item)" :color="v?.color">
+              <v-icon :icon="v.icon" v-if="v.icon"></v-icon>
+              <span v-else-if="v.text">{{ v.text }}</span>
+            </v-chip>
+          </template>
+
+          <template #bottom> </template>
+        </v-data-table>
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
@@ -181,6 +191,38 @@ const {
   user: { id: advisor_id },
   getValuesProfile,
 } = useUserStore();
+
+const valuesHeaders = [
+  { title: 'Question', key: 'question', width: 0, nowrap: true },
+  { key: 'value' },
+];
+
+const getValue = (response) => {
+  let color;
+  let icon;
+
+  if (response.sections.tag === 'plantYourTrees') {
+    color = 'green';
+    icon = 'mdi-check';
+  }
+
+  if (response.sections.tag === 'pullYourWeeds') {
+    color = 'red';
+    icon = 'mdi-close';
+  }
+
+  if (response.question.response_type === 'checkbox') {
+    return [{ icon, color }];
+  }
+
+  if (response.question.response_type === 'multi_select') {
+    return response.value.map((v) => ({ text: v, color }));
+  }
+
+  if (response.question.response_type === 'slider') {
+    return [{ text: response.question.slider_ticks[response.value] }];
+  }
+};
 
 const { valuesProfile } = storeToRefs(useUserStore());
 

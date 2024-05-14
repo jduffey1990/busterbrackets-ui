@@ -57,7 +57,6 @@ const loginUser = async () => {
 
     router.push({ name: 'Dashboard' });
   } catch (error) {
-    console.log(error);
     show({ message: 'Invalid credentials', error: true });
   }
 };
@@ -73,9 +72,7 @@ const resetPassword = async () => {
       await $axios.put('/api/users/reset-password/', {
         email: credentials.email,
       });
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
 
     show({
       message: 'Password reset! Please check your email.',

@@ -24,17 +24,28 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     async getValuesProfile({ advisor_id, user_id, dontRefresh }) {
-      if (this.valuesProfile.length && dontRefresh) {
-        return this.valuesProfile;
+      if (!(this.valuesProfile.length && dontRefresh)) {
+        const { data } = await this.$axios.get(
+          `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
+        );
+
+        this.valuesProfile = data
+          .map((d) => ({
+            ...d,
+            value: JSON.parse(d.value),
+          }))
+          .filter((d) => d.question.value !== false)
+          .sort(
+            (a, b) =>
+              a.sections.position - b.sections.position ||
+              a.question.response_type.localeCompare(
+                b.question.response_type
+              ) ||
+              a.question.text.localeCompare(b.question.text)
+          );
       }
 
-      const { data } = await this.$axios.get(
-        `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
-      );
-
-      this.valuesProfile = data;
-
-      return data;
+      return this.valuesProfile;
     },
     async getSession() {
       const { data } = await this.$axios('/api/users/session/');

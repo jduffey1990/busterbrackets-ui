@@ -205,7 +205,7 @@ onMounted(async () => {
         );
 
         if (foundQuestion) {
-          q.question.default_value = JSON.parse(foundQuestion.value);
+          q.question.default_value = foundQuestion.value;
         }
 
         if (q.question.response_type === 'slider') {
