@@ -75,52 +75,79 @@
           please do that before you can generate the recommendation.
         </v-alert>
 
-        <div class="my-4">
+        <div class="my-8" v-if="portfolioValuesPortfolio">
           <div>Portfolio Values - Portfolio</div>
-          <pre>{{ portfolioValues?.portfolio }}</pre>
+
+          <v-row>
+            <v-col cols="6">
+              <BarChart
+                :data="getChartData(portfolioValuesPortfolio)"
+                :options="chartOptions"
+              />
+            </v-col>
+            <v-col cols="6">
+              <v-table>
+                <tbody>
+                  <tr v-for="p in portfolioValuesPortfolio">
+                    <td class="text-no-wrap">{{ p.title }}</td>
+                    <td class="w-100">
+                      {{ p.value }}
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </v-col>
+          </v-row>
         </div>
         <hr />
 
-        <div class="my-4">
+        <div class="my-8" v-if="portfolioValuesMarket">
           <div>Portfolio Values - Market</div>
-          <pre>{{ portfolioValues?.market }}</pre>
+
+          <v-row>
+            <v-col cols="6">
+              <BarChart
+                :data="getChartData(portfolioValuesMarket)"
+                :options="chartOptions"
+              />
+            </v-col>
+            <v-col cols="6">
+              <v-table>
+                <tbody>
+                  <tr v-for="p in portfolioValuesMarket">
+                    <td class="text-no-wrap">{{ p.title }}</td>
+                    <td class="w-100">
+                      {{ p.value }}
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </v-col>
+          </v-row>
         </div>
         <hr />
 
-        <div class="my-4" v-if="portfolioSectors">
+        <div class="my-8" v-if="portfolioSectors">
           <div>Portfolio Sectors - Portfolio</div>
 
           <v-row>
             <v-col cols="6">
-              <div ref="pieWrapper">
-                <PieChart
-                  :data="getChartData(portfolioSectors)"
-                  :options="{
-                    responsive: true,
-
-                    plugins: {
-                      legend: {
-                        display: false,
-                      },
-                    },
-                  }"
-                />
-              </div>
+              <PieChart
+                :data="getChartData(portfolioSectors)"
+                :options="chartOptions"
+              />
             </v-col>
             <v-col cols="6">
-              <v-card width="99.9%">
-                <v-card-text>
-                  <v-data-table
-                    fixed-header
-                    :items="portfolioSectors"
-                    item-title="title"
-                    item-value="value"
-                    :items-per-page="-1"
-                  >
-                    <template #bottom> </template>
-                  </v-data-table>
-                </v-card-text>
-              </v-card>
+              <v-table>
+                <tbody>
+                  <tr v-for="p in portfolioSectors">
+                    <td class="text-no-wrap">{{ p.title }}</td>
+                    <td class="w-100">
+                      {{ p.value }}
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
             </v-col>
           </v-row>
         </div>
@@ -227,16 +254,30 @@ const generateRecommendation = async () => {
   }
 };
 
-const pieWrapper = ref();
-const portfolioValues = ref();
+const portfolioValuesPortfolio = ref();
+const portfolioValuesMarket = ref();
 const portfolioSectors = ref();
 const getPortfolios = async () => {
   try {
-    const { data: values } = await $axios.get(
+    const {
+      data: { portfolio: valuesPortfolio, market: valuesMarket },
+    } = await $axios.get(
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
     );
 
-    portfolioValues.value = values;
+    portfolioValuesPortfolio.value = Object.keys(valuesPortfolio)
+      .map((title) => ({
+        title,
+        value: round(valuesPortfolio[title], 2),
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    portfolioValuesMarket.value = Object.keys(valuesMarket)
+      .map((title) => ({
+        title,
+        value: round(valuesMarket[title], 2),
+      }))
+      .sort((a, b) => b.value - a.value);
 
     const {
       data: { portfolio: sectorsPortfolio },
@@ -327,5 +368,14 @@ const getChartData = (data) => {
       },
     ],
   };
+};
+
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
 };
 </script>
