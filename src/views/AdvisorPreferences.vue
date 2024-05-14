@@ -79,7 +79,11 @@ const allocationGuidelines = ref([]);
 const getaAllocationGuidelines = async () => {
   const { data } = await $axios.get(`/api/advisors/allocation-guidelines/`);
 
-  allocationGuidelines.value = data;
+  allocationGuidelines.value = data.map((item) => ({
+    ...item,
+    min_risk: (item.min_risk * 100).toFixed(0) + '%', // Multiplying by 100 and appending '%'
+    max_risk: (item.max_risk * 100).toFixed(0) + '%',
+  }));
 };
 
 getaAllocationGuidelines();
