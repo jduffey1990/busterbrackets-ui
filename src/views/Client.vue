@@ -79,46 +79,20 @@
         </v-alert>
 
         <div v-else>
-          <div class="my-8" v-if="portfolioValuesPortfolio">
-            <div>Portfolio Values - Portfolio</div>
+          <div class="my-8" v-if="portfolioValues">
+            <div>Portfolio/Market</div>
 
             <v-row>
               <v-col cols="6">
                 <BarChart
-                  :data="getChartData(portfolioValuesPortfolio)"
+                  :data="getChartData(portfolioValues)"
                   :options="chartOptions"
                 />
               </v-col>
               <v-col cols="6">
                 <v-table>
                   <tbody>
-                    <tr v-for="p in portfolioValuesPortfolio">
-                      <td class="text-no-wrap">{{ p.title }}</td>
-                      <td class="w-100">
-                        {{ p.value }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-table>
-              </v-col>
-            </v-row>
-          </div>
-          <hr />
-
-          <div class="my-8" v-if="portfolioValuesMarket">
-            <div>Portfolio Values - Market</div>
-
-            <v-row>
-              <v-col cols="6">
-                <BarChart
-                  :data="getChartData(portfolioValuesMarket)"
-                  :options="chartOptions"
-                />
-              </v-col>
-              <v-col cols="6">
-                <v-table>
-                  <tbody>
-                    <tr v-for="p in portfolioValuesMarket">
+                    <tr v-for="p in portfolioValues">
                       <td class="text-no-wrap">{{ p.title }}</td>
                       <td class="w-100">
                         {{ p.value }}
@@ -132,7 +106,7 @@
           <hr />
 
           <div class="my-8" v-if="portfolioSectors">
-            <div>Portfolio Sectors - Portfolio</div>
+            <div>Sectors</div>
 
             <v-row>
               <v-col cols="6">
@@ -154,6 +128,16 @@
                 </v-table>
               </v-col>
             </v-row>
+          </div>
+
+          <hr />
+
+          <div class="my-8">
+            <div>Pomarium Allocations</div>
+
+            <v-data-table :items="allocations" :items-per-page="-1">
+              <template #bottom> </template>
+            </v-data-table>
           </div>
         </div>
       </v-tabs-window-item>
@@ -220,6 +204,7 @@ import { useRoute } from 'vue-router';
 import PieChart from '../components/PieChart.vue';
 import BarChart from '../components/BarChart.vue';
 import { groupBy, round } from 'lodash';
+import { watch } from 'vue';
 
 const {
   user: { id: advisor_id },
@@ -259,9 +244,10 @@ const generateRecommendation = async () => {
   }
 };
 
-const portfolioValuesPortfolio = ref();
-const portfolioValuesMarket = ref();
 const portfolioSectors = ref();
+const allocations = ref([]);
+const hasRequestedPortfolios = ref(false);
+const portfolioValues = ref();
 const getPortfolios = async () => {
   try {
     const {
@@ -270,19 +256,22 @@ const getPortfolios = async () => {
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
     );
 
-    portfolioValuesPortfolio.value = Object.keys(valuesPortfolio)
-      .map((title) => ({
+    portfolioValues.value = [
+      ...Object.keys(valuesPortfolio).map((title) => ({
         title,
         value: round(valuesPortfolio[title], 2),
-      }))
-      .sort((a, b) => b.value - a.value);
-
-    portfolioValuesMarket.value = Object.keys(valuesMarket)
-      .map((title) => ({
+        type: 'Portfolio',
+        color: 'blue',
+      })),
+      ...Object.keys(valuesMarket).map((title) => ({
         title,
         value: round(valuesMarket[title], 2),
-      }))
-      .sort((a, b) => b.value - a.value);
+        type: 'Market',
+        color: 'red',
+      })),
+    ].sort(
+      (a, b) => a.title.localeCompare(b.title) || b.type.localeCompare(a.type)
+    );
 
     const {
       data: { portfolio: sectorsPortfolio },
@@ -296,7 +285,28 @@ const getPortfolios = async () => {
         value: round(sectorsPortfolio[title], 2),
       }))
       .sort((a, b) => b.value - a.value);
+
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
+    );
+
+    const { pomarium } = data[0].allocations;
+
+    for (let i in pomarium) {
+      pomarium[i] = Math.round(pomarium[i] * 100 * 100) / 100;
+    }
+
+    const labels = Object.keys(pomarium);
+
+    allocations.value = labels
+      .map((p) => ({
+        ticker: p,
+        allocation: pomarium[p],
+      }))
+      .sort((a, b) => b.allocation - a.allocation);
   } catch (error) {}
+
+  hasRequestedPortfolios.value = true;
 };
 
 const accounts = ref([]);
@@ -355,20 +365,28 @@ onMounted(async () => {
     }),
     'sections.name'
   );
+});
 
-  getPortfolios();
+watch(currentTab, (e) => {
+  if (e === 1 && !hasRequestedPortfolios.value) {
+    getPortfolios();
+  }
 });
 
 const getChartData = (data) => {
   const labels = data.map((d) => d.title);
 
+  const colors = data.map((d) => d.color);
+
   return {
     labels,
     datasets: [
       {
-        backgroundColor: labels.map(
-          (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
-        ),
+        backgroundColor: colors[0]
+          ? colors
+          : labels.map(
+              (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
+            ),
         data: data.map((d) => d.value),
       },
     ],
