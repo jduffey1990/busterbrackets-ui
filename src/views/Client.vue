@@ -75,26 +75,26 @@
           please do that before you can generate the recommendation.
         </v-alert>
 
-        <div>
+        <div class="my-4">
           <div>Portfolio Values - Portfolio</div>
           <pre>{{ portfolioValues?.portfolio }}</pre>
         </div>
-        <div>
+        <hr />
+
+        <div class="my-4">
           <div>Portfolio Values - Market</div>
           <pre>{{ portfolioValues?.market }}</pre>
         </div>
-        <div>
-          <div>Portfolio Sectors - Portfolio</div>
-          <pre>{{ portfolioSectors?.portfolio }}</pre>
-        </div>
+        <hr />
 
-        <!-- <div v-else>
+        <div class="my-4" v-if="portfolioSectors">
+          <div>Portfolio Sectors - Portfolio</div>
+
           <v-row>
             <v-col cols="6">
               <div ref="pieWrapper">
                 <PieChart
-                  v-if="latestPortfolioChart"
-                  :data="latestPortfolioChart"
+                  :data="getChartData(portfolioSectors)"
                   :options="{
                     responsive: true,
 
@@ -112,9 +112,10 @@
                 <v-card-text>
                   <v-data-table
                     fixed-header
-                    :items="latestPortfolioTable"
+                    :items="portfolioSectors"
+                    item-title="title"
+                    item-value="value"
                     :items-per-page="-1"
-                    :style="{ maxHeight: `${pieWrapper?.clientHeight}px` }"
                   >
                     <template #bottom> </template>
                   </v-data-table>
@@ -122,7 +123,7 @@
               </v-card>
             </v-col>
           </v-row>
-        </div> -->
+        </div>
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
@@ -180,13 +181,13 @@
 
 <script setup>
 import { useUserStore } from '@/store/user';
-import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRoute } from 'vue-router';
 import PieChart from '../components/PieChart.vue';
-import groupBy from 'lodash/groupBy';
+import BarChart from '../components/BarChart.vue';
+import { groupBy, round } from 'lodash';
 
 const {
   user: { id: advisor_id },
@@ -230,39 +231,6 @@ const pieWrapper = ref();
 const portfolioValues = ref();
 const portfolioSectors = ref();
 const getPortfolios = async () => {
-  // try {
-  //   const { data } = await $axios.get(
-  //     `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
-  //   );
-
-  //   const { pomarium } = data[0].allocations;
-
-  //   for (let i in pomarium) {
-  //     pomarium[i] = Math.round(pomarium[i] * 100 * 100) / 100;
-  //   }
-
-  //   const labels = Object.keys(pomarium);
-
-  //   latestPortfolioChart.value = {
-  //     labels,
-  //     datasets: [
-  //       {
-  //         backgroundColor: labels.map(
-  //           (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
-  //         ),
-  //         data: Object.values(pomarium),
-  //       },
-  //     ],
-  //   };
-
-  //   latestPortfolioTable.value = labels
-  //     .map((p) => ({
-  //       ticker: p,
-  //       allocation: pomarium[p],
-  //     }))
-  //     .sort((a, b) => b.allocation - a.allocation);
-  // } catch (error) {}
-
   try {
     const { data: values } = await $axios.get(
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
@@ -270,11 +238,18 @@ const getPortfolios = async () => {
 
     portfolioValues.value = values;
 
-    const { data: sectors } = await $axios.get(
+    const {
+      data: { portfolio: sectorsPortfolio },
+    } = await $axios.get(
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/sectors/`
     );
 
-    portfolioSectors.value = sectors;
+    portfolioSectors.value = Object.keys(sectorsPortfolio)
+      .map((title) => ({
+        title,
+        value: round(sectorsPortfolio[title], 2),
+      }))
+      .sort((a, b) => b.value - a.value);
   } catch (error) {}
 };
 
@@ -337,4 +312,20 @@ onMounted(async () => {
 
   getPortfolios();
 });
+
+const getChartData = (data) => {
+  const labels = data.map((d) => d.title);
+
+  return {
+    labels,
+    datasets: [
+      {
+        backgroundColor: labels.map(
+          (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
+        ),
+        data: data.map((d) => d.value),
+      },
+    ],
+  };
+};
 </script>
