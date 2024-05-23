@@ -159,7 +159,16 @@
           to do so.
         </v-alert>
 
-        <v-data-table v-else :items="accounts"> </v-data-table>
+        <v-data-table v-else :items="accounts" :headers="accountHeaders">
+          <template v-slot:item.actions="{ item }">
+            <v-btn
+              color="primary"
+              @click="downloadAccountCSV(item)"
+              size="small"
+              >Download CSV
+            </v-btn>
+          </template>
+        </v-data-table>
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
@@ -309,6 +318,58 @@ const getPortfolios = async () => {
   hasRequestedPortfolios.value = true;
 };
 
+const accountHeaders = [
+  {
+    key: 'actions',
+    sortable: false,
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Active',
+    key: 'active',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Name',
+    key: 'name',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Type',
+    key: 'account_type',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Value',
+    key: 'value',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Custodian',
+    key: 'custodian',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Fractional',
+    key: 'fractional',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Risk Tolerance',
+    key: 'risk_tolerance',
+    width: 0,
+    nowrap: true,
+  },
+  {},
+];
+
 const accounts = ref([]);
 const getAccounts = async () => {
   try {
@@ -318,6 +379,12 @@ const getAccounts = async () => {
 
     accounts.value = data;
   } catch (error) {}
+};
+
+const downloadAccountCSV = async (account) => {
+  window.open(
+    `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/`
+  );
 };
 
 const currentTab = ref();
