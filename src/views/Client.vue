@@ -1,5 +1,15 @@
 <template>
-  <div>
+  <div v-if="clientLoading || portfoliosLoading" class="text-center">
+    <v-progress-linear
+      color="primary"
+      indeterminate
+      class="mb-2"
+    ></v-progress-linear>
+
+    <div class="text-h6">Loading...</div>
+  </div>
+
+  <div v-else>
     <div class="text-h4 my-4">{{ client.full_name }}</div>
 
     <v-tabs v-model="currentTab">
@@ -229,7 +239,11 @@ const $axios = inject('$axios');
 const { show } = inject('toast');
 
 const client = ref({});
+const clientLoading = ref(false);
+
 const getClient = async () => {
+  clientLoading.value = true;
+
   try {
     const { data } = await $axios.get(
       `/api/advisors/${advisor_id}/clients/${user_id}/`
@@ -239,6 +253,8 @@ const getClient = async () => {
   } catch (error) {
     show({ message: `Couldn't retrieve client information`, error: true });
   }
+
+  clientLoading.value = false;
 };
 
 const generateRecommendation = async () => {
@@ -257,7 +273,11 @@ const portfolioSectors = ref();
 const allocations = ref([]);
 const hasRequestedPortfolios = ref(false);
 const portfolioValues = ref();
+const portfoliosLoading = ref(false);
+
 const getPortfolios = async () => {
+  portfoliosLoading.value = true;
+
   try {
     const {
       data: { portfolio: valuesPortfolio, market: valuesMarket },
@@ -316,6 +336,8 @@ const getPortfolios = async () => {
   } catch (error) {}
 
   hasRequestedPortfolios.value = true;
+
+  portfoliosLoading.value = false;
 };
 
 const accountHeaders = [
