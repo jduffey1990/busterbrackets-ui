@@ -2,7 +2,7 @@
   <v-layout class="justify-center pa-4">
     <v-card min-width="600px">
       <v-toolbar>
-        <v-toolbar-title> Account Settings </v-toolbar-title>
+        <v-toolbar-title> Settings </v-toolbar-title>
 
         <v-toolbar-items>
           <v-btn color="primary" variant="elevated" @click="saveProfile()">

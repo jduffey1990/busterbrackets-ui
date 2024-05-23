@@ -42,8 +42,8 @@
                 <v-list-item-title>Firm Admin </v-list-item-title>
               </v-list-item>
 
-              <v-list-item link :to="{ name: 'AccountSettings' }">
-                <v-list-item-title>Account Settings </v-list-item-title>
+              <v-list-item link :to="{ name: 'Settings' }">
+                <v-list-item-title>Settings</v-list-item-title>
               </v-list-item>
 
               <v-list-item link :to="{ name: 'AdvisorPreferences' }">

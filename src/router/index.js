@@ -9,7 +9,7 @@ import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import { useUserStore } from '@/store/user';
 import Admin from '@/views/Admin.vue';
-import AccountSettings from '@/views/AccountSettings.vue';
+import Settings from '@/views/Settings.vue';
 import Accounts from '@/views/Accounts.vue';
 
 const router = createRouter({
@@ -82,9 +82,9 @@ const router = createRouter({
       },
     },
     {
-      path: '/account-settings',
-      name: 'AccountSettings',
-      component: AccountSettings,
+      path: '/settings',
+      name: 'Settings',
+      component: Settings,
     },
     {
       path: '/survey',
