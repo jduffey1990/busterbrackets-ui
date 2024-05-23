@@ -23,8 +23,8 @@
         <v-checkbox v-model="preferences.value" label="Value"> </v-checkbox>
 
         <v-checkbox
-          v-model="preferences.volatility"
-          label="Volatility"
+          v-model="preferences.low_volatility"
+          label="Low Volatility"
         ></v-checkbox>
 
         <hr class="my-10" />
