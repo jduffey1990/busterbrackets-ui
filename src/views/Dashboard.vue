@@ -91,6 +91,7 @@ import { storeToRefs } from 'pinia';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
+
 import { useRouter } from 'vue-router';
 import moment from 'moment';
 
@@ -193,11 +194,7 @@ const createNewClient = async () => {
 };
 
 const goToClient = (event, client) => {
-  router.push({
-    name: 'Client',
-    params: { user_id: client.item.id },
-    hash: '#values',
-  });
+  router.push(`/clients/${client.item.id}#values`);
 };
 
 const copyText = () => {

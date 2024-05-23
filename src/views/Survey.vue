@@ -157,12 +157,13 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import { useUserStore } from '@/store/user';
 import { reactive } from 'vue';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const {
   user: { id: advisor_id },
@@ -285,8 +286,7 @@ const submit = async (prospect_id) => {
 
     show({ message: 'Survey saved!' });
 
-    const redirect = prospect_id ? '/' : `/clients/${user_id}#values`;
-    router.push(redirect);
+    router.push(prospect_id ? '/' : `/clients/${user_id}#values`);
   } catch (error) {
     show({ message: 'Failed to save survey', error: true });
   }

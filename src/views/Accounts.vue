@@ -61,20 +61,23 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import { useUserStore } from '@/store/user';
+import { ref } from 'vue';
+import { onMounted } from 'vue';
 import { inject } from 'vue';
 import { reactive } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const $axios = inject('$axios');
 
 const { show } = inject('toast');
+
+const router = useRouter();
 
 const custodians = [
   { value: 'altruist', title: 'Altruist' },
   { value: 'schwab', title: 'Schwab' },
   { value: 'fidelity', title: 'Fidelity' },
-  { value: 'raymond_jones', title: 'Raymond Jones' },
+  { value: 'raymond_james', title: 'Raymond James' },
   { value: 'pershing', title: 'Pershing' },
 ];
 
@@ -109,10 +112,7 @@ const createAccount = async () => {
       account
     );
 
-    router.push({
-      name: 'Client',
-      hash: '#accounts',
-    });
+    router.push(`/clients/${user_id}#accounts`);
 
     show({ message: 'Account created!' });
   } catch (error) {
@@ -120,5 +120,9 @@ const createAccount = async () => {
   }
 };
 
-const { data: accountTypes } = await $axios.get('/api/accounts/types/');
+const accountTypes = ref([]);
+onMounted(async () => {
+  const { data } = await $axios.get('/api/accounts/types/');
+  accountTypes.value = data;
+});
 </script>

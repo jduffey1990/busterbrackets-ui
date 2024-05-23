@@ -34,6 +34,7 @@ import UiPassword from '@/components/ui/Password.vue';
 import { useRouter } from 'vue-router';
 import { inject } from 'vue';
 import { storeToRefs } from 'pinia';
+
 const { show } = inject('toast');
 const $axios = inject('$axios');
 
@@ -55,7 +56,7 @@ const loginUser = async () => {
       message: `Welcome back ${user.value.full_name || user.value.email}!`,
     });
 
-    router.push({ name: 'Dashboard' });
+    router.push('/dashboard');
   } catch (error) {
     show({ message: 'Invalid credentials', error: true });
   }

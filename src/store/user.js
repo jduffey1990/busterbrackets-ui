@@ -77,8 +77,6 @@ export const useUserStore = defineStore('user', {
 
       cookies.remove('sessionid');
       cookies.remove('csrftoken');
-
-      window.location.reload();
     },
   },
 });

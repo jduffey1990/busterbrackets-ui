@@ -79,13 +79,12 @@
 import { useUserStore } from '@/store/user';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const { user, isLoggedIn, isFirmAdminOrGreater } = storeToRefs(useUserStore());
 
-const router = useRouter();
-
 const logout = async () => {
   await useUserStore().logout();
-  router.push({ name: 'Login' });
+  router.push('/login');
 };
 </script>

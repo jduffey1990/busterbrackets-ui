@@ -30,13 +30,13 @@ import { inject, reactive } from 'vue';
 import UiPassword from '@/components/ui/Password.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/store/user';
+
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
 const { login } = useUserStore();
 
 const { params } = useRoute();
-
 const router = useRouter();
 
 const credentials = reactive({
@@ -60,7 +60,7 @@ const resetPassword = async () => {
 
     show({ message: 'Password reset!' });
 
-    router.push({ name: 'Dashboard' });
+    router.push('/dashboard');
   } catch (error) {
     show({ message: `Couldn't reset password.`, error: true });
   }
