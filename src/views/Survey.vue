@@ -2,12 +2,7 @@
   <div class="d-flex my-4">
     <div class="text-h4">Portfolio Guidance and Values Survey</div>
     <v-spacer></v-spacer>
-    <!-- <v-btn class="mx-2" v-if="isFirmAdminOrGreater">Download as CSV</v-btn> -->
-    <v-btn
-      color="primary"
-      @click="isLoggedIn ? submit() : (showEmailModal = true)"
-      >Submit
-    </v-btn>
+    <v-btn color="primary" @click="submitSurvey()">Submit </v-btn>
   </div>
 
   <div v-if="survey">
@@ -108,10 +103,17 @@
           </v-stepper-window-item>
         </v-stepper-window>
 
-        <v-stepper-actions
-          @click:next="next"
-          @click:prev="prev"
-        ></v-stepper-actions>
+        <v-stepper-actions @click:next="next" @click:prev="prev">
+          <template #next v-if="currentStep === survey.survey_sections.length">
+            <v-btn
+              color="primary"
+              @click="submitSurvey()"
+              :disabled="false"
+              variant="flat"
+              >Submit
+            </v-btn>
+          </template>
+        </v-stepper-actions>
       </template>
     </v-stepper>
 
@@ -169,7 +171,6 @@ const {
   user: { id: advisor_id },
   getValuesProfile,
   isLoggedIn,
-  isFirmAdminOrGreater,
 } = useUserStore();
 
 const {
@@ -222,25 +223,6 @@ onMounted(async () => {
 
   survey.value = surveyData;
 });
-
-// const downloadExport = async () => {
-//   try {
-//     const { data } = await $axios.get('/api/survey/', {
-//       responseType: 'blob',
-//       headers: {
-//         Accept: 'text/csv',
-//       },
-//     });
-
-//     const link = document.createElement('a');
-//     link.href = window.URL.createObjectURL(new Blob([surveyData]));
-//     link.setAttribute('download', 'survey.csv');
-//     document.body.appendChild(link);
-//     link.click();
-//   } catch (error) {
-
-//   }
-// };
 
 const companies = ref([]);
 
@@ -330,6 +312,14 @@ const createNewProspect = async () => {
     await submit(id);
   } catch (error) {
     show({ message: 'Failed to save', error: true });
+  }
+};
+
+const submitSurvey = () => {
+  if (isLoggedIn) {
+    submit();
+  } else {
+    showEmailModal.value = true;
   }
 };
 </script>
