@@ -36,11 +36,19 @@
       <v-tabs-window-item>
         <v-data-table :items="prospects" :headers="prospectHeaders">
           <template v-slot:item.actions="{ item }">
-            <v-btn color="success" class="ml-2" @click="acceptProspect(item)"
+            <v-btn
+              color="success"
+              class="ml-2"
+              size="small"
+              @click="acceptProspect(item)"
               >Accept
             </v-btn>
 
-            <v-btn color="error" class="ml-2" @click="archiveProspect(item)"
+            <v-btn
+              color="warning"
+              class="ml-2"
+              size="small"
+              @click="archiveProspect(item)"
               >Archive
             </v-btn>
           </template>
@@ -135,7 +143,10 @@ const baseHeaders = [
   {
     title: 'Last Survey Date',
     key: 'last_survey_taken_date',
+    width: 0,
+    nowrap: true,
   },
+  {},
 ];
 
 const clients = ref([]);
