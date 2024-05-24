@@ -266,6 +266,12 @@ const submit = async (prospect_id) => {
       }))
     );
 
+    if (!prospect_id) {
+      await $axios.post(
+        `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
+      );
+    }
+
     show({ message: 'Survey saved!' });
 
     router.push(prospect_id ? '/' : `/clients/${user_id}#values`);

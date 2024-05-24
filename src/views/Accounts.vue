@@ -3,14 +3,9 @@
     <div class="d-flex my-4 align-center">
       <div class="text-h4 my-4">Create New Account</div>
       <v-spacer></v-spacer>
+      <v-btn class="ml-2" text="Back" @click="goBack()"></v-btn>
 
-      <v-checkbox class="ml-4" v-model="account.active" label="Active">
-      </v-checkbox>
-
-      <v-checkbox class="ml-4" v-model="account.fractional" label="Fractional">
-      </v-checkbox>
-
-      <v-btn class="ml-4" color="primary" text="Save" type="submit"></v-btn>
+      <v-btn class="ml-2" color="primary" text="Save" type="submit"></v-btn>
     </div>
 
     <v-row>
@@ -56,14 +51,33 @@
           item-value="value"
         ></v-select>
 
-
         <v-text-field
           label="Last 4 of Account Number"
           class="mb-4"
           v-model="account.last_four"
-          type="number"
-          :error-messages="[]"
+          type="tel"
+          maxlength="4"
         ></v-text-field>
+
+        <v-radio-group v-model="account.fractional" class="mb-4" inline>
+          <template v-slot:label> Fractional </template>
+          <v-radio :value="true">
+            <template v-slot:label> Yes </template>
+          </v-radio>
+          <v-radio :value="false">
+            <template v-slot:label> No </template>
+          </v-radio>
+        </v-radio-group>
+
+        <v-radio-group v-model="account.active" class="mb-4" inline>
+          <template v-slot:label> Active </template>
+          <v-radio :value="true">
+            <template v-slot:label> Yes </template>
+          </v-radio>
+          <v-radio :value="false">
+            <template v-slot:label> No </template>
+          </v-radio>
+        </v-radio-group>
       </v-col>
     </v-row>
   </v-form>
@@ -106,6 +120,7 @@ const account = reactive({
   value: undefined,
   fractional: false,
   risk_tolerance: undefined,
+  last_four: undefined,
 });
 
 const {
@@ -123,12 +138,16 @@ const createAccount = async () => {
       account
     );
 
-    router.push(`/clients/${user_id}#accounts`);
+    goBack();
 
     show({ message: 'Account created!' });
   } catch (error) {
     show({ message: `Couldn't create account`, error: true });
   }
+};
+
+const goBack = () => {
+  router.push(`/clients/${user_id}#accounts`);
 };
 
 const accountTypes = ref([]);

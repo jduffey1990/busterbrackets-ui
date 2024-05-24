@@ -16,11 +16,16 @@
     <div class="text-h4 my-4">{{ client.full_name }}</div>
 
     <v-tabs v-model="currentTab">
-      <v-tab
-        ref="tab"
-        :href="`#${v.toLowerCase()}`"
-        v-for="v in ['Values', 'Recommendations', 'Accounts', 'Profile']"
-        >{{ v }}
+      <v-tab ref="tab" :href="`#${t.label.toLowerCase()}`" v-for="t in tabs"
+        >{{ t.label }}
+
+        <span v-if="t.count !== undefined">({{ t.count }})</span>
+        <v-badge
+          v-if="t.showAlertBadge"
+          color="error"
+          content="!"
+          inline
+        ></v-badge>
       </v-tab>
     </v-tabs>
 
@@ -218,6 +223,7 @@ import PieChart from '../components/PieChart.vue';
 import BarChart from '../components/BarChart.vue';
 import { groupBy, round } from 'lodash';
 import { watch } from 'vue';
+import { currencyFormat } from '@/utils/number';
 
 const {
   user: { id: advisor_id },
@@ -253,18 +259,6 @@ const getClient = async () => {
   }
 
   clientLoading.value = false;
-};
-
-const generateRecommendation = async () => {
-  try {
-    await $axios.post(
-      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
-    );
-
-    getPortfolios();
-  } catch (error) {
-    show({ message: `Couldn't retrieve client information`, error: true });
-  }
 };
 
 const portfolioSectors = ref();
@@ -376,6 +370,12 @@ const accountHeaders = [
     nowrap: true,
   },
   {
+    title: 'Last Four',
+    key: 'last_four',
+    width: 0,
+    nowrap: true,
+  },
+  {
     title: 'Fractional',
     key: 'fractional',
     width: 0,
@@ -397,7 +397,18 @@ const getAccounts = async () => {
       `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`
     );
 
-    accounts.value = data;
+    accounts.value = data.map((d) => ({
+      ...d,
+      value: currencyFormat(d.value),
+      fractional: d.fractional ? 'Yes' : 'No',
+      active: d.active ? 'Yes' : 'No',
+    }));
+
+    const accountsTab = tabs.value.find((t) => t.label === 'Accounts');
+
+    accountsTab.count = accounts.value.length;
+
+    accountsTab.showAlertBadge = !accountsTab.count;
   } catch (error) {}
 };
 
@@ -409,6 +420,12 @@ const downloadAccountCSV = async (account) => {
 
 const currentTab = ref();
 const tab = ref();
+const tabs = ref([
+  { label: 'Values' },
+  { label: 'Recommendations' },
+  { label: 'Accounts' },
+  { label: 'Profile' },
+]);
 
 const getValue = (response) => {
   let color;
