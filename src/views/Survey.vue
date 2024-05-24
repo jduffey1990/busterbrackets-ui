@@ -1,9 +1,10 @@
 <template>
-  <div class="d-flex my-4">
-    <div class="text-h4">Values Profile</div>
-    <!-- <v-spacer></v-spacer>
-    <v-btn color="primary" @click="submitSurvey()">Submit </v-btn> -->
-  </div>
+  <div class="text-h4 mb-4">Values Profile</div>
+
+  <!-- <v-alert title="View Only" type="info" v-if="isAdvisorOrGreater" class="mb-4"
+    >You are viewing this survey as an advisor. You won't be able to submit this
+    survey.
+  </v-alert> -->
 
   <div v-if="survey">
     <v-stepper v-model="currentStep">
@@ -170,6 +171,7 @@ const router = useRouter();
 const {
   user: { id: advisor_id },
   getValuesProfile,
+  isAdvisorOrGreater,
   isLoggedIn,
 } = useUserStore();
 

@@ -1,11 +1,18 @@
 <template>
   <div>
     <div class="d-flex my-4">
-      <div class="text-h4">{{ user.full_name || user.email }}'s Dashboard</div>
+      <div>
+        <div class="text-h4 mb-2">
+          {{ user.full_name || user.email }}'s Dashboard
+        </div>
+        <div>
+          Survey Link: <a :href="surveyLink">{{ surveyLink }}</a>
+        </div>
+      </div>
       <v-spacer></v-spacer>
 
       <v-btn
-        @click="copyText()"
+        @click="viewSurvey()"
         text="View Survey"
         color="info"
         class="ml-2"
@@ -225,13 +232,11 @@ const goToClient = (event, client) => {
   router.push(`/clients/${client.item.id}#values`);
 };
 
-const copyText = () => {
-  navigator.clipboard.writeText(
-    `${location.origin}/survey?advisor=${advisor_id}`
-  );
-
-  show({ message: 'Link copied to clipboard!' });
+const viewSurvey = () => {
+  router.push(`/survey?advisor=${advisor_id}`);
 };
+
+const surveyLink = `${location.origin}/survey?advisor=${advisor_id}`;
 
 const acceptProspect = async ({ id }) => {
   if (confirm('Are you sure you want to accept this prospect as a client?')) {
