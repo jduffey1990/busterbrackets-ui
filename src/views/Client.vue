@@ -1,5 +1,8 @@
 <template>
-  <div v-if="clientLoading || portfoliosLoading" class="text-center">
+  <div
+    v-if="clientLoading || portfoliosLoading || valuesLoading"
+    class="text-center"
+  >
     <v-progress-linear
       color="primary"
       indeterminate
@@ -440,7 +443,10 @@ const getValue = (response) => {
 };
 
 const valuesProfile = ref();
+const valuesLoading = ref(false);
 onMounted(async () => {
+  valuesLoading.value = true;
+
   getClient();
 
   getAccounts();
@@ -454,6 +460,8 @@ onMounted(async () => {
     }),
     'sections.name'
   );
+
+  valuesLoading.value = false;
 });
 
 watch(currentTab, (e) => {
