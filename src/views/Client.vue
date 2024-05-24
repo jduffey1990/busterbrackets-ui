@@ -34,7 +34,7 @@
           >
             <v-btn
               color="primary"
-              :text="`${valuesProfile ? 'Edit' : 'Start'} Values Profile`"
+              :text="`${hasValuesProfile ? 'Edit' : 'Start'} Values Profile`"
               @click="navigate"
             >
             </v-btn>
@@ -44,7 +44,7 @@
         <v-alert
           title="No values profile yet..."
           type="info"
-          v-if="!valuesProfile"
+          v-if="!hasValuesProfile"
           >Please click "Start Values Profile" to fill out the survey!
         </v-alert>
 
@@ -72,23 +72,14 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
-        <div class="d-flex justify-end mb-4">
-          <v-btn
-            color="primary"
-            text="Generate Recommendation"
-            @click="generateRecommendation()"
-            :readonly="!valuesProfile"
-            :variant="valuesProfile ? 'elevated' : 'tonal'"
-          ></v-btn>
-        </div>
-
         <v-alert
           title="No recommendations yet..."
           type="info"
-          v-if="!valuesProfile"
-          >No recommendations have been generated yet. Please click "Generate
-          Recommendation" to do so. If you already haven't taken the survey,
-          please do that before you can generate the recommendation.
+          v-if="!allocations.length"
+        >
+          No recommendations have been generated yet. If you already haven't
+          taken the survey, please do that before you can generate the
+          recommendation.
         </v-alert>
 
         <div v-else>
@@ -219,7 +210,7 @@
 
 <script setup>
 import { useUserStore } from '@/store/user';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRoute } from 'vue-router';
@@ -243,6 +234,10 @@ const { show } = inject('toast');
 
 const client = ref({});
 const clientLoading = ref(false);
+
+const hasValuesProfile = computed(
+  () => !!Object.keys(valuesProfile.value).length
+);
 
 const getClient = async () => {
   clientLoading.value = true;
@@ -442,7 +437,7 @@ const getValue = (response) => {
   }
 };
 
-const valuesProfile = ref();
+const valuesProfile = ref({});
 const valuesLoading = ref(false);
 onMounted(async () => {
   valuesLoading.value = true;
