@@ -4,10 +4,10 @@
       <div class="text-h4 my-4">Create New Account</div>
       <v-spacer></v-spacer>
 
-      <v-checkbox class="ml-4" v-model="account.active" label="Active?">
+      <v-checkbox class="ml-4" v-model="account.active" label="Active">
       </v-checkbox>
 
-      <v-checkbox class="ml-4" v-model="account.fractional" label="Fractional?">
+      <v-checkbox class="ml-4" v-model="account.fractional" label="Fractional">
       </v-checkbox>
 
       <v-btn class="ml-4" color="primary" text="Save" type="submit"></v-btn>
@@ -43,7 +43,7 @@
         <v-text-field
           class="mb-4"
           v-model="account.value"
-          label="Account Value"
+          label="Account Market Value"
           type="number"
         ></v-text-field>
 
@@ -55,6 +55,15 @@
           item-title="title"
           item-value="value"
         ></v-select>
+
+
+        <v-text-field
+          label="Last 4 of Account Number"
+          class="mb-4"
+          v-model="account.last_four"
+          type="number"
+          :error-messages="[]"
+        ></v-text-field>
       </v-col>
     </v-row>
   </v-form>
@@ -82,9 +91,11 @@ const custodians = [
 ];
 
 const riskTolerances = [
-  { value: 0, title: 'Low Risk' },
-  { value: 1, title: 'Medium Risk' },
-  { value: 2, title: 'High Risk' },
+  { value: 0, title: 'Very Low' },
+  { value: 1, title: 'Low' },
+  { value: 2, title: 'Moderate' },
+  { value: 3, title: 'High' },
+  { value: 4, title: 'Very High' },
 ];
 
 const account = reactive({
