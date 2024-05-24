@@ -6,7 +6,7 @@
 
       <v-btn
         @click="copyText()"
-        text="Get Survey Link"
+        text="View Survey"
         color="info"
         class="ml-2"
       ></v-btn>
@@ -26,7 +26,16 @@
 
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item>
+        <v-alert
+          title="No clients yet..."
+          type="info"
+          v-if="!clients.length"
+          class="my-4"
+          >Click "Create New Client" to begin to add clients here.
+        </v-alert>
+
         <v-data-table
+          v-else
           :headers="clientHeaders"
           :items="clients"
           @click:row="goToClient"
@@ -34,7 +43,16 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item>
-        <v-data-table :items="prospects" :headers="prospectHeaders">
+        <v-alert
+          title="No prospects yet..."
+          type="info"
+          v-if="!prospects.length"
+          class="my-4"
+          >Click "View Survey" to view your client survey and to view your
+          affiliate link.
+        </v-alert>
+
+        <v-data-table v-else :items="prospects" :headers="prospectHeaders">
           <template v-slot:item.actions="{ item }">
             <v-btn
               color="success"

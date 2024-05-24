@@ -379,19 +379,19 @@ const accountHeaders = [
     nowrap: true,
   },
   {
-    title: 'Name',
+    title: 'Account Name',
     key: 'name',
     width: 0,
     nowrap: true,
   },
   {
-    title: 'Type',
+    title: 'Account Type',
     key: 'account_type',
     width: 0,
     nowrap: true,
   },
   {
-    title: 'Value',
+    title: 'Account Market Value',
     key: 'value',
     width: 0,
     nowrap: true,
@@ -403,7 +403,7 @@ const accountHeaders = [
     nowrap: true,
   },
   {
-    title: 'Last Four',
+    title: 'Account Last Four',
     key: 'last_four',
     width: 0,
     nowrap: true,

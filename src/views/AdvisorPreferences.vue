@@ -22,6 +22,7 @@
         <v-card-text class="pa-8">
           <div class="text-h5 mb-3">Factor Levers</div>
           <v-checkbox
+            readonly
             v-model="preferences.momentum"
             label="Momentum"
           ></v-checkbox>
