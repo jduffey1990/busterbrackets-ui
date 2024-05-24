@@ -2,10 +2,6 @@
   <v-form @submit.prevent="createAccount()">
     <div class="d-flex my-4 align-center">
       <div class="text-h4 my-4">Create New Account</div>
-      <v-spacer></v-spacer>
-      <v-btn class="ml-2" text="Back" @click="goBack()"></v-btn>
-
-      <v-btn class="ml-2" color="primary" text="Save" type="submit"></v-btn>
     </div>
 
     <v-row>
@@ -59,25 +55,29 @@
           maxlength="4"
         ></v-text-field>
 
-        <v-radio-group v-model="account.fractional" class="mb-4" inline>
-          <template v-slot:label> Fractional </template>
-          <v-radio :value="true">
-            <template v-slot:label> Yes </template>
-          </v-radio>
-          <v-radio :value="false">
-            <template v-slot:label> No </template>
-          </v-radio>
-        </v-radio-group>
+        <v-select
+          label="Fractional"
+          class="mb-4"
+          v-model="account.fractional"
+          :items="yesNoBooleans"
+          item-title="title"
+          item-value="value"
+        ></v-select>
 
-        <v-radio-group v-model="account.active" class="mb-4" inline>
-          <template v-slot:label> Active </template>
-          <v-radio :value="true">
-            <template v-slot:label> Yes </template>
-          </v-radio>
-          <v-radio :value="false">
-            <template v-slot:label> No </template>
-          </v-radio>
-        </v-radio-group>
+        <v-select
+          label="Active"
+          class="mb-4"
+          v-model="account.active"
+          :items="yesNoBooleans"
+          item-title="title"
+          item-value="value"
+        ></v-select>
+
+        <div class="d-flex justify-end mb-4">
+          <v-btn class="ml-2" text="Back" @click="goBack()"></v-btn>
+
+          <v-btn class="ml-2" color="primary" text="Save" type="submit"></v-btn>
+        </div>
       </v-col>
     </v-row>
   </v-form>
@@ -110,6 +110,11 @@ const riskTolerances = [
   { value: 2, title: 'Moderate' },
   { value: 3, title: 'High' },
   { value: 4, title: 'Very High' },
+];
+
+const yesNoBooleans = [
+  { value: false, title: 'No' },
+  { value: true, title: 'Yes' },
 ];
 
 const account = reactive({

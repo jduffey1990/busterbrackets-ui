@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex my-4">
-    <div class="text-h4">Portfolio Guidance and Values Survey</div>
+    <div class="text-h4">Values Profile</div>
     <v-spacer></v-spacer>
     <v-btn color="primary" @click="submitSurvey()">Submit </v-btn>
   </div>

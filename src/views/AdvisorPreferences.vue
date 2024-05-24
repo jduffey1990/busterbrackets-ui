@@ -1,42 +1,56 @@
 <template>
-  <v-layout class="justify-center pa-4">
-    <v-card class="w-100">
-      <v-toolbar>
-        <v-toolbar-title> Advisor Preferences </v-toolbar-title>
+  <div v-if="hasLoaded">
+    <v-layout
+      class="justify-center pa-4"
+      v-if="Object.keys(preferences).length"
+    >
+      <v-card class="w-100">
+        <v-toolbar>
+          <v-toolbar-title> Advisor Preferences </v-toolbar-title>
 
-        <v-toolbar-items>
-          <v-btn color="primary" variant="elevated" @click="savePreferences()">
-            Save
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
+          <v-toolbar-items>
+            <v-btn
+              color="primary"
+              variant="elevated"
+              @click="savePreferences()"
+            >
+              Save
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
 
-      <v-card-text class="pa-8">
-        <div class="text-h5 mb-3">Factor Levers</div>
-        <v-checkbox
-          v-model="preferences.momentum"
-          label="Momentum"
-        ></v-checkbox>
+        <v-card-text class="pa-8">
+          <div class="text-h5 mb-3">Factor Levers</div>
+          <v-checkbox
+            v-model="preferences.momentum"
+            label="Momentum"
+          ></v-checkbox>
 
-        <v-checkbox v-model="preferences.quality" label="Quality"> </v-checkbox>
+          <v-checkbox v-model="preferences.quality" label="Quality">
+          </v-checkbox>
 
-        <v-checkbox v-model="preferences.value" label="Value"> </v-checkbox>
+          <v-checkbox v-model="preferences.value" label="Value"> </v-checkbox>
 
-        <v-checkbox
-          v-model="preferences.low_volatility"
-          label="Low Volatility"
-        ></v-checkbox>
+          <v-checkbox
+            v-model="preferences.low_volatility"
+            label="Low Volatility"
+          ></v-checkbox>
 
-        <hr class="my-10" />
+          <hr class="my-10" />
 
-        <div class="text-h5 mb-3">Asset Allocation Guidelines</div>
+          <div class="text-h5 mb-3">Asset Allocation Guidelines</div>
 
-        <v-data-table :items="allocationGuidelines" :items-per-page="-1">
-          <template #bottom> </template>
-        </v-data-table>
-      </v-card-text>
-    </v-card>
-  </v-layout>
+          <v-data-table :items="allocationGuidelines" :items-per-page="-1">
+            <template #bottom> </template>
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-layout>
+
+    <v-alert title="No Advisor Preferences" type="warning" v-else
+      >You need to be an advisor to view your preferences.
+    </v-alert>
+  </div>
 </template>
 
 <script setup>
@@ -53,10 +67,18 @@ const { show } = inject('toast');
 
 const preferences = ref({});
 
-const getPreferences = async () => {
-  const { data } = await $axios.get(`/api/advisors/${advisor_id}/preferences/`);
+const hasLoaded = ref(false);
 
-  preferences.value = data;
+const getPreferences = async () => {
+  try {
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_id}/preferences/`
+    );
+
+    preferences.value = data;
+  } catch (error) {}
+
+  hasLoaded.value = true;
 };
 
 getPreferences();

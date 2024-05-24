@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="user.firm">
     <div class="d-flex my-4">
       <div class="text-h4">{{ user.firm?.name }} Admin Dashboard</div>
       <v-spacer></v-spacer>
@@ -61,6 +61,10 @@
       </v-card>
     </v-dialog>
   </div>
+
+  <v-alert title="No Firm" type="warning" v-else
+    >You need to be associated to a firm to manage your advisors.
+  </v-alert>
 </template>
 
 <script setup>
@@ -69,8 +73,6 @@ import { storeToRefs } from 'pinia';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
-import { useRouter } from 'vue-router';
-import moment from 'moment';
 
 const $axios = inject('$axios');
 const { show } = inject('toast');
@@ -118,7 +120,9 @@ const getAdvisors = async () => {
   advisors.value = data;
 };
 
-getAdvisors();
+if (user.firm) {
+  getAdvisors();
+}
 
 const createNewAdvisor = async () => {
   try {

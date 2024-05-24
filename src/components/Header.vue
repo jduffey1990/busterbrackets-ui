@@ -39,7 +39,7 @@
                 link
                 :to="{ name: 'Admin' }"
               >
-                <v-list-item-title>Firm Admin </v-list-item-title>
+                <v-list-item-title>Firm Admin</v-list-item-title>
               </v-list-item>
 
               <v-list-item link :to="{ name: 'Settings' }">

@@ -183,31 +183,50 @@
       <v-tabs-window-item class="py-2">
         <v-row>
           <v-col cols="6">
+            <v-text-field
+              label="First Name"
+              type="text"
+              v-model="client.first_name"
+              class="mb-4"
+            ></v-text-field>
+
+            <v-text-field
+              label="Last Name"
+              type="text"
+              v-model="client.last_name"
+              class="mb-4"
+            ></v-text-field>
+
+            <v-text-field
+              label="Email"
+              type="email"
+              v-model="client.email"
+              class="mb-4"
+            ></v-text-field>
+
+            <div class="d-flex justify-end mb-4">
+              <v-btn @click="saveClient()" color="primary"> Save </v-btn>
+            </div>
+          </v-col>
+        </v-row>
+
+        <!-- <v-row>
+          <v-col cols="6">
             <v-list>
               <v-list-item
                 title="First Name"
                 :subtitle="client.first_name"
               ></v-list-item>
+
               <v-list-item
                 title="Last Name"
                 :subtitle="client.last_name"
               ></v-list-item>
+              
               <v-list-item title="Email" :subtitle="client.email"></v-list-item>
             </v-list>
           </v-col>
-
-          <v-col cols="6">
-            <v-list>
-              <v-list-item title="Account Number" :subtitle="''"></v-list-item>
-              <v-list-item
-                title="Account Custodian"
-                :subtitle="client?.advisor?.full_name"
-              ></v-list-item>
-              <v-list-item title="Account Type" :subtitle="''"></v-list-item>
-              <v-list-item title="Account Status" :subtitle="''"></v-list-item>
-            </v-list>
-          </v-col>
-        </v-row>
+        </v-row> -->
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
@@ -259,6 +278,20 @@ const getClient = async () => {
   }
 
   clientLoading.value = false;
+};
+
+const saveClient = async () => {
+  try {
+    await $axios.patch(`/api/advisors/${advisor_id}/clients/${user_id}/`, {
+      first_name: client.value.first_name,
+      last_name: client.value.last_name,
+      email: client.value.email,
+    });
+
+    show({ message: 'Client profile saved!' });
+  } catch (error) {
+    show({ message: `Couldn't save client profile`, error: true });
+  }
 };
 
 const portfolioSectors = ref();
