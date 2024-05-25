@@ -90,7 +90,7 @@ const canEdit = computed(() => isSuper && user_id);
 const getFactorLevers = async () => {
   try {
     const { data } = await $axios.get(
-      `/api/advisors/${advisor_id}/factor-levers/`
+      `/api/advisors/${user_id || advisor_id}/factor-levers/`
     );
 
     factorLevers.value = data;
@@ -103,7 +103,7 @@ const allocations = ref([]);
 const getAllocations = async () => {
   try {
     const { data } = await $axios.get(
-      `/api/advisors/${advisor_id}/allocations/`
+      `/api/advisors/${user_id || advisor_id}/allocations/`
     );
 
     allocations.value = data;
@@ -168,9 +168,12 @@ const onFileUpload = ({ target: { files } }) => {
 
     if (data.length) {
       try {
-        await $axios.post(`/api/advisors/${advisor_id}/allocations/`, {
-          allocations: allocations.value,
-        });
+        await $axios.post(
+          `/api/advisors/${user_id || advisor_id}/allocations/`,
+          {
+            allocations: allocations.value,
+          }
+        );
 
         show({ message: 'Advisor Allocations saved!' });
 
@@ -190,7 +193,7 @@ const onFileUpload = ({ target: { files } }) => {
 const currentAdvisor = ref();
 onMounted(async () => {
   if (canEdit.value) {
-    const { data } = await $axios.get(`/api/users/${user_id}/`);
+    const { data } = await $axios.get(`/api/users/${user_id || advisor_id}/`);
 
     currentAdvisor.value = data;
   }
@@ -198,9 +201,12 @@ onMounted(async () => {
 
 const saveFactorLevers = async () => {
   try {
-    await $axios.patch(`/api/advisors/${advisor_id}/factor-levers/`, {
-      ...factorLevers.value,
-    });
+    await $axios.patch(
+      `/api/advisors/${user_id || advisor_id}/factor-levers/`,
+      {
+        ...factorLevers.value,
+      }
+    );
 
     show({ message: 'Factor levers saved!' });
   } catch (error) {
