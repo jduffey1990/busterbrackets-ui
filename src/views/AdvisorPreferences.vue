@@ -1,113 +1,213 @@
 <template>
-  <div v-if="hasLoaded">
-    <v-layout
-      class="justify-center pa-4"
-      v-if="Object.keys(preferences).length"
-    >
-      <v-card class="w-100">
-        <v-toolbar>
-          <v-toolbar-title> Advisor Preferences </v-toolbar-title>
+  <div>
+    <div class="d-flex my-4">
+      <div class="text-h4">
+        <span v-if="currentAdvisor">{{ currentAdvisor.full_name }}</span>
+        Advisor Preferences
+      </div>
+      <v-spacer></v-spacer>
 
-          <v-toolbar-items>
-            <v-btn
-              color="primary"
-              variant="elevated"
-              @click="savePreferences()"
-            >
-              Save
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
+      <v-btn
+        v-if="canEdit"
+        @click="saveFactorLevers()"
+        color="primary"
+        text="Save"
+        class="ml-2"
+      ></v-btn>
+    </div>
 
-        <v-card-text class="pa-8">
-          <div class="text-h5 mb-3">Factor Levers</div>
-          <v-checkbox
-            readonly
-            v-model="preferences.momentum"
-            label="Momentum"
-          ></v-checkbox>
-
-          <v-checkbox v-model="preferences.quality" label="Quality">
-          </v-checkbox>
-
-          <v-checkbox v-model="preferences.value" label="Value"> </v-checkbox>
-
-          <v-checkbox
-            v-model="preferences.low_volatility"
-            label="Low Volatility"
-          ></v-checkbox>
-
-          <hr class="my-10" />
-
-          <div class="text-h5 mb-3">Asset Allocation Guidelines</div>
-
-          <v-data-table :items="allocationGuidelines" :items-per-page="-1">
-            <template #bottom> </template>
-          </v-data-table>
-        </v-card-text>
-      </v-card>
-    </v-layout>
-
-    <v-alert title="No Advisor Preferences" type="warning" v-else
-      >You need to be an advisor to view your preferences.
+    <v-alert type="info" title="Super Admin Only" v-if="canEdit" class="mb-4">
+      You are viewing this as a super admin.
     </v-alert>
+
+    <div class="text-h6 mb-3">Factor Levers</div>
+    <v-checkbox
+      :readonly="!canEdit"
+      v-model="factorLevers.momentum"
+      label="Momentum"
+    ></v-checkbox>
+
+    <v-checkbox
+      :readonly="!canEdit"
+      v-model="factorLevers.quality"
+      label="Quality"
+    >
+    </v-checkbox>
+
+    <v-checkbox :readonly="!canEdit" v-model="factorLevers.value" label="Value">
+    </v-checkbox>
+
+    <v-checkbox
+      :readonly="!canEdit"
+      v-model="factorLevers.low_volatility"
+      label="Low Volatility"
+    ></v-checkbox>
+
+    <hr class="my-10" />
+
+    <div class="d-flex my-4">
+      <div class="text-h6">Asset Allocation Guidelines</div>
+      <v-spacer></v-spacer>
+
+      <input
+        type="file"
+        accept="text/csv"
+        v-if="canEdit"
+        @change="onFileUpload($event)"
+      />
+    </div>
+
+    <v-data-table :items="allocations" :items-per-page="-1" :headers="headers">
+      <template #bottom> </template>
+    </v-data-table>
   </div>
 </template>
 
 <script setup>
 import { useUserStore } from '@/store/user';
+import { computed } from 'vue';
+import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
+import { useRoute } from 'vue-router';
+const { show } = inject('toast');
 
 const {
   user: { id: advisor_id },
+  isSuper,
 } = useUserStore();
 
 const $axios = inject('$axios');
-const { show } = inject('toast');
 
-const preferences = ref({});
+const factorLevers = ref({});
 
-const hasLoaded = ref(false);
+const {
+  params: { user_id },
+} = useRoute();
 
-const getPreferences = async () => {
+const canEdit = computed(() => isSuper && user_id);
+
+const getFactorLevers = async () => {
   try {
     const { data } = await $axios.get(
-      `/api/advisors/${advisor_id}/preferences/`
+      `/api/advisors/${advisor_id}/factor-levers/`
     );
 
-    preferences.value = data;
+    factorLevers.value = data;
   } catch (error) {}
-
-  hasLoaded.value = true;
 };
 
-getPreferences();
+getFactorLevers();
 
-const savePreferences = async () => {
+const allocations = ref([]);
+const getAllocations = async () => {
   try {
-    await $axios.put(
-      `/api/advisors/${advisor_id}/preferences/`,
-      preferences.value
+    const { data } = await $axios.get(
+      `/api/advisors/${advisor_id}/allocations/`
     );
 
-    show({ message: 'Preferences saved!' });
+    allocations.value = data;
+  } catch (error) {}
+};
+
+getAllocations();
+
+const headers = [
+  {
+    title: 'Name',
+    key: 'name',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Ticker',
+    key: 'ticker',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Min Risk',
+    key: 'min_risk',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Max Risk',
+    key: 'max_risk',
+    width: 0,
+    nowrap: true,
+  },
+  {},
+];
+
+const onFileUpload = ({ target: { files } }) => {
+  const reader = new FileReader();
+
+  reader.readAsText(files[0]);
+
+  reader.onload = async ({ target: { result } }) => {
+    allocations.value = [];
+
+    const data = result.split('\r\n');
+    for (const i in data) {
+      if (!+i) {
+        continue;
+      }
+
+      const allocation = data[i].split(',').filter((a) => a.length);
+
+      if (allocation.length) {
+        const name = allocation[0];
+        const ticker = allocation[1];
+        const min_risk = +allocation[2].replace('%', '');
+        const max_risk = +allocation[3].replace('%', '');
+
+        allocations.value.push({ name, ticker, min_risk, max_risk });
+      }
+    }
+
+    if (data.length) {
+      try {
+        await $axios.post(`/api/advisors/${advisor_id}/allocations/`, {
+          allocations: allocations.value,
+        });
+
+        show({ message: 'Advisor Allocations saved!' });
+
+        getAllocations();
+
+        return;
+      } catch (error) {}
+    }
+
+    show({
+      message: `Upload CSV failed. Please check format and try again.`,
+      error: true,
+    });
+  };
+};
+
+const currentAdvisor = ref();
+onMounted(async () => {
+  if (canEdit.value) {
+    const { data } = await $axios.get(`/api/users/${user_id}/`);
+
+    currentAdvisor.value = data;
+  }
+});
+
+const saveFactorLevers = async () => {
+  try {
+    await $axios.patch(`/api/advisors/${advisor_id}/factor-levers/`, {
+      ...factorLevers.value,
+    });
+
+    show({ message: 'Factor levers saved!' });
   } catch (error) {
-    show({ message: `Couldn't save preferences`, error: true });
+    show({
+      message: `Couldn't save Factor Levers`,
+      error: true,
+    });
   }
 };
-
-const allocationGuidelines = ref([]);
-
-const getaAllocationGuidelines = async () => {
-  const { data } = await $axios.get(`/api/advisors/allocation-guidelines/`);
-
-  allocationGuidelines.value = data.map((item) => ({
-    ...item,
-    min_risk: (item.min_risk * 100).toFixed(0) + '%', // Multiplying by 100 and appending '%'
-    max_risk: (item.max_risk * 100).toFixed(0) + '%',
-  }));
-};
-
-getaAllocationGuidelines();
 </script>

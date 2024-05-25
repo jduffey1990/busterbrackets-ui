@@ -12,13 +12,6 @@
       <v-spacer></v-spacer>
 
       <v-btn
-        @click="viewSurvey()"
-        text="View Survey"
-        color="info"
-        class="ml-2"
-      ></v-btn>
-
-      <v-btn
         @click="openCreateNewClientModal = true"
         color="primary"
         text="Create New Client"
@@ -55,7 +48,7 @@
           type="info"
           v-if="!prospects.length"
           class="my-4"
-          >Click "View Survey" to view your client survey and to view your
+          >Click the Survey Link to view your client survey and to view your
           affiliate link.
         </v-alert>
 

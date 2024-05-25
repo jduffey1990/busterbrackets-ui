@@ -11,6 +11,7 @@ import { useUserStore } from '@/store/user';
 import Admin from '@/views/Admin.vue';
 import Settings from '@/views/Settings.vue';
 import Accounts from '@/views/Accounts.vue';
+import Advisors from '@/views/Advisors.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -37,6 +38,31 @@ const router = createRouter({
         const { isAdvisorOrGreater } = useUserStore();
 
         if (isAdvisorOrGreater) {
+          return next();
+        }
+
+        next('/');
+      },
+    },
+    {
+      path: '/advisors',
+      children: [
+        {
+          path: '',
+          name: 'Advisors',
+          component: Advisors,
+        },
+        {
+          path: ':user_id/preferences',
+          name: 'AdminAdvisorPreferences',
+          component: AdvisorPreferences,
+        },
+      ],
+
+      beforeEnter: (to, from, next) => {
+        const { isSuper } = useUserStore();
+
+        if (isSuper) {
           return next();
         }
 

@@ -34,6 +34,10 @@
               </v-btn>
             </template>
             <v-list>
+              <v-list-item v-if="isSuper" link :to="{ name: 'Advisors' }">
+                <v-list-item-title>Advisors</v-list-item-title>
+              </v-list-item>
+
               <v-list-item
                 v-if="isFirmAdminOrGreater"
                 link
@@ -81,7 +85,9 @@ import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 const router = useRouter();
 
-const { user, isLoggedIn, isFirmAdminOrGreater } = storeToRefs(useUserStore());
+const { user, isLoggedIn, isFirmAdminOrGreater, isSuper } = storeToRefs(
+  useUserStore()
+);
 
 const logout = async () => {
   await useUserStore().logout();

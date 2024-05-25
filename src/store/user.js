@@ -12,6 +12,9 @@ export const useUserStore = defineStore('user', {
     valuesProfile: [],
   }),
   getters: {
+    isSuper(state) {
+      return state.user.role === Role.SUPER;
+    },
     isFirmAdminOrGreater(state) {
       return firmAdminPermissions.includes(state.user.role);
     },
