@@ -193,8 +193,28 @@
               color="primary"
               @click="downloadAccountCSV(item)"
               size="small"
+              class="ml-2"
               >Download CSV
             </v-btn>
+
+            <router-link
+              :to="{
+                name: 'Accounts',
+                params: { user_id },
+                query: { account_id: item.id },
+              }"
+              v-slot="{ navigate }"
+            >
+              <v-btn
+                @click="navigate"
+                role="link"
+                color="info"
+                size="small"
+                class="ml-2"
+              >
+                Edit
+              </v-btn>
+            </router-link>
           </template>
         </v-data-table>
       </v-tabs-window-item>

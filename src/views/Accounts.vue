@@ -1,5 +1,5 @@
 <template>
-  <v-form @submit.prevent="createAccount()">
+  <v-form @submit.prevent="save()">
     <div class="d-flex my-4 align-center">
       <div class="text-h4 my-4">Create New Account</div>
     </div>
@@ -134,18 +134,25 @@ const {
 
 const {
   params: { user_id },
+  query: { account_id },
 } = useRoute();
 
-const createAccount = async () => {
+const save = async () => {
   try {
-    await $axios.post(
-      `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`,
-      account
-    );
+    if (account_id) {
+      await $axios.patch(`/api/accounts/${account_id}/`, account);
 
-    goBack();
+      show({ message: 'Account saved!' });
+    } else {
+      await $axios.post(
+        `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`,
+        account
+      );
 
-    show({ message: 'Account created!' });
+      goBack();
+
+      show({ message: 'Account created!' });
+    }
   } catch (error) {
     show({ message: `Couldn't create account`, error: true });
   }
@@ -159,5 +166,11 @@ const accountTypes = ref([]);
 onMounted(async () => {
   const { data } = await $axios.get('/api/accounts/types/');
   accountTypes.value = data;
+
+  if (account_id) {
+    const { data } = await $axios.get(`/api/accounts/${account_id}/`);
+
+    Object.assign(account, data);
+  }
 });
 </script>
