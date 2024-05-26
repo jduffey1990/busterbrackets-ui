@@ -2,11 +2,14 @@
   <slot />
 
   <v-snackbar v-model="show" :color="color" location="top" :timeout="3000">
-    {{ message }}
     <template #actions>
       <v-btn variant="text" @click="show = false">
         <v-icon icon="mdi-close-thick"></v-icon
       ></v-btn>
+    </template>
+
+    <template #text>
+      <div v-html="message"></div>
     </template>
   </v-snackbar>
 </template>

@@ -71,14 +71,14 @@
           type="info"
           v-if="!prospects.length"
           class="my-4"
-          >Click the Survey Link to view your client survey and to view your
-          affiliate link.
+          >Click the Copy Survey Link to send your unique firm survey to
+          referrals or use to market and build a list of prospects. affilia.
         </v-alert>
 
         <v-data-table v-else :items="prospects" :headers="headers">
           <template v-slot:item.actions="{ item }">
             <v-btn
-              color="success"
+              color="secondary"
               class="ml-2"
               size="small"
               @click="acceptProspect(item)"
@@ -142,6 +142,7 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 import { useRouter } from 'vue-router';
 import moment from 'moment';
+import { parseError } from '@/utils/error';
 
 const $axios = inject('$axios');
 const { show } = inject('toast');
@@ -237,7 +238,7 @@ const createNewClient = async () => {
 
     show({ message: 'Client created!' });
   } catch (error) {
-    show({ message: `Couldn't create client`, error: true });
+    show({ message: parseError(error), error: true });
   }
 };
 
@@ -263,7 +264,7 @@ const acceptProspect = async ({ id }) => {
 
       show({ message: 'Client created!' });
     } catch (error) {
-      show({ message: `Couldn't create client`, error: true });
+      show({ message: parseError(error), error: true });
     }
   }
 };
@@ -280,7 +281,7 @@ const archiveProspect = async ({ id }) => {
 
       show({ message: 'Prospect archived!' });
     } catch (error) {
-      show({ message: `Couldn't archive prospect`, error: true });
+      show({ message: parseError(error), error: true });
     }
   }
 };
@@ -297,7 +298,7 @@ const archiveClient = async ({ id }) => {
 
       show({ message: 'Client archived!' });
     } catch (error) {
-      show({ message: `Couldn't archive client`, error: true });
+      show({ message: parseError(error), error: true });
     }
   }
 };

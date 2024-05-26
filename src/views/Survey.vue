@@ -169,6 +169,7 @@ import { reactive } from 'vue';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { parseError } from '@/utils/error';
 
 const router = useRouter();
 
@@ -284,7 +285,7 @@ const submit = async (prospect_id) => {
 
     router.push(prospect_id ? '/' : `/clients/${user_id}#values`);
   } catch (error) {
-    show({ message: 'Failed to save survey', error: true });
+    show({ message: parseError(error), error: true });
   }
 };
 
@@ -325,7 +326,7 @@ const createNewProspect = async () => {
 
     await submit(id);
   } catch (error) {
-    show({ message: 'Failed to save', error: true });
+    show({ message: parseError(error), error: true });
   }
 };
 

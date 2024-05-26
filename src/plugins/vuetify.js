@@ -41,7 +41,7 @@ export default createVuetify({
           info: '#5CBBF6',
           success: '#41C676',
           lightgrey: '#f6f9fc',
-          error: '#DE3D7A',
+          error: '#c6414f',
         },
       },
     },

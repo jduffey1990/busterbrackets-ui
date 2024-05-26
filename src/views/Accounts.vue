@@ -90,6 +90,8 @@ import { onMounted } from 'vue';
 import { inject } from 'vue';
 import { reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { parseError } from '@/utils/error';
+
 const $axios = inject('$axios');
 
 const { show } = inject('toast');
@@ -154,7 +156,7 @@ const save = async () => {
       show({ message: 'Account created!' });
     }
   } catch (error) {
-    show({ message: `Couldn't create account`, error: true });
+    show({ message: parseError(error), error: true });
   }
 };
 

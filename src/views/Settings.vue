@@ -36,6 +36,7 @@
 import { useUserStore } from '@/store/user';
 import { reactive } from 'vue';
 import { inject } from 'vue';
+import { parseError } from '@/utils/error';
 const $axios = inject('$axios');
 const { show } = inject('toast');
 
@@ -55,7 +56,7 @@ const saveProfile = async () => {
 
     show({ message: 'Account saved!' });
   } catch (error) {
-    show({ message: `Couldn't save account`, error: true });
+    show({ message: parseError(error), error: true });
   }
 };
 </script>

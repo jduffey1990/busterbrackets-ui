@@ -263,6 +263,7 @@ import BarChart from '../components/BarChart.vue';
 import { groupBy, round } from 'lodash';
 import { watch } from 'vue';
 import { currencyFormat } from '@/utils/number';
+import { parseError } from '@/utils/error';
 
 const {
   user: { id: advisor_id },
@@ -310,7 +311,7 @@ const saveClient = async () => {
 
     show({ message: 'Client profile saved!' });
   } catch (error) {
-    show({ message: `Couldn't save client profile`, error: true });
+    show({ message: parseError(error), error: true });
   }
 };
 
@@ -587,12 +588,12 @@ const getBarChart = (data) => {
     datasets: [
       {
         label: 'Pomarium',
-        backgroundColor: 'blue',
+        backgroundColor: '#1867C0',
         data: pomariumData.map((d) => d.value),
       },
       {
         label: 'Market',
-        backgroundColor: 'red',
+        backgroundColor: '#c6414f',
         data: marketData.map((d) => d.value),
       },
     ],

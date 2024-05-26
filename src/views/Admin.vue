@@ -73,6 +73,7 @@ import { storeToRefs } from 'pinia';
 import { reactive } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
+import { parseError } from '@/utils/error';
 
 const $axios = inject('$axios');
 const { show } = inject('toast');
@@ -136,7 +137,7 @@ const createNewAdvisor = async () => {
 
     show({ message: 'Advisor created!' });
   } catch (error) {
-    show({ message: `Couldn't create advisor`, error: true });
+    show({ message: parseError(error), error: true });
   }
 };
 </script>
