@@ -72,7 +72,7 @@
           v-if="!prospects.length"
           class="my-4"
           >Click the Copy Survey Link to send your unique firm survey to
-          referrals or use to market and build a list of prospects. affilia.
+          referrals or use to market and build a list of prospects.
         </v-alert>
 
         <v-data-table v-else :items="prospects" :headers="headers">
