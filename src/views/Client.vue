@@ -89,19 +89,25 @@
 
         <div v-else>
           <div class="my-8" v-if="portfolioValues">
-            <div>Portfolio/Market</div>
+            <div class="text-h6">Portfolio/Market</div>
 
             <v-row>
               <v-col cols="6">
                 <BarChart
-                  :data="getChartData(portfolioValues)"
-                  :options="chartOptions"
+                  :data="getBarChart(portfolioValues)"
+                  :options="{
+                    responsive: true,
+                  }"
                 />
               </v-col>
               <v-col cols="6">
                 <v-table>
                   <tbody>
-                    <tr v-for="p in portfolioValues">
+                    <tr>
+                      <th>Client Value</th>
+                      <th>Pomarium vs. Market</th>
+                    </tr>
+                    <tr v-for="p in portfolioValuesComparison">
                       <td class="text-no-wrap">{{ p.title }}</td>
                       <td class="w-100">
                         {{ p.value }}
@@ -115,16 +121,25 @@
           <hr />
 
           <div class="my-8" v-if="portfolioSectors">
-            <div>Sectors</div>
+            <div class="text-h6">Sectors</div>
 
             <v-row>
-              <v-col cols="6">
-                <PieChart
-                  :data="getChartData(portfolioSectors)"
-                  :options="chartOptions"
-                />
+              <v-col cols="4">
+                <div class="d-flex justify-center align-center h-100">
+                  <PieChart
+                    :data="getPieChart(portfolioSectors)"
+                    :options="{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                      },
+                    }"
+                  />
+                </div>
               </v-col>
-              <v-col cols="6">
+              <v-col cols="8">
                 <v-table>
                   <tbody>
                     <tr v-for="p in portfolioSectors">
@@ -142,9 +157,13 @@
           <hr />
 
           <div class="my-8">
-            <div>Pomarium Allocations</div>
+            <div class="text-h6">Pomarium Allocations</div>
 
-            <v-data-table :items="allocations" :items-per-page="-1">
+            <v-data-table
+              :items="allocations"
+              :headers="allocationHeaders"
+              :items-per-page="-1"
+            >
               <template #bottom> </template>
             </v-data-table>
           </div>
@@ -209,24 +228,6 @@
             </div>
           </v-col>
         </v-row>
-
-        <!-- <v-row>
-          <v-col cols="6">
-            <v-list>
-              <v-list-item
-                title="First Name"
-                :subtitle="client.first_name"
-              ></v-list-item>
-
-              <v-list-item
-                title="Last Name"
-                :subtitle="client.last_name"
-              ></v-list-item>
-              
-              <v-list-item title="Email" :subtitle="client.email"></v-list-item>
-            </v-list>
-          </v-col>
-        </v-row> -->
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
@@ -299,6 +300,27 @@ const allocations = ref([]);
 const hasRequestedPortfolios = ref(false);
 const portfolioValues = ref();
 const portfoliosLoading = ref(false);
+const allocationHeaders = [
+  {
+    title: 'Company',
+    key: 'company',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Ticker',
+    key: 'ticker',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Allocation',
+    key: 'allocation',
+    width: 0,
+    nowrap: true,
+  },
+  {},
+];
 
 const getPortfolios = async () => {
   portfoliosLoading.value = true;
@@ -315,13 +337,11 @@ const getPortfolios = async () => {
         title,
         value: round(valuesPortfolio[title], 2),
         type: 'Portfolio',
-        color: 'blue',
       })),
       ...Object.keys(valuesMarket).map((title) => ({
         title,
         value: round(valuesMarket[title], 2),
         type: 'Market',
-        color: 'red',
       })),
     ].sort(
       (a, b) => a.title.localeCompare(b.title) || b.type.localeCompare(a.type)
@@ -344,7 +364,10 @@ const getPortfolios = async () => {
       `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
     );
 
-    const { pomarium } = data[0].allocations;
+    const {
+      allocations: { pomarium },
+      portfolio_data: { pomarium_names },
+    } = data[0];
 
     for (let i in pomarium) {
       pomarium[i] = Math.round(pomarium[i] * 100 * 100) / 100;
@@ -354,6 +377,7 @@ const getPortfolios = async () => {
 
     allocations.value = labels
       .map((p) => ({
+        company: pomarium_names[p],
         ticker: p,
         allocation: pomarium[p],
       }))
@@ -364,6 +388,26 @@ const getPortfolios = async () => {
 
   portfoliosLoading.value = false;
 };
+
+const portfolioValuesComparison = computed(() => {
+  const comparison = [];
+  const grouped = groupBy(portfolioValues.value, 'title');
+
+  for (let i in grouped) {
+    const val = round(
+      grouped[i].find((g) => g.type === 'Portfolio').value -
+        grouped[i].find((g) => g.type === 'Market').value,
+      2
+    );
+
+    comparison.push({
+      title: i,
+      value: `${Math.abs(val)}% ${val > 0 ? 'better' : 'worse'}`,
+    });
+  }
+
+  return comparison;
+});
 
 const accountHeaders = [
   {
@@ -515,32 +559,40 @@ watch(currentTab, (e) => {
   }
 });
 
-const getChartData = (data) => {
-  const labels = data.map((d) => d.title);
-
-  const colors = data.map((d) => d.color);
+const getBarChart = (data) => {
+  const marketData = data.filter((d) => d.type === 'Market');
+  const pomariumData = data.filter((d) => d.type === 'Portfolio');
 
   return {
-    labels,
+    labels: marketData.map((d) => d.title),
     datasets: [
       {
-        backgroundColor: colors[0]
-          ? colors
-          : labels.map(
-              (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
-            ),
-        data: data.map((d) => d.value),
+        label: 'Pomarium',
+        backgroundColor: 'blue',
+        data: pomariumData.map((d) => d.value),
+      },
+      {
+        label: 'Market',
+        backgroundColor: 'red',
+        data: marketData.map((d) => d.value),
       },
     ],
   };
 };
 
-const chartOptions = {
-  responsive: true,
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
+const getPieChart = (data) => {
+  const labels = data.map((d) => d.title);
+
+  return {
+    labels,
+    datasets: [
+      {
+        backgroundColor: labels.map(
+          (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
+        ),
+        data: data.map((d) => d.value),
+      },
+    ],
+  };
 };
 </script>
