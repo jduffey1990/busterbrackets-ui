@@ -45,12 +45,24 @@
           >Click "Create New Client" to begin to add clients here.
         </v-alert>
 
-        <v-data-table
-          v-else
-          :headers="clientHeaders"
-          :items="clients"
-          @click:row="goToClient"
-        ></v-data-table>
+        <v-data-table v-else :headers="headers" :items="clients">
+          <template v-slot:item.actions="{ item }">
+            <v-btn
+              color="primary"
+              class="ml-2"
+              size="small"
+              @click="goToClient(item)"
+              >View Client
+            </v-btn>
+            <v-btn
+              color="warning"
+              class="ml-2"
+              size="small"
+              @click="archiveClient(item)"
+              >Archive
+            </v-btn>
+          </template>
+        </v-data-table>
       </v-tabs-window-item>
 
       <v-tabs-window-item>
@@ -63,7 +75,7 @@
           affiliate link.
         </v-alert>
 
-        <v-data-table v-else :items="prospects" :headers="prospectHeaders">
+        <v-data-table v-else :items="prospects" :headers="headers">
           <template v-slot:item.actions="{ item }">
             <v-btn
               color="success"
@@ -156,7 +168,13 @@ const resetForm = () => {
   Object.assign(newClient, initialState);
 };
 
-const baseHeaders = [
+const headers = [
+  {
+    key: 'actions',
+    sortable: false,
+    width: 0,
+    nowrap: true,
+  },
   {
     title: 'Full Name',
     key: 'full_name',
@@ -179,7 +197,7 @@ const baseHeaders = [
 ];
 
 const clients = ref([]);
-const clientHeaders = [...baseHeaders];
+
 const getClients = async () => {
   const { data } = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
 
@@ -193,15 +211,6 @@ const getClients = async () => {
 
 getClients();
 
-const prospectHeaders = [
-  {
-    key: 'actions',
-    sortable: false,
-    width: 0,
-    nowrap: true,
-  },
-  ...baseHeaders,
-];
 const prospects = ref([]);
 const getProspects = async () => {
   const { data } = await $axios.get(`/api/advisors/${advisor_id}/prospects/`);
@@ -232,8 +241,8 @@ const createNewClient = async () => {
   }
 };
 
-const goToClient = (event, client) => {
-  router.push(`/clients/${client.item.id}#values`);
+const goToClient = ({ id }) => {
+  router.push(`/clients/${id}#values`);
 };
 
 const viewSurvey = () => {
@@ -270,6 +279,23 @@ const archiveProspect = async ({ id }) => {
       show({ message: 'Prospect archived!' });
     } catch (error) {
       show({ message: `Couldn't archive prospect`, error: true });
+    }
+  }
+};
+
+const archiveClient = async ({ id }) => {
+  if (confirm('Are you sure you want to archive this client?')) {
+    try {
+      await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {
+        is_archived: true,
+      });
+
+      getClients();
+      getProspects();
+
+      show({ message: 'Client archived!' });
+    } catch (error) {
+      show({ message: `Couldn't archive client`, error: true });
     }
   }
 };
