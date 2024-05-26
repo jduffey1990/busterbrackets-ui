@@ -151,10 +151,10 @@ const save = async () => {
         account
       );
 
-      goBack();
-
       show({ message: 'Account created!' });
     }
+
+    goBack();
   } catch (error) {
     show({ message: parseError(error), error: true });
   }
