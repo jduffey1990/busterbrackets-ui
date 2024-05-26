@@ -5,11 +5,22 @@
         <div class="text-h4 mb-2">
           {{ user.full_name || user.email }}'s Dashboard
         </div>
-        <div>
-          Survey Link: <a :href="surveyLink">{{ surveyLink }}</a>
-        </div>
       </div>
       <v-spacer></v-spacer>
+
+      <v-btn
+        @click="copyText()"
+        color="secondary"
+        text="Copy Survey Link"
+        class="ml-2"
+      ></v-btn>
+
+      <v-btn
+        @click="viewSurvey()"
+        color="info"
+        text="View Survey"
+        class="ml-2"
+      ></v-btn>
 
       <v-btn
         @click="openCreateNewClientModal = true"
@@ -229,8 +240,6 @@ const viewSurvey = () => {
   router.push(`/survey?advisor=${advisor_id}`);
 };
 
-const surveyLink = `${location.origin}/survey?advisor=${advisor_id}`;
-
 const acceptProspect = async ({ id }) => {
   if (confirm('Are you sure you want to accept this prospect as a client?')) {
     try {
@@ -263,5 +272,12 @@ const archiveProspect = async ({ id }) => {
       show({ message: `Couldn't archive prospect`, error: true });
     }
   }
+};
+
+const surveyLink = `/survey?advisor=${advisor_id}`;
+const copyText = () => {
+  navigator.clipboard.writeText(`${location.origin}${surveyLink}`);
+
+  show({ message: 'Link copied to clipboard!' });
 };
 </script>

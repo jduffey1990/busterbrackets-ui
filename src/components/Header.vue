@@ -30,7 +30,9 @@
           <v-menu>
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" class="text-disabled">
-                {{ user.full_name || user.email }} ({{ user.role }})
+                {{ user.full_name || user.email }} ({{
+                  user.role.replace('_', ' ')
+                }})
               </v-btn>
             </template>
             <v-list>

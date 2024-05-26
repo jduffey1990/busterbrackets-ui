@@ -1,10 +1,14 @@
 <template>
   <div class="text-h4 mb-4">Values Profile</div>
 
-  <!-- <v-alert title="View Only" type="info" v-if="isAdvisorOrGreater" class="mb-4"
-    >You are viewing this survey as an advisor. You won't be able to submit this
-    survey.
-  </v-alert> -->
+  <v-alert
+    title="Advisor Survey"
+    type="info"
+    v-if="isAdvisorSurvey"
+    class="mb-4"
+    >You are taking this survey as an advisor. You will need to approve this
+    prospect after the survey is submitted.
+  </v-alert>
 
   <div v-if="survey">
     <v-stepper v-model="currentStep">
@@ -188,12 +192,14 @@ const surveyResponses = [];
 
 const currentStep = ref();
 
+const isAdvisorSurvey = ref(advisor === advisor_id);
+
 onMounted(async () => {
   const { data: surveyData } = await $axios.get('/api/surveys/');
 
   let valuesProfile = [];
 
-  if (isLoggedIn) {
+  if (isLoggedIn && !isAdvisorSurvey.value) {
     valuesProfile = await getValuesProfile({
       advisor_id,
       user_id,
@@ -324,7 +330,7 @@ const createNewProspect = async () => {
 };
 
 const submitSurvey = () => {
-  if (isLoggedIn) {
+  if (isLoggedIn && !isAdvisorSurvey.value) {
     submit();
   } else {
     showEmailModal.value = true;
