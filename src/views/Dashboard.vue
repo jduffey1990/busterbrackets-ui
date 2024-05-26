@@ -256,6 +256,8 @@ const acceptProspect = async ({ id }) => {
         role: 'client',
       });
 
+      await $axios.post(`/api/advisors/${advisor_id}/clients/${id}/portfolio/`);
+
       getClients();
       getProspects();
 

@@ -82,9 +82,8 @@
           type="info"
           v-if="!allocations.length"
         >
-          No recommendations have been generated yet. If you already haven't
-          taken the survey, please do that before you can generate the
-          recommendation.
+          No recommendations have been generated yet. If you haven't taken the
+          survey, please do that before you can generate the recommendation.
         </v-alert>
 
         <div v-else>

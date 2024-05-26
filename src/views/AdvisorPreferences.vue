@@ -7,13 +7,20 @@
       </div>
       <v-spacer></v-spacer>
 
-      <v-btn
-        v-if="canEdit"
-        @click="saveFactorLevers()"
-        color="primary"
-        text="Save"
-        class="ml-2"
-      ></v-btn>
+      <template v-if="canEdit">
+        <v-btn
+          @click="router.push('/advisors')"
+          text="Back"
+          class="ml-2"
+        ></v-btn>
+
+        <v-btn
+          @click="saveFactorLevers()"
+          color="primary"
+          text="Save"
+          class="ml-2"
+        ></v-btn>
+      </template>
     </div>
 
     <v-alert type="info" title="Super Admin Only" v-if="canEdit" class="mb-4">
@@ -69,7 +76,8 @@ import { computed } from 'vue';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { inject } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+const router = useRouter();
 const { show } = inject('toast');
 
 const {
