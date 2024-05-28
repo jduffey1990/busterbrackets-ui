@@ -121,7 +121,7 @@ const getAdvisors = async () => {
   advisors.value = data;
 };
 
-if (user.firm) {
+if (user.value.firm) {
   getAdvisors();
 }
 
