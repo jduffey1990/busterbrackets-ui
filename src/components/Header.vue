@@ -6,7 +6,7 @@
           <router-link to="/" custom v-slot="{ navigate }">
             <v-img
               :width="200"
-              src="@/assets/pomarium-logo-text-side.png"
+              src="@/assets/pomarium.svg"
               @click="navigate"
               class="cursor-pointer"
             ></v-img>
