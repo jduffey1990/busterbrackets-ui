@@ -25,7 +25,7 @@
       <v-btn
         @click="openCreateNewClientModal = true"
         color="primary"
-        text="Create New Client"
+        text="Take Survey with Client"
         class="ml-2"
       ></v-btn>
     </div>
@@ -42,7 +42,7 @@
           type="info"
           v-if="!clients.length"
           class="my-4"
-          >Click "Create New Client" to begin to add clients here.
+          >Click "Take Survey with Client" to start adding clients to your list.
         </v-alert>
 
         <v-data-table v-else :headers="headers" :items="clients">
@@ -71,7 +71,7 @@
           type="info"
           v-if="!prospects.length"
           class="my-4"
-          >Click the Copy Survey Link to send your unique firm survey to
+          >Click the "Copy Survey Link" to send your unique firm survey to
           referrals or use to market and build a list of prospects.
         </v-alert>
 
@@ -228,15 +228,15 @@ getProspects();
 
 const createNewClient = async () => {
   try {
-    await $axios.post(`/api/advisors/${advisor_id}/clients/`, newClient);
+    const {
+      data: { id },
+    } = await $axios.post(`/api/advisors/${advisor_id}/clients/`, newClient);
 
     openCreateNewClientModal.value = false;
 
-    getClients();
-
-    resetForm();
-
     show({ message: 'Client created!' });
+
+    router.push(`/survey?user_id=${id}`);
   } catch (error) {
     show({ message: parseError(error), error: true });
   }
@@ -244,10 +244,6 @@ const createNewClient = async () => {
 
 const goToClient = ({ id }) => {
   router.push(`/clients/${id}#values`);
-};
-
-const viewSurvey = () => {
-  router.push(`/survey?advisor=${advisor_id}`);
 };
 
 const acceptProspect = async ({ id }) => {
@@ -307,6 +303,14 @@ const surveyLink = `/survey?advisor=${advisor_id}`;
 const copyText = () => {
   navigator.clipboard.writeText(`${location.origin}${surveyLink}`);
 
-  show({ message: 'Link copied to clipboard!' });
+  show({
+    message: `<div>Link copied to clipboard!</div>
+    <br/>
+    <div>NOTE: Not mobile friendly yet but will be shortly</div>`,
+  });
+};
+
+const viewSurvey = () => {
+  router.push(surveyLink);
 };
 </script>

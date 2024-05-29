@@ -143,9 +143,7 @@
                   <tbody>
                     <tr v-for="p in portfolioSectors">
                       <td class="text-no-wrap">{{ p.title }}</td>
-                      <td class="w-100">
-                        {{ p.value }}
-                      </td>
+                      <td class="w-100">{{ p.value }}%</td>
                     </tr>
                   </tbody>
                 </v-table>
@@ -376,7 +374,7 @@ const getPortfolios = async () => {
     portfolioSectors.value = Object.keys(sectorsPortfolio)
       .map((title) => ({
         title,
-        value: round(sectorsPortfolio[title], 2),
+        value: round(sectorsPortfolio[title]),
       }))
       .sort((a, b) => b.value - a.value);
 
@@ -399,9 +397,10 @@ const getPortfolios = async () => {
       .map((p) => ({
         company: pomarium_names[p],
         ticker: p,
-        allocation: pomarium[p],
+        allocation: `${pomarium[p]}%`,
+        value: pomarium[p],
       }))
-      .sort((a, b) => b.allocation - a.allocation);
+      .sort((a, b) => b.value - a.value);
   } catch (error) {}
 
   hasRequestedPortfolios.value = true;
@@ -420,13 +419,16 @@ const portfolioValuesComparison = computed(() => {
       2
     );
 
+    const roundedAbsValue = round(Math.abs(val));
+
     comparison.push({
       title: i,
-      value: `${Math.abs(val)}% ${val > 0 ? 'better' : 'worse'}`,
+      value: `${roundedAbsValue}% ${val > 0 ? 'better' : 'worse'}`,
+      roundedAbsValue,
     });
   }
 
-  return comparison;
+  return comparison.sort((a, b) => b.roundedAbsValue - a.roundedAbsValue);
 });
 
 const accountHeaders = [
@@ -472,12 +474,12 @@ const accountHeaders = [
     width: 0,
     nowrap: true,
   },
-  {
-    title: 'Fractional',
-    key: 'fractional',
-    width: 0,
-    nowrap: true,
-  },
+  // {
+  //   title: 'Fractional',
+  //   key: 'fractional',
+  //   width: 0,
+  //   nowrap: true,
+  // },
   {
     title: 'Risk Tolerance',
     key: 'risk_tolerance',
@@ -497,7 +499,7 @@ const getAccounts = async () => {
     accounts.value = data.map((d) => ({
       ...d,
       value: currencyFormat(d.value),
-      fractional: d.fractional ? 'Yes' : 'No',
+      // fractional: d.fractional ? 'Yes' : 'No',
       active: d.active ? 'Yes' : 'No',
     }));
 

@@ -55,14 +55,14 @@
           maxlength="4"
         ></v-text-field>
 
-        <v-select
+        <!-- <v-select
           label="Fractional"
           class="mb-4"
           v-model="account.fractional"
           :items="yesNoBooleans"
           item-title="title"
           item-value="value"
-        ></v-select>
+        ></v-select> -->
 
         <v-select
           label="Active"

@@ -176,7 +176,6 @@ const router = useRouter();
 const {
   user: { id: advisor_id },
   getValuesProfile,
-  isAdvisorOrGreater,
   isLoggedIn,
 } = useUserStore();
 

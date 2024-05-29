@@ -52,8 +52,8 @@
                 <v-list-item-title>Settings</v-list-item-title>
               </v-list-item>
 
-              <v-list-item link :to="{ name: 'AdvisorPreferences' }">
-                <v-list-item-title>Advisor Preferences </v-list-item-title>
+              <v-list-item link :to="{ name: 'InvestmentPreferences' }">
+                <v-list-item-title>Investment Preferences</v-list-item-title>
               </v-list-item>
 
               <v-list-item @click="logout()">

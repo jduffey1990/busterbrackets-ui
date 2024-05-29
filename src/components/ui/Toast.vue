@@ -1,7 +1,7 @@
 <template>
   <slot />
 
-  <v-snackbar v-model="show" :color="color" location="top" :timeout="3000">
+  <v-snackbar v-model="show" :color="color" location="top" :timeout="5000">
     <template #actions>
       <v-btn variant="text" @click="show = false">
         <v-icon icon="mdi-close-thick"></v-icon

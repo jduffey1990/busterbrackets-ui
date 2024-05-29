@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/views/Login.vue';
 import Survey from '@/views/Survey.vue';
 import Dashboard from '@/views/Dashboard.vue';
-import AdvisorPreferences from '@/views/AdvisorPreferences.vue';
+import InvestmentPreferences from '@/views/InvestmentPreferences.vue';
 
 import Client from '@/views/Client.vue';
 import Home from '@/views/Home.vue';
@@ -54,8 +54,8 @@ const router = createRouter({
         },
         {
           path: ':user_id/preferences',
-          name: 'AdminAdvisorPreferences',
-          component: AdvisorPreferences,
+          name: 'AdminInvestmentPreferences',
+          component: InvestmentPreferences,
         },
       ],
 
@@ -94,9 +94,9 @@ const router = createRouter({
       },
     },
     {
-      path: '/advisor-preferences',
-      name: 'AdvisorPreferences',
-      component: AdvisorPreferences,
+      path: '/investment-preferences',
+      name: 'InvestmentPreferences',
+      component: InvestmentPreferences,
       beforeEnter: (to, from, next) => {
         const { isAdvisorOrGreater } = useUserStore();
 
