@@ -9,7 +9,6 @@ const advisorPermissions = [...firmAdminPermissions, Role.ADVISOR];
 export const useUserStore = defineStore('user', {
   state: () => ({
     user: {},
-    valuesProfile: [],
   }),
   getters: {
     isSuper(state) {
@@ -26,29 +25,23 @@ export const useUserStore = defineStore('user', {
     },
   },
   actions: {
-    async getValuesProfile({ advisor_id, user_id, dontRefresh }) {
-      if (!(this.valuesProfile.length && dontRefresh)) {
-        const { data } = await this.$axios.get(
-          `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
+    async getValuesProfile({ advisor_id, user_id }) {
+      const { data } = await this.$axios.get(
+        `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
+      );
+
+      return data
+        .map((d) => ({
+          ...d,
+          value: JSON.parse(d.value),
+        }))
+        .filter((d) => d.question.value !== false)
+        .sort(
+          (a, b) =>
+            a.sections.position - b.sections.position ||
+            a.question.response_type.localeCompare(b.question.response_type) ||
+            a.question.text.localeCompare(b.question.text)
         );
-
-        this.valuesProfile = data
-          .map((d) => ({
-            ...d,
-            value: JSON.parse(d.value),
-          }))
-          .filter((d) => d.question.value !== false)
-          .sort(
-            (a, b) =>
-              a.sections.position - b.sections.position ||
-              a.question.response_type.localeCompare(
-                b.question.response_type
-              ) ||
-              a.question.text.localeCompare(b.question.text)
-          );
-      }
-
-      return this.valuesProfile;
     },
     async getSession() {
       const { data } = await this.$axios('/api/users/session/');

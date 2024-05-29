@@ -564,11 +564,13 @@ onMounted(async () => {
 
   currentTab.value = tab.value.findIndex((t) => t.href === hash);
 
+  const vp = await getValuesProfile({
+    advisor_id,
+    user_id,
+  });
+
   valuesProfile.value = groupBy(
-    await getValuesProfile({
-      advisor_id,
-      user_id,
-    }),
+    vp.filter((v) => v.value !== false),
     'sections.name'
   );
 

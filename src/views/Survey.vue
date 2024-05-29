@@ -203,7 +203,6 @@ onMounted(async () => {
     valuesProfile = await getValuesProfile({
       advisor_id,
       user_id,
-      dontRefresh: true,
     });
   }
 
