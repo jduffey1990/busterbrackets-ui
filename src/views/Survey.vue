@@ -10,6 +10,10 @@
     prospect after the survey is submitted.
   </v-alert>
 
+  <v-alert type="warning" v-if="showMultiSelectError" class="mb-4"
+    >Please do not include and exclude the same company in your selections.
+  </v-alert>
+
   <div v-if="survey">
     <v-stepper v-model="currentStep">
       <template v-slot:default="{ prev, next }">
@@ -113,7 +117,7 @@
             <v-btn
               color="primary"
               @click="submitSurvey()"
-              :disabled="false"
+              :disabled="showMultiSelectError"
               variant="flat"
               >Submit
             </v-btn>
@@ -247,6 +251,7 @@ const getCompanies = async () => {
 getCompanies();
 
 const touched = ref(false);
+const showMultiSelectError = ref(false);
 const updateResponse = (q, setInitial) => {
   const position = surveyResponses.findIndex(
     (s) => s.question.id === q.question.id
@@ -260,6 +265,16 @@ const updateResponse = (q, setInitial) => {
 
   if (!setInitial) {
     touched.value = true;
+  }
+
+  const multiSelect = surveyResponses
+    .filter((r) => r.question.response_type === 'multi_select')
+    .map((r) => r.question.default_value);
+
+  if (multiSelect.length > 1) {
+    showMultiSelectError.value = !!multiSelect.reduce(
+      (p, c) => p.filter((e) => c.includes(e)).length
+    );
   }
 };
 
