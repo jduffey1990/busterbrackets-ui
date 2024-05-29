@@ -89,8 +89,9 @@ import { ref } from 'vue';
 import { onMounted } from 'vue';
 import { inject } from 'vue';
 import { reactive } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { parseError } from '@/utils/error';
+import { isEqual } from 'lodash';
 
 const $axios = inject('$axios');
 
@@ -119,7 +120,7 @@ const yesNoBooleans = [
   { value: true, title: 'Yes' },
 ];
 
-const account = reactive({
+const initialState = {
   name: undefined,
   active: true,
   account_type: undefined,
@@ -128,6 +129,20 @@ const account = reactive({
   fractional: false,
   risk_tolerance: undefined,
   last_four: undefined,
+};
+
+const account = reactive({ ...initialState });
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!isEqual(initialState, account)) {
+    if (confirm('Do you really want to leave? you have unsaved changes!')) {
+      next();
+    }
+
+    return;
+  }
+
+  next();
 });
 
 const {

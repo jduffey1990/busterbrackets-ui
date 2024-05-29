@@ -168,7 +168,7 @@ import { useUserStore } from '@/store/user';
 import { reactive } from 'vue';
 import { onMounted } from 'vue';
 import { ref, inject } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { parseError } from '@/utils/error';
 
 const router = useRouter();
@@ -221,7 +221,7 @@ onMounted(async () => {
           if (q.question.default_value === undefined) {
             q.question.default_value = 0;
 
-            updateResponse(q);
+            updateResponse(q, true);
           }
         }
       }
@@ -246,7 +246,8 @@ const getCompanies = async () => {
 
 getCompanies();
 
-const updateResponse = (q) => {
+const touched = ref(false);
+const updateResponse = (q, setInitial) => {
   const position = surveyResponses.findIndex(
     (s) => s.question.id === q.question.id
   );
@@ -256,7 +257,31 @@ const updateResponse = (q) => {
   }
 
   surveyResponses.push(q);
+
+  if (!setInitial) {
+    touched.value = true;
+  }
 };
+
+addEventListener('beforeunload', (event) => {
+  if (touched.value) {
+    if (!confirm('Do you really want to leave? you have unsaved changes!')) {
+      event.preventDefault();
+    }
+  }
+});
+
+onBeforeRouteLeave((to, from, next) => {
+  if (touched.value) {
+    if (confirm('Do you really want to leave? you have unsaved changes!')) {
+      next();
+    }
+
+    return;
+  }
+
+  next();
+});
 
 const submit = async (prospect_id) => {
   try {
@@ -281,7 +306,7 @@ const submit = async (prospect_id) => {
 
     show({ message: 'Survey saved!' });
 
-    router.push(prospect_id ? '/' : `/clients/${user_id}#values`);
+    router.push(prospect_id ? '/?success=true' : `/clients/${user_id}#values`);
   } catch (error) {
     show({ message: parseError(error), error: true });
   }
@@ -313,17 +338,29 @@ const resetForm = () => {
 
 resetForm();
 
+let newProspectId;
 const createNewProspect = async () => {
   try {
-    const {
-      data: { id },
-    } = await $axios.post('/api/prospects/', {
-      ...newProspect,
-      advisor,
-    });
+    if (!newProspectId) {
+      const {
+        data: { id },
+      } = await $axios.post('/api/prospects/', {
+        ...newProspect,
+        advisor,
+      });
 
-    await submit(id);
+      newProspectId = id;
+    }
+
+    await submit(newProspectId);
   } catch (error) {
+    if (error.response.status === 409) {
+      return show({
+        message: 'A user with that email already exists',
+        error: true,
+      });
+    }
+
     show({ message: parseError(error), error: true });
   }
 };
