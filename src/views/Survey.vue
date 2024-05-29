@@ -126,7 +126,7 @@
       </template>
     </v-stepper>
 
-    <v-dialog max-width="500" v-model="showEmailModal">
+    <v-dialog max-width="500" v-model="showNewProspectModal">
       <v-card title="Register">
         <v-card-text>
           <v-text-field
@@ -152,7 +152,7 @@
           <v-btn
             text="Cancel"
             @click="
-              showEmailModal = false;
+              showNewProspectModal = false;
               resetForm();
             "
           ></v-btn>
@@ -279,7 +279,7 @@ const updateResponse = (q, setInitial) => {
 };
 
 addEventListener('beforeunload', (event) => {
-  if (touched.value) {
+  if (touched.value && !hasSubmitted.value) {
     if (!confirm('Do you really want to leave? you have unsaved changes!')) {
       event.preventDefault();
     }
@@ -287,7 +287,7 @@ addEventListener('beforeunload', (event) => {
 });
 
 onBeforeRouteLeave((to, from, next) => {
-  if (touched.value) {
+  if (touched.value && !hasSubmitted.value) {
     if (confirm('Do you really want to leave? you have unsaved changes!')) {
       next();
     }
@@ -298,6 +298,7 @@ onBeforeRouteLeave((to, from, next) => {
   next();
 });
 
+const hasSubmitted = ref(false);
 const submit = async (prospect_id) => {
   try {
     // if saving for a client
@@ -321,7 +322,13 @@ const submit = async (prospect_id) => {
 
     show({ message: 'Survey saved!' });
 
-    router.push(prospect_id ? '/?success=true' : `/clients/${user_id}#values`);
+    hasSubmitted.value = true;
+
+    setTimeout(() => {
+      router.push(
+        prospect_id ? '/?success=true' : `/clients/${user_id}#values`
+      );
+    });
   } catch (error) {
     show({ message: parseError(error), error: true });
   }
@@ -337,7 +344,7 @@ const getTicks = (ticks) => {
   return tickObj;
 };
 
-const showEmailModal = ref(false);
+const showNewProspectModal = ref(false);
 
 const initialState = {
   first_name: undefined,
@@ -384,7 +391,7 @@ const submitSurvey = () => {
   if (isLoggedIn && !isAdvisorSurvey.value) {
     submit();
   } else {
-    showEmailModal.value = true;
+    showNewProspectModal.value = true;
   }
 };
 </script>
