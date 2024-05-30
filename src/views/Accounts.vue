@@ -73,6 +73,9 @@
           item-value="value"
         ></v-select>
 
+        <pre>{{ account }}</pre>
+        <pre>{{ accountCopy }}</pre>
+
         <div class="d-flex justify-end mb-4">
           <v-btn class="ml-2" text="Back" @click="goBack()"></v-btn>
 
@@ -91,7 +94,7 @@ import { inject } from 'vue';
 import { reactive } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { parseError } from '@/utils/error';
-import { isEqual } from 'lodash';
+import { isEqual, cloneDeep } from 'lodash';
 
 const $axios = inject('$axios');
 
@@ -120,31 +123,6 @@ const yesNoBooleans = [
   { value: true, title: 'Yes' },
 ];
 
-const initialState = {
-  name: undefined,
-  active: true,
-  account_type: undefined,
-  custodian: undefined,
-  value: undefined,
-  fractional: false,
-  risk_tolerance: undefined,
-  last_four: undefined,
-};
-
-const account = reactive({ ...initialState });
-
-onBeforeRouteLeave((to, from, next) => {
-  if (!isEqual(initialState, account)) {
-    if (confirm('Do you really want to leave? you have unsaved changes!')) {
-      next();
-    }
-
-    return;
-  }
-
-  next();
-});
-
 const {
   user: { id: advisor_id },
 } = useUserStore();
@@ -169,6 +147,8 @@ const save = async () => {
       show({ message: 'Account created!' });
     }
 
+    setAccountData(account);
+
     goBack();
   } catch (error) {
     show({ message: parseError(error), error: true });
@@ -181,13 +161,50 @@ const goBack = () => {
 
 const accountTypes = ref([]);
 onMounted(async () => {
-  const { data } = await $axios.get('/api/accounts/types/');
-  accountTypes.value = data;
+  const { data: accountTypeData } = await $axios.get('/api/accounts/types/');
+  accountTypes.value = accountTypeData;
+
+  let initialAccountData;
 
   if (account_id) {
-    const { data } = await $axios.get(`/api/accounts/${account_id}/`);
+    const { data: accountData } = await $axios.get(
+      `/api/accounts/${account_id}/`
+    );
 
-    Object.assign(account, data);
+    initialAccountData = accountData;
   }
+
+  setAccountData(initialAccountData);
+});
+
+const initialState = {
+  name: undefined,
+  active: true,
+  account_type: undefined,
+  custodian: undefined,
+  value: undefined,
+  fractional: false,
+  risk_tolerance: undefined,
+  last_four: undefined,
+};
+
+const account = reactive({});
+let accountCopy = {};
+
+const setAccountData = (data) => {
+  Object.assign(account, data || initialState);
+  accountCopy = cloneDeep(account);
+};
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!isEqual(account, accountCopy)) {
+    if (confirm('Do you really want to leave? you have unsaved changes!')) {
+      next();
+    }
+
+    return;
+  }
+
+  next();
 });
 </script>

@@ -1,6 +1,4 @@
 <template>
-  <!-- <link rel="icon" type="image/x-icon" href="@/assets/favicon.ico" /> -->
-
   <v-app>
     <Header />
 
