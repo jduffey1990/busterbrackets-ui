@@ -73,9 +73,6 @@
           item-value="value"
         ></v-select>
 
-        <pre>{{ account }}</pre>
-        <pre>{{ accountCopy }}</pre>
-
         <div class="d-flex justify-end mb-4">
           <v-btn class="ml-2" text="Back" @click="goBack()"></v-btn>
 
