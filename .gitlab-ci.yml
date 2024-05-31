@@ -77,7 +77,7 @@ deploy-beta:
     - gcloud config set project $GOOGLE_CLOUD_BETA_PROJECT
     - gcloud run deploy ui --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
 
-# ---- firebase ----
+# ---- firebase (going away) ----
 
 dev-firebase-deploy:
   image: node:lts-alpine3.19
