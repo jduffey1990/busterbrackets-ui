@@ -3,8 +3,21 @@
 
   <v-data-table :items="advisors" :headers="headers">
     <template v-slot:item.actions="{ item }">
-      <v-btn color="primary" @click="editPreferences(item)" size="small"
+      <v-btn
+        color="primary"
+        @click="editPreferences(item)"
+        size="small"
+        class="ml-2"
         >Edit Preferences
+      </v-btn>
+
+      <v-btn
+        color="info"
+        @click="copyText(item)"
+        size="small"
+        v-if="item.reset_password_link"
+        class="ml-2"
+        >Get Reset Password URL
       </v-btn>
     </template>
   </v-data-table>
@@ -17,6 +30,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const $axios = inject('$axios');
+const { show } = inject('toast');
 
 const headers = [
   {
@@ -53,5 +67,13 @@ getAdvisors();
 
 const editPreferences = (item) => {
   router.push(`/advisors/${item.id}/preferences`);
+};
+
+const copyText = (item) => {
+  navigator.clipboard.writeText(item.reset_password_link);
+
+  show({
+    message: `Link copied to clipboard!`,
+  });
 };
 </script>
