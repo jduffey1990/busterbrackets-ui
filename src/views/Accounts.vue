@@ -180,7 +180,7 @@ const initialState = {
   account_type: undefined,
   custodian: undefined,
   value: undefined,
-  fractional: false,
+  //fractional: false,
   risk_tolerance: undefined,
   last_four: undefined,
 };
