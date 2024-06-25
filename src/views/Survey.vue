@@ -2,69 +2,69 @@
   <div class="text-h4 mb-4">Values Profile</div>
 
   <v-alert
-    title="Advisor Survey"
-    type="info"
-    v-if="isAdvisorSurvey"
-    class="mb-4"
-    >You are taking this survey as an advisor. You will need to approve this
+      title="Advisor Survey"
+      type="info"
+      v-if="isAdvisorSurvey"
+      class="mb-4"
+  >You are taking this survey as an advisor. You will need to approve this
     prospect after the survey is submitted.
   </v-alert>
 
   <v-alert type="warning" v-if="showMultiSelectError" class="mb-4"
-    >Please do not include and exclude the same company in your selections.
+  >Please do not include and exclude the same company in your selections.
   </v-alert>
 
-  <div v-if="survey">
+  <div v-if="survey" class="stepper-container">
     <v-stepper v-model="currentStep">
       <template v-slot:default="{ prev, next }">
         <v-stepper-header>
           <template
-            v-for="(s, i) in survey.survey_sections.map(({ name }) => name)"
+              v-for="(s, i) in survey.survey_sections.map(({ name }) => name)"
           >
             <v-stepper-item
-              :value="i + 1"
-              :title="s"
-              editable
-              :edit-icon="null"
+                :value="i + 1"
+                :title="s"
+                editable
+                :edit-icon="null"
             ></v-stepper-item>
           </template>
         </v-stepper-header>
 
-        <v-stepper-window>
+        <v-stepper-window class="align-center justify-center">
           <v-stepper-window-item
-            v-for="(section, i) in survey.survey_sections"
-            :value="i + 1"
+              v-for="(section, i) in survey.survey_sections"
+              :value="i + 1"
           >
-            <v-container>
+            <v-container fluid>
               <div
-                class="pb-6"
-                v-if="section.description"
-                v-html="section.description"
+                  class="pb-6"
+                  v-if="section.description"
+                  v-html="section.description"
               ></div>
 
-              <v-row>
+              <v-row class="align-content-center justify-center">
                 <v-col
-                  v-for="group in section.survey_groups"
-                  :cols="group.column_width"
+                    v-for="group in section.survey_groups"
+                    :cols="group.column_width"
                 >
-                  <div class="text-h6">
+                  <div class="text-h6 align-center">
                     {{ group.name }}
                   </div>
 
                   <div v-for="q in group.survey_questions">
                     <v-autocomplete
-                      v-if="q.question.response_type === 'multi_select'"
-                      class="pb-6"
-                      v-model="q.question.default_value"
-                      :items="companies"
-                      item-title="name"
-                      item-value="ticker"
-                      :label="q.question.text"
-                      chips
-                      closable-chips
-                      multiple
-                      clear-on-select
-                      @update:model-value="updateResponse(q)"
+                        v-if="q.question.response_type === 'multi_select'"
+                        class="pb-6"
+                        v-model="q.question.default_value"
+                        :items="companies"
+                        item-title="name"
+                        item-value="ticker"
+                        :label="q.question.text"
+                        chips
+                        closable-chips
+                        multiple
+                        clear-on-select
+                        @update:model-value="updateResponse(q)"
                     >
                       <template v-slot:chip="{ props, item }">
                         <v-chip v-bind="props" :text="item.raw.name"></v-chip>
@@ -72,38 +72,40 @@
 
                       <template v-slot:item="{ props, item }">
                         <v-list-item
-                          v-bind="props"
-                          :title="item.raw.name"
+                            v-bind="props"
+                            :title="item.raw.name"
                         ></v-list-item>
                       </template>
                     </v-autocomplete>
 
                     <v-checkbox
-                      v-if="q.question.response_type === 'checkbox'"
-                      v-model="q.question.default_value"
-                      @input="updateResponse(q)"
-                      :label="q.question.text"
+                        v-if="q.question.response_type === 'checkbox'"
+                        v-model="q.question.default_value"
+                        @input="updateResponse(q)"
+                        :label="q.question.text"
                     >
                     </v-checkbox>
 
                     <div
-                      v-if="q.question.response_type === 'slider'"
-                      class="pb-12"
+                        v-if="q.question.response_type === 'slider'"
+                        class="pb-8 justify-center"
                     >
                       <div class="text-h5">
                         {{ q.question.text }}
                       </div>
 
                       <v-slider
-                        v-model="q.question.default_value"
-                        :min="0"
-                        :max="q.question.slider_ticks.length - 1"
-                        :step="1.0"
-                        :ticks="getTicks(q.question.slider_ticks)"
-                        @end="updateResponse(q)"
-                        show-ticks="always"
-                        color="primary"
+                          v-model="q.question.default_value"
+                          :min="0"
+                          :max="q.question.slider_ticks.length - 1"
+                          :step="1.0"
+                          :ticks="getTicks(q.question.slider_ticks)"
+                          @end="updateResponse(q)"
+                          show-ticks="always"
+                          color="primary"
+                          max-width="800px"
                       ></v-slider>
+
                     </div>
                   </div>
                 </v-col>
@@ -115,11 +117,11 @@
         <v-stepper-actions @click:next="next" @click:prev="prev">
           <template #next v-if="currentStep === survey.survey_sections.length">
             <v-btn
-              color="primary"
-              @click="submitSurvey()"
-              :disabled="showMultiSelectError"
-              variant="flat"
-              >Submit
+                color="primary"
+                @click="submitSurvey()"
+                :disabled="showMultiSelectError"
+                variant="flat"
+            >Submit
             </v-btn>
           </template>
         </v-stepper-actions>
@@ -130,19 +132,19 @@
       <v-card title="Register">
         <v-card-text>
           <v-text-field
-            v-model="newProspect.first_name"
-            label="First name"
+              v-model="newProspect.first_name"
+              label="First name"
           ></v-text-field>
-          <br />
+          <br/>
           <v-text-field
-            v-model="newProspect.last_name"
-            label="Last name"
+              v-model="newProspect.last_name"
+              label="Last name"
           ></v-text-field>
-          <br />
+          <br/>
           <v-text-field
-            label="Email"
-            type="email"
-            v-model="newProspect.email"
+              label="Email"
+              type="email"
+              v-model="newProspect.email"
           ></v-text-field>
         </v-card-text>
 
@@ -150,16 +152,16 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            text="Cancel"
-            @click="
+              text="Cancel"
+              @click="
               showNewProspectModal = false;
               resetForm();
             "
           ></v-btn>
           <v-btn
-            text="Save"
-            color="primary"
-            @click="createNewProspect()"
+              text="Save"
+              color="primary"
+              @click="createNewProspect()"
           ></v-btn>
         </v-card-actions>
       </v-card>
@@ -168,27 +170,27 @@
 </template>
 
 <script setup>
-import { useUserStore } from '@/store/user';
-import { reactive } from 'vue';
-import { onMounted } from 'vue';
-import { ref, inject } from 'vue';
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
-import { parseError } from '@/utils/error';
+import {useUserStore} from '@/store/user';
+import {reactive} from 'vue';
+import {onMounted} from 'vue';
+import {ref, inject} from 'vue';
+import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
+import {parseError} from '@/utils/error';
 
 const router = useRouter();
 
 const {
-  user: { id: advisor_id },
+  user: {id: advisor_id},
   getValuesProfile,
   isLoggedIn,
 } = useUserStore();
 
 const {
-  query: { user_id, advisor },
+  query: {user_id, advisor},
 } = useRoute();
 
 const $axios = inject('$axios');
-const { show } = inject('toast');
+const {show} = inject('toast');
 
 const survey = ref();
 
@@ -199,7 +201,7 @@ const currentStep = ref();
 const isAdvisorSurvey = ref(advisor === advisor_id);
 
 onMounted(async () => {
-  const { data: surveyData } = await $axios.get('/api/surveys/');
+  const {data: surveyData} = await $axios.get('/api/surveys/');
 
   let valuesProfile = [];
 
@@ -214,7 +216,7 @@ onMounted(async () => {
     for (let group of section.survey_groups) {
       for (let q of group.survey_questions) {
         const foundQuestion = valuesProfile.find(
-          (vp) => vp.question.id === q.question.id
+            (vp) => vp.question.id === q.question.id
         );
 
         if (foundQuestion) {
@@ -239,13 +241,14 @@ const companies = ref([]);
 
 const getCompanies = async () => {
   try {
-    const { data } = await $axios.get('/api/companies/');
+    const {data} = await $axios.get('/api/companies/');
 
     companies.value = data.map((s) => ({
       ...s,
       name: `${s.name} (${s.ticker})`,
     }));
-  } catch (error) {}
+  } catch (error) {
+  }
 };
 
 getCompanies();
@@ -254,7 +257,7 @@ const touched = ref(false);
 const showMultiSelectError = ref(false);
 const updateResponse = (q, setInitial) => {
   const position = surveyResponses.findIndex(
-    (s) => s.question.id === q.question.id
+      (s) => s.question.id === q.question.id
   );
 
   if (position > -1) {
@@ -268,12 +271,12 @@ const updateResponse = (q, setInitial) => {
   }
 
   const multiSelect = surveyResponses
-    .filter((r) => r.question.response_type === 'multi_select')
-    .map((r) => r.question.default_value);
+      .filter((r) => r.question.response_type === 'multi_select')
+      .map((r) => r.question.default_value);
 
   if (multiSelect.length > 1) {
     showMultiSelectError.value = !!multiSelect.reduce(
-      (p, c) => p.filter((e) => c.includes(e)).length
+        (p, c) => p.filter((e) => c.includes(e)).length
     );
   }
 };
@@ -303,34 +306,34 @@ const submit = async (prospect_id) => {
   try {
     // if saving for a client
     const url = prospect_id
-      ? `/api/prospects/${prospect_id}/responses/`
-      : `/api/advisors/${advisor_id}/clients/${user_id}/responses/`;
+        ? `/api/prospects/${prospect_id}/responses/`
+        : `/api/advisors/${advisor_id}/clients/${user_id}/responses/`;
 
     await $axios.post(
-      url,
-      surveyResponses.map((sr) => ({
-        ...sr.question,
-        default_value: JSON.stringify(sr.question.default_value),
-      }))
+        url,
+        surveyResponses.map((sr) => ({
+          ...sr.question,
+          default_value: JSON.stringify(sr.question.default_value),
+        }))
     );
 
     if (!prospect_id) {
       await $axios.post(
-        `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
+          `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
       );
     }
 
-    show({ message: 'Survey saved!' });
+    show({message: 'Survey saved!'});
 
     hasSubmitted.value = true;
 
     setTimeout(() => {
       router.push(
-        prospect_id ? '/?success=true' : `/clients/${user_id}#values`
+          prospect_id ? '/?success=true' : `/clients/${user_id}#values`
       );
     });
   } catch (error) {
-    show({ message: parseError(error), error: true });
+    show({message: parseError(error), error: true});
   }
 };
 
@@ -352,7 +355,7 @@ const initialState = {
   email: undefined,
 };
 
-const newProspect = reactive({ ...initialState });
+const newProspect = reactive({...initialState});
 
 const resetForm = () => {
   Object.assign(newProspect, initialState);
@@ -365,7 +368,7 @@ const createNewProspect = async () => {
   try {
     if (!newProspectId) {
       const {
-        data: { id },
+        data: {id},
       } = await $axios.post('/api/prospects/', {
         ...newProspect,
         advisor,
@@ -383,7 +386,7 @@ const createNewProspect = async () => {
       });
     }
 
-    show({ message: parseError(error), error: true });
+    show({message: parseError(error), error: true});
   }
 };
 
@@ -395,3 +398,20 @@ const submitSurvey = () => {
   }
 };
 </script>
+
+<style scoped>
+
+.stepper-container {
+  max-width: 868px; /* Set your desired max-width here */
+  margin: 0 auto; /* Center the stepper */
+}
+
+@media (max-width: 600px) {
+  .stepper-container {
+    max-width: 100%; /* Ensure it adjusts on smaller screens */
+    padding: 0 10px; /* Add some padding if needed */
+  }
+}
+
+
+</style>
