@@ -9,24 +9,24 @@
       <v-spacer></v-spacer>
 
       <v-btn
-        @click="copyText()"
-        color="secondary"
-        text="Copy Survey Link"
-        class="ml-2"
+          @click="copyText()"
+          color="secondary"
+          text="Copy Survey Link"
+          class="ml-2"
       ></v-btn>
 
       <v-btn
-        @click="viewSurvey()"
-        color="info"
-        text="View Survey"
-        class="ml-2"
+          @click="viewSurvey()"
+          color="info"
+          text="View Survey"
+          class="ml-2"
       ></v-btn>
 
       <v-btn
-        @click="openCreateNewClientModal = true"
-        color="primary"
-        text="Take Survey with Client"
-        class="ml-2"
+          @click="openCreateNewClientModal = true"
+          color="primary"
+          text="Take Survey with Client"
+          class="ml-2"
       ></v-btn>
     </div>
 
@@ -38,62 +38,72 @@
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item>
         <v-alert
-          title="No clients yet..."
-          type="info"
-          v-if="!clients.length"
-          class="my-4"
-          >Click "Take Survey with Client" to start adding clients to your list.
+            title="No clients yet..."
+            type="info"
+            v-if="!clients.length"
+            class="my-4"
+        >Click "Take Survey with Client" to start adding clients to your list.
         </v-alert>
 
-        <v-data-table v-else :headers="headers" :items="clients">
-          <template v-slot:item.actions="{ item }">
-            <v-btn
-              color="primary"
-              class="ml-2"
-              size="small"
-              @click="goToClient(item)"
+        <div v-else class="mt-10 px-10">
+          <v-btn color="primary" @click="toggleClients" class="mb-4">
+            {{ !displayState.showClients ? `${displayState.hidden}` : `${displayState.shown}` }}
+          </v-btn>
+          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clients">
+            <template v-slot:item.actions="{ item }">
+              <v-btn
+                  color="primary"
+                  class="ml-2"
+                  size="small"
+                  @click="goToClient(item)"
               >View Client
-            </v-btn>
-            <v-btn
-              color="warning"
-              class="ml-2"
-              size="small"
-              @click="archiveClient(item)"
+              </v-btn>
+              <v-btn
+                  color="warning"
+                  class="ml-2"
+                  size="small"
+                  @click="archiveClient(item)"
               >Archive
-            </v-btn>
-          </template>
-        </v-data-table>
+              </v-btn>
+            </template>
+          </v-data-table>
+        </div>
       </v-tabs-window-item>
 
       <v-tabs-window-item>
         <v-alert
-          title="No prospects yet..."
-          type="info"
-          v-if="!prospects.length"
-          class="my-4"
-          >Click the "Copy Survey Link" to send your unique firm survey to
+            title="No prospects yet..."
+            type="info"
+            v-if="!prospects.length"
+            class="my-4"
+        >Click the "Copy Survey Link" to send your unique firm survey to
           referrals or use to market and build a list of prospects.
         </v-alert>
 
-        <v-data-table v-else :items="prospects" :headers="headers">
-          <template v-slot:item.actions="{ item }">
-            <v-btn
-              color="secondary"
-              class="ml-2"
-              size="small"
-              @click="acceptProspect(item)"
+        <div v-else class="mt-10 px-10">
+          <v-btn color="primary" @click="toggleProspects" class="mb-4">
+            {{ !displayState.showProspects ? `${displayState.hiddenProspects}` : `${displayState.shownProspects}` }}
+          </v-btn>
+          <v-data-table :items="prospects" :headers="headers">
+            <template v-slot:item.actions="{ item }">
+              <v-btn
+                  color="secondary"
+                  class="ml-2"
+                  size="small"
+                  @click="acceptProspect(item)"
               >Accept
-            </v-btn>
+              </v-btn>
 
-            <v-btn
-              color="warning"
-              class="ml-2"
-              size="small"
-              @click="archiveProspect(item)"
+              <v-btn
+                  color="warning"
+                  class="ml-2"
+                  size="small"
+                  @click="archiveProspect(item)"
               >Archive
-            </v-btn>
-          </template>
-        </v-data-table>
+              </v-btn>
+            </template>
+          </v-data-table>
+        </div>
       </v-tabs-window-item>
     </v-tabs-window>
 
@@ -101,19 +111,19 @@
       <v-card title="Create New Client">
         <v-card-text>
           <v-text-field
-            v-model="newClient.first_name"
-            label="First name"
+              v-model="newClient.first_name"
+              label="First name"
           ></v-text-field>
-          <br />
+          <br/>
           <v-text-field
-            v-model="newClient.last_name"
-            label="Last name"
+              v-model="newClient.last_name"
+              label="Last name"
           ></v-text-field>
-          <br />
+          <br/>
           <v-text-field
-            label="Email"
-            type="email"
-            v-model="newClient.email"
+              label="Email"
+              type="email"
+              v-model="newClient.email"
           ></v-text-field>
         </v-card-text>
 
@@ -121,8 +131,8 @@
           <v-spacer></v-spacer>
 
           <v-btn
-            text="Cancel"
-            @click="
+              text="Cancel"
+              @click="
               openCreateNewClientModal = false;
               resetForm();
             "
@@ -135,23 +145,24 @@
 </template>
 
 <script setup>
-import { useUserStore } from '@/store/user';
-import { storeToRefs } from 'pinia';
-import { reactive } from 'vue';
-import { ref } from 'vue';
-import { inject } from 'vue';
-import { useRouter } from 'vue-router';
+import {useUserStore} from '@/store/user';
+import {storeToRefs} from 'pinia';
+import {reactive} from 'vue';
+import {ref} from 'vue';
+import {inject} from 'vue';
+import {useRouter} from 'vue-router';
 import moment from 'moment';
-import { parseError } from '@/utils/error';
+import {parseError} from '@/utils/error';
+import {FALSE} from "sass";
 
 const $axios = inject('$axios');
-const { show } = inject('toast');
+const {show} = inject('toast');
 
 const router = useRouter();
 
-const { user } = storeToRefs(useUserStore());
+const {user} = storeToRefs(useUserStore());
 
-const { id: advisor_id } = user.value;
+const {id: advisor_id} = user.value;
 
 const openCreateNewClientModal = ref(false);
 
@@ -163,7 +174,8 @@ const initialState = {
   email: undefined,
 };
 
-const newClient = reactive({ ...initialState });
+
+const newClient = reactive({...initialState});
 
 const resetForm = () => {
   Object.assign(newClient, initialState);
@@ -200,13 +212,13 @@ const headers = [
 const clients = ref([]);
 
 const getClients = async () => {
-  const { data } = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
+  const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
 
   clients.value = data.map((d) => ({
     ...d,
     last_survey_taken_date:
-      d.last_survey_taken_date &&
-      moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+        d.last_survey_taken_date &&
+        moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
   }));
 };
 
@@ -214,13 +226,13 @@ getClients();
 
 const prospects = ref([]);
 const getProspects = async () => {
-  const { data } = await $axios.get(`/api/advisors/${advisor_id}/prospects/`);
+  const {data} = await $axios.get(`/api/advisors/${advisor_id}/prospects/`);
 
   prospects.value = data.map((d) => ({
     ...d,
     last_survey_taken_date:
-      d.last_survey_taken_date &&
-      moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+        d.last_survey_taken_date &&
+        moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
   }));
 };
 
@@ -229,24 +241,24 @@ getProspects();
 const createNewClient = async () => {
   try {
     const {
-      data: { id },
+      data: {id},
     } = await $axios.post(`/api/advisors/${advisor_id}/clients/`, newClient);
 
     openCreateNewClientModal.value = false;
 
-    show({ message: 'Client created!' });
+    show({message: 'Client created!'});
 
     router.push(`/survey?user_id=${id}`);
   } catch (error) {
-    show({ message: parseError(error), error: true });
+    show({message: parseError(error), error: true});
   }
 };
 
-const goToClient = ({ id }) => {
+const goToClient = ({id}) => {
   router.push(`/clients/${id}#values`);
 };
 
-const acceptProspect = async ({ id }) => {
+const acceptProspect = async ({id}) => {
   if (confirm('Are you sure you want to accept this prospect as a client?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {
@@ -258,14 +270,14 @@ const acceptProspect = async ({ id }) => {
       getClients();
       getProspects();
 
-      show({ message: 'Client created!' });
+      show({message: 'Client created!'});
     } catch (error) {
-      show({ message: parseError(error), error: true });
+      show({message: parseError(error), error: true});
     }
   }
 };
 
-const archiveProspect = async ({ id }) => {
+const archiveProspect = async ({id}) => {
   if (confirm('Are you sure you want to archive this prospect?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {
@@ -275,14 +287,14 @@ const archiveProspect = async ({ id }) => {
       getClients();
       getProspects();
 
-      show({ message: 'Prospect archived!' });
+      show({message: 'Prospect archived!'});
     } catch (error) {
-      show({ message: parseError(error), error: true });
+      show({message: parseError(error), error: true});
     }
   }
 };
 
-const archiveClient = async ({ id }) => {
+const archiveClient = async ({id}) => {
   if (confirm('Are you sure you want to archive this client?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {
@@ -292,9 +304,9 @@ const archiveClient = async ({ id }) => {
       getClients();
       getProspects();
 
-      show({ message: 'Client archived!' });
+      show({message: 'Client archived!'});
     } catch (error) {
-      show({ message: parseError(error), error: true });
+      show({message: parseError(error), error: true});
     }
   }
 };
@@ -313,4 +325,19 @@ const copyText = () => {
 const viewSurvey = () => {
   router.push(surveyLink);
 };
+
+const displayState = reactive({
+  showClients: false,
+  showProspects: false,
+  hidden: "Display Clients",
+  shown: "Hide Clients",
+  hiddenProspects: "Display Prospects",
+  shownProspects: "Hide Prospects"
+});
+const toggleClients = () => {
+  displayState.showClients = !displayState.showClients
+}
+const toggleProspects = () => {
+  displayState.showProspects = !displayState.showProspects
+}
 </script>
