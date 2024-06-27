@@ -14,7 +14,7 @@
   >Please do not include and exclude the same company in your selections.
   </v-alert>
 
-  <div v-if="survey" class="stepper-container">
+  <div v-if="survey">
     <v-stepper v-model="currentStep">
       <template v-slot:default="{ prev, next }">
         <v-stepper-header>
@@ -30,19 +30,19 @@
           </template>
         </v-stepper-header>
 
-        <v-stepper-window class="align-center justify-center">
+        <v-stepper-window>
           <v-stepper-window-item
               v-for="(section, i) in survey.survey_sections"
               :value="i + 1"
           >
-            <v-container fluid>
+            <v-container>
               <div
                   class="pb-6"
                   v-if="section.description"
                   v-html="section.description"
               ></div>
 
-              <v-row class="align-content-center justify-center">
+              <v-row>
                 <v-col
                     v-for="group in section.survey_groups"
                     :cols="group.column_width"
@@ -78,17 +78,27 @@
                       </template>
                     </v-autocomplete>
 
-                    <v-checkbox
-                        v-if="q.question.response_type === 'checkbox'"
-                        v-model="q.question.default_value"
-                        @input="updateResponse(q)"
-                        :label="q.question.text"
-                    >
-                    </v-checkbox>
+                    <!-- Checkbox without tooltip -->
+                    <div v-else-if="q.question.response_type === 'checkbox'" class="d-flex">
+                      <v-checkbox
+                          v-model="q.question.default_value"
+                          @input="updateResponse(q)"
+                          :label="q.question.text"
+                      ></v-checkbox>
+                      <v-tooltip
+                          v-if="q.question.tooltip"
+                          :text="q.question.tooltip"
+                          location="top"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-icon small v-bind="props" color="info" class="ml-2">mdi-information</v-icon>
+                        </template>
+                      </v-tooltip>
+                    </div>
 
                     <div
                         v-if="q.question.response_type === 'slider'"
-                        class="pb-8 justify-center"
+                        class="pb-8"
                     >
                       <div class="text-h5">
                         {{ q.question.text }}
@@ -103,7 +113,7 @@
                           @end="updateResponse(q)"
                           show-ticks="always"
                           color="primary"
-                          max-width="800px"
+                          max-width="1000px"
                       ></v-slider>
 
                     </div>
@@ -399,19 +409,16 @@ const submitSurvey = () => {
 };
 </script>
 
-<style scoped>
-
-.stepper-container {
-  max-width: 868px; /* Set your desired max-width here */
-  margin: 0 auto; /* Center the stepper */
+<style>
+.v-overlay__content {
+  max-width: 50% !important;
 }
 
-@media (max-width: 600px) {
-  .stepper-container {
-    max-width: 100%; /* Ensure it adjusts on smaller screens */
-    padding: 0 10px; /* Add some padding if needed */
-  }
+.v-col-12 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
-
 
 </style>
