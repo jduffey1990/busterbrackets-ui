@@ -84,7 +84,7 @@
           <v-btn color="primary" @click="toggleProspects" class="mb-4">
             {{ !displayState.showProspects ? `${displayState.hiddenProspects}` : `${displayState.shownProspects}` }}
           </v-btn>
-          <v-data-table :items="prospects" :headers="headers">
+          <v-data-table v-if="displayState.showProspects" :items="prospects" :headers="headers">
             <template v-slot:item.actions="{ item }">
               <v-btn
                   color="secondary"
