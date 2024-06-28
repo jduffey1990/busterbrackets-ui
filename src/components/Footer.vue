@@ -4,7 +4,7 @@
       <v-row align="center" justify="center">
 
         <v-btn variant="text" color="primary">
-          Disclosures
+          Terms & Conditions
           <v-overlay
               activator="parent"
               class="ty"
