@@ -411,7 +411,7 @@ const submitSurvey = () => {
 
 <style>
 .v-overlay__content {
-  max-width: 50% !important;
+  max-width: 40% !important;
 }
 
 .v-col-12 {
