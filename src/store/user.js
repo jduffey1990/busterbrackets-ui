@@ -90,8 +90,8 @@ export const useUserStore = defineStore('user', {
                         role: this.user.role
                     },
                     account: {
-                        id: this.user.firm,
-                        accountName: this.user.advisor,
+                        id: this.user.firm_id,
+                        accountName: this.user.advisor_id,
                         payingStatus: this.user.is_archived ? 'inactive' : 'active',
                     }
                 });
