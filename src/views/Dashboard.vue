@@ -36,7 +36,8 @@
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
-      <v-tabs-window-item>
+
+      <v-tabs-window-item :key="0">
         <v-alert
             title="No clients yet..."
             type="info"
@@ -70,7 +71,7 @@
         </div>
       </v-tabs-window-item>
 
-      <v-tabs-window-item>
+      <v-tabs-window-item :key="1">
         <v-alert
             title="No prospects yet..."
             type="info"
@@ -147,129 +148,120 @@
 <script setup>
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
-import {reactive} from 'vue';
-import {ref} from 'vue';
-import {inject} from 'vue';
+import {ref, reactive, computed, inject} from 'vue';
 import {useRouter} from 'vue-router';
 import moment from 'moment';
 import {parseError} from '@/utils/error';
-import {FALSE} from "sass";
 
+// Injected dependencies
 const $axios = inject('$axios');
 const {show} = inject('toast');
 
+// Router instance
 const router = useRouter();
 
-const {user} = storeToRefs(useUserStore());
+// User store
+const userStore = useUserStore();
+const {user} = storeToRefs(userStore);
+const isFirmAdminOrGreater = computed(() => userStore.isFirmAdminOrGreater);
 
+// User info
 const {id: advisor_id} = user.value;
 
+// State variables
 const openCreateNewClientModal = ref(false);
-
-const currentTab = ref();
-
+const currentTab = ref(0);
 const initialState = {
   first_name: undefined,
   last_name: undefined,
   email: undefined,
 };
-
-
 const newClient = reactive({...initialState});
 
+// Display state
+const displayState = reactive({
+  showClients: false,
+  showProspects: false,
+  hidden: 'Display Clients',
+  shown: 'Hide Clients',
+  hiddenProspects: 'Display Prospects',
+  shownProspects: 'Hide Prospects',
+});
+
+// Data tables headers
+const headers = [
+  {key: 'actions', sortable: false, width: 0, nowrap: true},
+  {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
+  {title: 'Email', key: 'email', width: 0, nowrap: true},
+  {title: 'Last Survey Date', key: 'last_survey_taken_date', width: 0, nowrap: true},
+  {},
+];
+
+// Clients and Prospects data
+const clients = ref([]);
+const advisors = ref([]);
+const prospects = ref([]);
+
+// Fetch clients data
+const getClients = async () => {
+  const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
+  clients.value = data.map((d) => ({
+    ...d,
+    last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+  }));
+};
+
+const getAdvisors = async () => {
+  if (isFirmAdminOrGreater) {
+    const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors/`);
+    advisors.value = data;
+  }
+};
+
+// Fetch prospects data
+const getProspects = async () => {
+  const {data} = await $axios.get(`/api/advisors/${advisor_id}/prospects/`);
+  prospects.value = data.map((d) => ({
+    ...d,
+    last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+  }));
+};
+
+// Initial data fetch
+getClients();
+getAdvisors()
+getProspects();
+
+// Form reset
 const resetForm = () => {
   Object.assign(newClient, initialState);
 };
 
-const headers = [
-  {
-    key: 'actions',
-    sortable: false,
-    width: 0,
-    nowrap: true,
-  },
-  {
-    title: 'Full Name',
-    key: 'full_name',
-    width: 0,
-    nowrap: true,
-  },
-  {
-    title: 'Email',
-    key: 'email',
-    width: 0,
-    nowrap: true,
-  },
-  {
-    title: 'Last Survey Date',
-    key: 'last_survey_taken_date',
-    width: 0,
-    nowrap: true,
-  },
-  {},
-];
-
-const clients = ref([]);
-
-const getClients = async () => {
-  const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
-
-  clients.value = data.map((d) => ({
-    ...d,
-    last_survey_taken_date:
-        d.last_survey_taken_date &&
-        moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
-  }));
-};
-
-getClients();
-
-const prospects = ref([]);
-const getProspects = async () => {
-  const {data} = await $axios.get(`/api/advisors/${advisor_id}/prospects/`);
-
-  prospects.value = data.map((d) => ({
-    ...d,
-    last_survey_taken_date:
-        d.last_survey_taken_date &&
-        moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
-  }));
-};
-
-getProspects();
-
+// Create new client
 const createNewClient = async () => {
   try {
-    const {
-      data: {id},
-    } = await $axios.post(`/api/advisors/${advisor_id}/clients/`, newClient);
-
+    const {data: {id}} = await $axios.post(`/api/advisors/${advisor_id}/clients/`, newClient);
     openCreateNewClientModal.value = false;
-
     show({message: 'Client created!'});
-
     router.push(`/survey?user_id=${id}`);
   } catch (error) {
     show({message: parseError(error), error: true});
   }
 };
 
+// Navigation functions
 const goToClient = ({id}) => {
   router.push(`/clients/${id}#values`);
 };
 
+// Prospect actions
 const acceptProspect = async ({id}) => {
   if (confirm('Are you sure you want to accept this prospect as a client?')) {
     try {
-      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {
-        role: 'client',
-      });
-
+      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {role: 'client'});
       await $axios.post(`/api/advisors/${advisor_id}/clients/${id}/portfolio/`);
-
       getClients();
       getProspects();
-
       show({message: 'Client created!'});
     } catch (error) {
       show({message: parseError(error), error: true});
@@ -280,13 +272,9 @@ const acceptProspect = async ({id}) => {
 const archiveProspect = async ({id}) => {
   if (confirm('Are you sure you want to archive this prospect?')) {
     try {
-      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {
-        is_archived: true,
-      });
-
+      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {is_archived: true});
       getClients();
       getProspects();
-
       show({message: 'Prospect archived!'});
     } catch (error) {
       show({message: parseError(error), error: true});
@@ -294,16 +282,13 @@ const archiveProspect = async ({id}) => {
   }
 };
 
+// Client actions
 const archiveClient = async ({id}) => {
   if (confirm('Are you sure you want to archive this client?')) {
     try {
-      await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {
-        is_archived: true,
-      });
-
+      await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {is_archived: true});
       getClients();
       getProspects();
-
       show({message: 'Client archived!'});
     } catch (error) {
       show({message: parseError(error), error: true});
@@ -311,14 +296,12 @@ const archiveClient = async ({id}) => {
   }
 };
 
+// Survey link and clipboard functions
 const surveyLink = `/survey?advisor=${advisor_id}`;
 const copyText = () => {
   navigator.clipboard.writeText(`${location.origin}${surveyLink}`);
-
   show({
-    message: `<div>Link copied to clipboard!</div>
-    <br/>
-    <div>NOTE: Not mobile friendly yet but will be shortly</div>`,
+    message: `<div>Link copied to clipboard!</div><br/><div>NOTE: Not mobile friendly yet but will be shortly</div>`,
   });
 };
 
@@ -326,18 +309,13 @@ const viewSurvey = () => {
   router.push(surveyLink);
 };
 
-const displayState = reactive({
-  showClients: false,
-  showProspects: false,
-  hidden: "Display Clients",
-  shown: "Hide Clients",
-  hiddenProspects: "Display Prospects",
-  shownProspects: "Hide Prospects"
-});
+// Toggle display functions
 const toggleClients = () => {
-  displayState.showClients = !displayState.showClients
-}
+  displayState.showClients = !displayState.showClients;
+};
+
 const toggleProspects = () => {
-  displayState.showProspects = !displayState.showProspects
-}
+  displayState.showProspects = !displayState.showProspects;
+};
 </script>
+
