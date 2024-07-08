@@ -552,6 +552,10 @@ const submitSurvey = () => {
     font-size: 1rem;
   }
 
+  .v-slider-track__tick-label {
+    font-size: x-small;
+  }
+
 }
 
 </style>
