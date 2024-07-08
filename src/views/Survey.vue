@@ -35,51 +35,42 @@
               v-for="(section, i) in survey.survey_sections"
               :value="i + 1"
           >
-            <v-container>
+            <v-container class="flex-container">
               <div
-                  class="pb-6"
+                  class="survey_header"
                   v-if="section.description"
                   v-html="section.description"
               ></div>
+              <div class="justify-center">
 
-              <v-row>
+                <div
+                    v-if="section.sub_header"
+                    class="sub_header"
+                    v-html="section.sub_header"
+                ></div>
+              </div>
+
+              <v-row class="justify-center">
                 <v-col
                     v-for="group in section.survey_groups"
                     :cols="group.column_width"
                 >
-                  <div class="text-h6 align-center">
+                  <div class="group_header">
                     {{ group.name }}
+                    <v-checkbox
+                        v-if="groupContainsCheckboxes(group)"
+                        v-model="group.selectAll"
+                        @change="toggleAllCheckboxes(section)"
+                        label="Select All"
+                        class="ml-3"
+                    ></v-checkbox>
                   </div>
 
                   <div v-for="q in group.survey_questions">
-                    <v-autocomplete
-                        v-if="q.question.response_type === 'multi_select'"
-                        class="pb-6"
-                        v-model="q.question.default_value"
-                        :items="companies"
-                        item-title="name"
-                        item-value="ticker"
-                        :label="q.question.text"
-                        chips
-                        closable-chips
-                        multiple
-                        clear-on-select
-                        @update:model-value="updateResponse(q)"
-                    >
-                      <template v-slot:chip="{ props, item }">
-                        <v-chip v-bind="props" :text="item.raw.name"></v-chip>
-                      </template>
 
-                      <template v-slot:item="{ props, item }">
-                        <v-list-item
-                            v-bind="props"
-                            :title="item.raw.name"
-                        ></v-list-item>
-                      </template>
-                    </v-autocomplete>
 
-                    <!-- Checkbox without tooltip -->
-                    <div v-else-if="q.question.response_type === 'checkbox'" class="d-flex">
+                    <!-- Tooltip added to info symbol -->
+                    <div v-if="q.question.response_type === 'checkbox'" class="d-flex">
                       <v-checkbox
                           v-model="q.question.default_value"
                           @input="updateResponse(q)"
@@ -118,6 +109,41 @@
 
                     </div>
                   </div>
+                </v-col>
+              </v-row>
+            </v-container>
+            <v-container class="flex-container justify-center mt-6">
+              <v-row class="d-flex justify-center">
+                <v-col cols="12" md="8">
+                  <v-autocomplete
+                      v-if="section.survey_groups.some(group => group.survey_questions.some(q => q.question.response_type === 'multi_select'))"
+                      v-model="section.survey_groups.find(group => group.survey_questions.some(q => q.question.response_type === 'multi_select')).survey_questions.find(q => q.question.response_type === 'multi_select').question.default_value"
+                      :items="companies"
+                      item-title="name"
+                      item-value="ticker"
+                      :label="section.survey_groups.find(group => group.survey_questions
+                      .some(q => q.question.response_type === 'multi_select')).survey_questions
+                      .find(q => q.question.response_type === 'multi_select').question.text"
+                      chips
+                      closable-chips
+                      multiple
+                      clear-on-select
+                      @update:model-value="updateResponse(section.survey_groups.find(group => group.survey_questions
+                      .some(q => q.question.response_type === 'multi_select')).survey_questions
+                      .find(q => q.question.response_type === 'multi_select'))"
+                      class="autocomplete"
+                  >
+                    <template v-slot:chip="{ props, item }">
+                      <v-chip v-bind="props" :text="item.raw.name"></v-chip>
+                    </template>
+
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item
+                          v-bind="props"
+                          :title="item.raw.name"
+                      ></v-list-item>
+                    </template>
+                  </v-autocomplete>
                 </v-col>
               </v-row>
             </v-container>
@@ -291,6 +317,28 @@ const updateResponse = (q, setInitial) => {
   }
 };
 
+function groupContainsCheckboxes(group) {
+  return group.survey_questions.some(q => q.question.response_type === 'checkbox');
+}
+
+function toggleAllCheckboxes(section) {
+  section.survey_groups.forEach(group => {
+    if (group.selectAll) {
+      group.survey_questions.forEach(q => {
+        if (q.question.response_type === 'checkbox') {
+          q.question.default_value = true;
+        }
+      });
+    } else {
+      group.survey_questions.forEach(q => {
+        if (q.question.response_type === 'checkbox') {
+          q.question.default_value = false;
+        }
+      });
+    }
+  });
+}
+
 addEventListener('beforeunload', (event) => {
   if (touched.value && !hasSubmitted.value) {
     if (!confirm('Do you really want to leave? you have unsaved changes!')) {
@@ -346,6 +394,7 @@ const submit = async (prospect_id) => {
     show({message: parseError(error), error: true});
   }
 };
+
 
 const getTicks = (ticks) => {
   const tickObj = {};
@@ -414,11 +463,90 @@ const submitSurvey = () => {
   max-width: 40% !important;
 }
 
+.v-input--horizontal {
+  justify-content: center;
+}
+
 .v-col-12 {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
+}
+
+.v-col-6 {
+  min-width: 500px !important;
+}
+
+.autocomplete {
+  text-align: center;
+  max-width: 100%;
+}
+
+.autocomplete .v-input__control {
+  display: flex;
+  justify-content: center;
+}
+
+.survey_header {
+  padding: 10px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  align-items: center;
+  border: 2px solid #5CBBF6;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  background-color: #f0f4f8;
+  color: #333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.justify-center {
+  display: flex;
+  justify-content: center;
+}
+
+.sub_header {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 40px;
+  font-size: 1.25rem;
+  color: #666;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid black;
+  padding-bottom: 5px;
+  width: fit-content;
+}
+
+.group_header {
+  display: flex;
+  align-items: center; /* Aligns items vertically in the center */
+  font-size: 1.25rem; /* Adjust the size as needed to match text-h6 */
+  font-weight: 500; /* Adjust the weight as needed to match text-h6 */
+  margin-bottom: 5px; /* Add margin to separate from other elements */
+  justify-content: start; /* Space between the text and the checkbox */
+}
+
+@media only screen and (max-width: 1275px) {
+
+  .group_header {
+    font-size: 1rem;
+    flex-direction: column; /* Change layout to column */
+    align-items: flex-start;
+  }
+
+}
+
+
+@media only screen and (max-width: 700px) {
+
+  .survey_header {
+    font-size: 1rem;
+  }
+
 }
 
 </style>

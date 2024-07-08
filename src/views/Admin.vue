@@ -252,8 +252,6 @@ const createNewAdvisor = async () => {
 };
 
 // Handle button click to view clients
-// Handle button click to view clients
-// Handle button click to view clients
 const viewClients = (advisorId) => {
   if (!displayState[advisorId]) {
     displayState[advisorId] = {showClients: false, showProspects: false};
