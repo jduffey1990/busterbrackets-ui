@@ -50,7 +50,7 @@
                 ></div>
               </div>
 
-              <v-row class="justify-center">
+              <v-row class="rows">
                 <v-col
                     v-for="group in section.survey_groups"
                     :cols="group.column_width"
@@ -536,6 +536,11 @@ const submitSurvey = () => {
     font-size: 1rem;
     flex-direction: column; /* Change layout to column */
     align-items: flex-start;
+  }
+
+  .rows {
+    display: flex;
+    justify-content: center;
   }
 
 }
