@@ -475,7 +475,7 @@ const submitSurvey = () => {
 }
 
 .v-col-6 {
-  min-width: 500px !important;
+  min-width: 300px !important;
 }
 
 .autocomplete {
