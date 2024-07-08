@@ -1,12 +1,12 @@
 <template>
   <div
-    v-if="clientLoading || portfoliosLoading || valuesLoading"
-    class="text-center"
+      v-if="clientLoading || portfoliosLoading || valuesLoading"
+      class="text-center"
   >
     <v-progress-linear
-      color="primary"
-      indeterminate
-      class="mb-2"
+        color="primary"
+        indeterminate
+        class="mb-2"
     ></v-progress-linear>
 
     <div class="text-h6">Loading...</div>
@@ -17,14 +17,14 @@
 
     <v-tabs v-model="currentTab">
       <v-tab ref="tab" :href="`#${t.label.toLowerCase()}`" v-for="t in tabs"
-        >{{ t.label }}
+      >{{ t.label }}
 
         <span v-if="t.count !== undefined">({{ t.count }})</span>
         <v-badge
-          v-if="t.showAlertBadge"
-          color="error"
-          content="!"
-          inline
+            v-if="t.showAlertBadge"
+            color="error"
+            content="!"
+            inline
         ></v-badge>
       </v-tab>
     </v-tabs>
@@ -33,24 +33,24 @@
       <v-tabs-window-item class="py-2">
         <div class="d-flex justify-end mb-4">
           <router-link
-            :to="{ name: 'Survey', query: { user_id: client.id } }"
-            custom
-            v-slot="{ navigate }"
+              :to="{ name: 'Survey', query: { user_id: client.id } }"
+              custom
+              v-slot="{ navigate }"
           >
             <v-btn
-              color="primary"
-              :text="`${hasValuesProfile ? 'Edit' : 'Start'} Values Profile`"
-              @click="navigate"
+                color="primary"
+                :text="`${hasValuesProfile ? 'Edit' : 'Start'} Values Profile`"
+                @click="navigate"
             >
             </v-btn>
           </router-link>
         </div>
 
         <v-alert
-          title="No values profile yet..."
-          type="info"
-          v-if="!hasValuesProfile"
-          >Please click "Start Values Profile" to fill out the survey!
+            title="No values profile yet..."
+            type="info"
+            v-if="!hasValuesProfile"
+        >Please click "Start Values Profile" to fill out the survey!
         </v-alert>
 
         <div v-for="(value, i) in valuesProfile" class="mb-4">
@@ -58,19 +58,19 @@
 
           <v-table>
             <tbody>
-              <tr v-for="val in value">
-                <td class="text-no-wrap">{{ val.question.text }}</td>
-                <td class="w-100">
-                  <v-chip
+            <tr v-for="val in value">
+              <td class="text-no-wrap">{{ val.question.text }}</td>
+              <td class="w-100">
+                <v-chip
                     v-for="v in getValue(val)"
                     :color="v?.color"
                     class="mr-2"
-                  >
-                    <v-icon :icon="v.icon" v-if="v.icon"></v-icon>
-                    <span v-else-if="v.text">{{ v.text }}</span>
-                  </v-chip>
-                </td>
-              </tr>
+                >
+                  <v-icon :icon="v.icon" v-if="v.icon"></v-icon>
+                  <span v-else-if="v.text">{{ v.text }}</span>
+                </v-chip>
+              </td>
+            </tr>
             </tbody>
           </v-table>
         </div>
@@ -78,23 +78,24 @@
 
       <v-tabs-window-item class="py-2">
         <v-alert
-          title="No recommendations yet..."
-          type="info"
-          v-if="!allocations.length"
+            title="No recommendations yet..."
+            type="info"
+            v-if="!allocations.length"
         >
           No recommendations have been generated yet. If you haven't taken the
           survey, please do that before you can generate the recommendation.
         </v-alert>
 
         <div v-else>
+
           <div class="my-8" v-if="portfolioValues">
             <div class="text-h6">Portfolio/Market</div>
 
             <v-row>
               <v-col cols="6">
                 <BarChart
-                  :data="getBarChart(portfolioValues)"
-                  :options="{
+                    :data="getBarChart(portfolioValues)"
+                    :options="{
                     responsive: true,
                   }"
                 />
@@ -102,22 +103,22 @@
               <v-col cols="6">
                 <v-table>
                   <tbody>
-                    <tr>
-                      <th>Client Value</th>
-                      <th>Pomarium vs. Market</th>
-                    </tr>
-                    <tr v-for="p in portfolioValuesComparison">
-                      <td class="text-no-wrap">{{ p.title }}</td>
-                      <td class="w-100">
-                        {{ p.value }}
-                      </td>
-                    </tr>
+                  <tr>
+                    <th>Client Value</th>
+                    <th>Pomarium vs. Market</th>
+                  </tr>
+                  <tr v-for="p in portfolioValuesComparison">
+                    <td class="text-no-wrap">{{ p.title }}</td>
+                    <td class="w-100">
+                      {{ p.value }}
+                    </td>
+                  </tr>
                   </tbody>
                 </v-table>
               </v-col>
             </v-row>
           </div>
-          <hr />
+          <hr/>
 
           <div class="my-8" v-if="portfolioSectors">
             <div class="text-h6">Sectors</div>
@@ -126,8 +127,8 @@
               <v-col cols="4">
                 <div class="d-flex justify-center align-center h-100">
                   <PieChart
-                    :data="getPieChart(portfolioSectors)"
-                    :options="{
+                      :data="getPieChart(portfolioSectors)"
+                      :options="{
                       responsive: true,
                       plugins: {
                         legend: {
@@ -141,27 +142,27 @@
               <v-col cols="8">
                 <v-table>
                   <tbody>
-                    <tr v-for="p in portfolioSectors">
-                      <td class="text-no-wrap">{{ p.title }}</td>
-                      <td class="w-100">{{ p.value }}%</td>
-                    </tr>
+                  <tr v-for="p in portfolioSectors">
+                    <td class="text-no-wrap">{{ p.title }}</td>
+                    <td class="w-100">{{ p.value }}%</td>
+                  </tr>
                   </tbody>
                 </v-table>
               </v-col>
             </v-row>
           </div>
 
-          <hr />
+          <hr/>
 
           <div class="my-8">
             <div class="text-h6">Pomarium Allocations</div>
 
             <v-data-table
-              :items="allocations"
-              :headers="allocationHeaders"
-              :items-per-page="-1"
+                :items="allocations"
+                :headers="allocationHeaders"
+                :items-per-page="-1"
             >
-              <template #bottom> </template>
+              <template #bottom></template>
             </v-data-table>
           </div>
         </div>
@@ -170,8 +171,8 @@
       <v-tabs-window-item class="py-2">
         <div class="d-flex justify-end mb-4">
           <router-link
-            :to="{ name: 'Accounts', params: { user_id } }"
-            v-slot="{ navigate }"
+              :to="{ name: 'Accounts', params: { user_id } }"
+              v-slot="{ navigate }"
           >
             <v-btn @click="navigate" role="link" color="primary">
               Create New Account
@@ -180,34 +181,34 @@
         </div>
 
         <v-alert title="No accounts yet..." type="info" v-if="!accounts.length"
-          >No accounts have been created yet. Please click "Create New Account"
+        >No accounts have been created yet. Please click "Create New Account"
           to do so.
         </v-alert>
 
         <v-data-table v-else :items="accounts" :headers="accountHeaders">
           <template v-slot:item.actions="{ item }">
             <v-btn
-              color="primary"
-              @click="downloadAccountCSV(item)"
-              size="small"
-              class="ml-2"
-              >Download CSV
+                color="primary"
+                @click="downloadAccountCSV(item)"
+                size="small"
+                class="ml-2"
+            >Download CSV
             </v-btn>
 
             <router-link
-              :to="{
+                :to="{
                 name: 'Accounts',
                 params: { user_id },
                 query: { account_id: item.id },
               }"
-              v-slot="{ navigate }"
+                v-slot="{ navigate }"
             >
               <v-btn
-                @click="navigate"
-                role="link"
-                color="info"
-                size="small"
-                class="ml-2"
+                  @click="navigate"
+                  role="link"
+                  color="info"
+                  size="small"
+                  class="ml-2"
               >
                 Edit
               </v-btn>
@@ -220,28 +221,28 @@
         <v-row>
           <v-col cols="6">
             <v-text-field
-              label="First Name"
-              type="text"
-              v-model="client.first_name"
-              class="mb-4"
+                label="First Name"
+                type="text"
+                v-model="client.first_name"
+                class="mb-4"
             ></v-text-field>
 
             <v-text-field
-              label="Last Name"
-              type="text"
-              v-model="client.last_name"
-              class="mb-4"
+                label="Last Name"
+                type="text"
+                v-model="client.last_name"
+                class="mb-4"
             ></v-text-field>
 
             <v-text-field
-              label="Email"
-              type="email"
-              v-model="client.email"
-              class="mb-4"
+                label="Email"
+                type="email"
+                v-model="client.email"
+                class="mb-4"
             ></v-text-field>
 
             <div class="d-flex justify-end mb-4">
-              <v-btn @click="saveClient()" color="primary"> Save </v-btn>
+              <v-btn @click="saveClient()" color="primary"> Save</v-btn>
             </div>
           </v-col>
         </v-row>
@@ -251,49 +252,49 @@
 </template>
 
 <script setup>
-import { useUserStore } from '@/store/user';
-import { computed, onMounted } from 'vue';
-import { ref } from 'vue';
-import { inject } from 'vue';
-import { useRoute } from 'vue-router';
+import {useUserStore} from '@/store/user';
+import {computed, onMounted} from 'vue';
+import {ref} from 'vue';
+import {inject} from 'vue';
+import {useRoute} from 'vue-router';
 import PieChart from '../components/PieChart.vue';
 import BarChart from '../components/BarChart.vue';
-import { groupBy, round } from 'lodash';
-import { watch } from 'vue';
-import { currencyFormat } from '@/utils/number';
-import { parseError } from '@/utils/error';
+import {groupBy, round} from 'lodash';
+import {watch} from 'vue';
+import {currencyFormat} from '@/utils/number';
+import {parseError} from '@/utils/error';
 
 const {
-  user: { id: advisor_id },
+  user: {id: advisor_id},
   getValuesProfile,
 } = useUserStore();
 
 const {
-  params: { user_id },
+  params: {user_id},
   hash,
 } = useRoute();
 
 const $axios = inject('$axios');
-const { show } = inject('toast');
+const {show} = inject('toast');
 
 const client = ref({});
 const clientLoading = ref(false);
 
 const hasValuesProfile = computed(
-  () => !!Object.keys(valuesProfile.value).length
+    () => !!Object.keys(valuesProfile.value).length
 );
 
 const getClient = async () => {
   clientLoading.value = true;
 
   try {
-    const { data } = await $axios.get(
-      `/api/advisors/${advisor_id}/clients/${user_id}/`
+    const {data} = await $axios.get(
+        `/api/advisors/${advisor_id}/clients/${user_id}/`
     );
 
     client.value = data;
   } catch (error) {
-    show({ message: `Couldn't retrieve client information`, error: true });
+    show({message: `Couldn't retrieve client information`, error: true});
   }
 
   clientLoading.value = false;
@@ -307,9 +308,9 @@ const saveClient = async () => {
       email: client.value.email,
     });
 
-    show({ message: 'Client profile saved!' });
+    show({message: 'Client profile saved!'});
   } catch (error) {
-    show({ message: parseError(error), error: true });
+    show({message: parseError(error), error: true});
   }
 };
 
@@ -345,9 +346,9 @@ const getPortfolios = async () => {
 
   try {
     const {
-      data: { portfolio: valuesPortfolio, market: valuesMarket },
+      data: {portfolio: valuesPortfolio, market: valuesMarket},
     } = await $axios.get(
-      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
+        `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
     );
 
     portfolioValues.value = [
@@ -362,29 +363,29 @@ const getPortfolios = async () => {
         type: 'Market',
       })),
     ].sort(
-      (a, b) => a.title.localeCompare(b.title) || b.type.localeCompare(a.type)
+        (a, b) => a.title.localeCompare(b.title) || b.type.localeCompare(a.type)
     );
 
     const {
-      data: { portfolio: sectorsPortfolio },
+      data: {portfolio: sectorsPortfolio},
     } = await $axios.get(
-      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/sectors/`
+        `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/sectors/`
     );
 
     portfolioSectors.value = Object.keys(sectorsPortfolio)
-      .map((title) => ({
-        title,
-        value: round(sectorsPortfolio[title]),
-      }))
-      .sort((a, b) => b.value - a.value);
+        .map((title) => ({
+          title,
+          value: round(sectorsPortfolio[title]),
+        }))
+        .sort((a, b) => b.value - a.value);
 
-    const { data } = await $axios.get(
-      `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
+    const {data} = await $axios.get(
+        `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
     );
 
     const {
-      allocations: { pomarium },
-      portfolio_data: { pomarium_names },
+      allocations: {pomarium},
+      portfolio_data: {pomarium_names},
     } = data[0];
 
     for (let i in pomarium) {
@@ -394,14 +395,15 @@ const getPortfolios = async () => {
     const labels = Object.keys(pomarium);
 
     allocations.value = labels
-      .map((p) => ({
-        company: pomarium_names[p],
-        ticker: p,
-        allocation: `${pomarium[p]}%`,
-        value: pomarium[p],
-      }))
-      .sort((a, b) => b.value - a.value);
-  } catch (error) {}
+        .map((p) => ({
+          company: pomarium_names[p],
+          ticker: p,
+          allocation: `${pomarium[p]}%`,
+          value: pomarium[p],
+        }))
+        .sort((a, b) => b.value - a.value);
+  } catch (error) {
+  }
 
   hasRequestedPortfolios.value = true;
 
@@ -414,9 +416,9 @@ const portfolioValuesComparison = computed(() => {
 
   for (let i in grouped) {
     const val = round(
-      grouped[i].find((g) => g.type === 'Portfolio').value -
+        grouped[i].find((g) => g.type === 'Portfolio').value -
         grouped[i].find((g) => g.type === 'Market').value,
-      2
+        2
     );
 
     const roundedAbsValue = round(Math.abs(val));
@@ -492,8 +494,8 @@ const accountHeaders = [
 const accounts = ref([]);
 const getAccounts = async () => {
   try {
-    const { data } = await $axios.get(
-      `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`
+    const {data} = await $axios.get(
+        `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`
     );
 
     accounts.value = data.map((d) => ({
@@ -508,22 +510,23 @@ const getAccounts = async () => {
     accountsTab.count = accounts.value.length;
 
     accountsTab.showAlertBadge = !accountsTab.count;
-  } catch (error) {}
+  } catch (error) {
+  }
 };
 
 const downloadAccountCSV = async (account) => {
   window.open(
-    `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/`
+      `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/`
   );
 };
 
 const currentTab = ref();
 const tab = ref();
 const tabs = ref([
-  { label: 'Values' },
-  { label: 'Recommendations' },
-  { label: 'Accounts' },
-  { label: 'Profile' },
+  {label: 'Values'},
+  {label: 'Recommendations'},
+  {label: 'Accounts'},
+  {label: 'Profile'},
 ]);
 
 const getValue = (response) => {
@@ -541,15 +544,15 @@ const getValue = (response) => {
   }
 
   if (response.question.response_type === 'checkbox') {
-    return [{ icon, color }];
+    return [{icon, color}];
   }
 
   if (response.question.response_type === 'multi_select') {
-    return response.value.map((v) => ({ text: v, color }));
+    return response.value.map((v) => ({text: v, color}));
   }
 
   if (response.question.response_type === 'slider') {
-    return [{ text: response.question.slider_ticks[response.value] }];
+    return [{text: response.question.slider_ticks[response.value]}];
   }
 };
 
@@ -570,8 +573,8 @@ onMounted(async () => {
   });
 
   valuesProfile.value = groupBy(
-    vp.filter((v) => v.value !== false),
-    'sections.name'
+      vp.filter((v) => v.value !== false),
+      'sections.name'
   );
 
   valuesLoading.value = false;
@@ -604,16 +607,39 @@ const getBarChart = (data) => {
   };
 };
 
+// const getPieChart = (data) => {
+//   const labels = data.map((d) => d.title);
+//
+//   return {
+//     labels,
+//     datasets: [
+//       {
+//         backgroundColor: labels.map(
+//             (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
+//         ),
+//         data: data.map((d) => d.value),
+//       },
+//     ],
+//   };
+// };
+
+//added some logic to keep the random colors from being too close to white so ass to not show up on the background
 const getPieChart = (data) => {
   const labels = data.map((d) => d.title);
+
+  const generateRandomColor = () => {
+    let color;
+    do {
+      color = Math.floor(Math.random() * 16777215).toString(16);
+    } while (parseInt(color, 16) > 0xeeeeee); // Avoiding colors close to white
+    return `#${color.padStart(6, '0')}`;
+  };
 
   return {
     labels,
     datasets: [
       {
-        backgroundColor: labels.map(
-          (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
-        ),
+        backgroundColor: labels.map(() => generateRandomColor()),
         data: data.map((d) => d.value),
       },
     ],
