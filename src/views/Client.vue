@@ -586,6 +586,36 @@ watch(currentTab, (e) => {
   }
 });
 
+const brandColors = [
+  '#07152A', '#E1EFFF', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4',
+  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#07152A', '#9CA1AA'
+];
+
+const getUniqueRandomColor = (colors, usedColors) => {
+  let color;
+  do {
+    const index = Math.floor(Math.random() * colors.length);
+    color = colors[index];
+  } while (usedColors.has(color));
+  usedColors.add(color);
+  return color;
+};
+
+const getPieChart = (data) => {
+  const labels = data.map((d) => d.title);
+  const usedColors = new Set();
+
+  return {
+    labels,
+    datasets: [
+      {
+        backgroundColor: labels.map(() => getUniqueRandomColor(brandColors, usedColors)),
+        data: data.map((d) => d.value),
+      },
+    ],
+  };
+};
+
 const getBarChart = (data) => {
   const marketData = data.filter((d) => d.type === 'Market');
   const pomariumData = data.filter((d) => d.type === 'Portfolio');
@@ -595,54 +625,16 @@ const getBarChart = (data) => {
     datasets: [
       {
         label: 'Pomarium',
-        backgroundColor: '#1867C0',
+        backgroundColor: '#07152A', // Primary dark
         data: pomariumData.map((d) => d.value),
       },
       {
         label: 'Market',
-        backgroundColor: '#c6414f',
+        backgroundColor: '#CF6232', // Rust
         data: marketData.map((d) => d.value),
       },
     ],
   };
 };
 
-// const getPieChart = (data) => {
-//   const labels = data.map((d) => d.title);
-//
-//   return {
-//     labels,
-//     datasets: [
-//       {
-//         backgroundColor: labels.map(
-//             (_) => `#${((Math.random() * 0xffffff) << 0).toString(16)}`
-//         ),
-//         data: data.map((d) => d.value),
-//       },
-//     ],
-//   };
-// };
-
-//added some logic to keep the random colors from being too close to white so ass to not show up on the background
-const getPieChart = (data) => {
-  const labels = data.map((d) => d.title);
-
-  const generateRandomColor = () => {
-    let color;
-    do {
-      color = Math.floor(Math.random() * 16777215).toString(16);
-    } while (parseInt(color, 16) > 0xeeeeee); // Avoiding colors close to white
-    return `#${color.padStart(6, '0')}`;
-  };
-
-  return {
-    labels,
-    datasets: [
-      {
-        backgroundColor: labels.map(() => generateRandomColor()),
-        data: data.map((d) => d.value),
-      },
-    ],
-  };
-};
 </script>
