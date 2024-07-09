@@ -65,7 +65,7 @@
         ></v-select> -->
 
         <v-select
-          label="Active"
+          label="Live Account"
           class="mb-4"
           v-model="account.active"
           :items="yesNoBooleans"

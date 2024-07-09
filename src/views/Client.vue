@@ -441,7 +441,7 @@ const accountHeaders = [
     nowrap: true,
   },
   {
-    title: 'Active',
+    title: 'Live Account',
     key: 'active',
     width: 0,
     nowrap: true,
