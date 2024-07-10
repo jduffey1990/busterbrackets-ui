@@ -14,7 +14,7 @@
   >Please do not include and exclude the same company in your selections.
   </v-alert>
 
-  <div v-if="survey">
+  <div v-if="survey" class="survey_div">
     <v-stepper v-model="currentStep">
       <template v-slot:default="{ prev, next }">
         <v-stepper-header>
@@ -459,6 +459,7 @@ const submitSurvey = () => {
 </script>
 
 <style>
+
 .v-overlay__content {
   max-width: 40% !important;
 }

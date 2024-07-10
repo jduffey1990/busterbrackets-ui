@@ -1,3 +1,85 @@
 hr {
   border-color: rgba(0, 0, 0, 0.12);
 }
+
+p {
+  color: var(--Primary-Dark, #07152A);
+  font-family: "Halyard Text";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 130%; /* 26px */
+}
+
+h1 {
+  color: var(--Primary-Dark, #07152A);
+  font-family: "Halyard Display";
+  font-size: 58px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 110%; /* 63.8px */
+}
+
+h2 {
+  color: var(--Primary-Dark, #07152A);
+  font-family: "Halyard Display";
+  font-size: 46px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 110%; /* 50.6px */
+}
+
+h3 {
+  color: var(--Primary-Dark, #07152A);
+  font-family: "Halyard Display";
+  font-size: 38px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 120%; /* 45.6px */
+  letter-spacing: -0.5px;
+}
+
+h4 {
+  color: var(--Primary-Dark, #07152A);
+  font-family: "Halyard Display";
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 120%; /* 31.2px */
+}
+
+h5 {
+  color: var(--Primary-Dark, #07152A);
+  leading-trim: both;
+  text-edge: cap;
+  font-family: "Halyard Display";
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 120%; /* 26.4px */
+  letter-spacing: 0.5px;
+}
+
+h6 {
+  color: var(--Primary-Dark, #07152A);
+  leading-trim: both;
+  text-edge: cap;
+  font-family: "Halyard Text";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 110%; /* 17.6px */
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* small text, for things like td, tables, data, etc. */
+
+.small {
+  color: var(--Primary-Dark, #07152A);
+  font-family: "Halyard Text";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 130%; /* 20.8px */
+}

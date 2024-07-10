@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="d-flex my-4">
+    <div class="top_line_dash mb-6">
       <div>
-        <div class="text-h4 mb-2">
+        <div class="text-h4 mb-2 justify-center">
           {{ user.full_name || user.email }}'s Dashboard
         </div>
       </div>
@@ -12,21 +12,21 @@
           @click="copyText()"
           color="secondary"
           text="Copy Survey Link"
-          class="ml-2"
+          class="survey_button"
       ></v-btn>
 
       <v-btn
           @click="viewSurvey()"
           color="info"
           text="View Survey"
-          class="ml-2"
+          class="survey_button"
       ></v-btn>
 
       <v-btn
           @click="openCreateNewClientModal = true"
           color="primary"
           text="Take Survey with Client"
-          class="ml-2"
+          class="survey_button"
       ></v-btn>
     </div>
 
@@ -46,8 +46,8 @@
         >Click "Take Survey with Client" to start adding clients to your list.
         </v-alert>
 
-        <div v-else class="mt-10 px-10">
-          <v-btn color="primary" @click="toggleClients" class="mb-4">
+        <div v-else class="client_display">
+          <v-btn color="primary" @click="toggleClients" class="client_button">
             {{ !displayState.showClients ? `${displayState.hidden}` : `${displayState.shown}` }}
           </v-btn>
           <v-data-table v-if="displayState.showClients" :headers="headers" :items="clients">
@@ -60,8 +60,7 @@
               >View Client
               </v-btn>
               <v-btn
-                  color="warning"
-                  class="ml-2"
+                  class="ml-2 custom-archive-btn"
                   size="small"
                   @click="archiveClient(item)"
               >Archive
@@ -212,7 +211,7 @@ const getClients = async () => {
 };
 
 const getAdvisors = async () => {
-  if (isFirmAdminOrGreater) {
+  if (isFirmAdminOrGreater.value) {
     const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors/`);
     advisors.value = data;
   }
@@ -229,7 +228,7 @@ const getProspects = async () => {
 
 // Initial data fetch
 getClients();
-getAdvisors()
+isFirmAdminOrGreater.value && getAdvisors()
 getProspects();
 
 // Form reset
@@ -319,3 +318,52 @@ const toggleProspects = () => {
 };
 </script>
 
+<style>
+.top_line_dash {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.survey_button {
+  margin-left: 10px;
+}
+
+.custom-archive-btn {
+  background-color: #ffffff;
+  border: 2px solid #07152A;
+  color: #07152A; /* To set the text color to match the stroke */
+}
+
+.client_display {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  margin-top: 20px;
+  margin-left: 20px;
+}
+
+.client_button {
+  max-width: fit-content;
+  margin-bottom: 30px;
+}
+
+@media only screen and (max-width: 700px) {
+
+  .top_line_dash {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .survey_button {
+    margin-top: 10px;
+  }
+
+  .client_display {
+    justify-content: center;
+    align-items: center;
+  }
+}
+</style>

@@ -1,14 +1,14 @@
 <template>
-  <v-app-bar fixed color="lightgrey" height="80">
+  <v-app-bar fixed :elevation="0" height="80">
     <v-container>
-      <v-row>
+      <div class="nav_bar">
         <v-app-bar-title>
           <router-link to="/" custom v-slot="{ navigate }">
             <v-img
-              :width="200"
-              src="@/assets/pomarium.svg"
-              @click="navigate"
-              class="cursor-pointer"
+                :width="166"
+                src="@/assets/pomarium.svg"
+                @click="navigate"
+                class="cursor-pointer"
             ></v-img>
           </router-link>
         </v-app-bar-title>
@@ -19,15 +19,15 @@
           <div class="mx-3">
             <router-link to="/dashboard" custom v-slot="{ navigate, isActive }">
               <v-btn
-                @click="navigate"
-                :class="{ 'font-weight-black': isActive }"
+                  @click="navigate"
+                  :class="{ 'font-weight-black': isActive }"
               >
                 Dashboard
               </v-btn>
             </router-link>
           </div>
 
-          <v-menu>
+          <v-menu :elevation="0">
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" class="text-disabled">
                 {{ user.full_name || user.email }} ({{
@@ -35,15 +35,15 @@
                 }})
               </v-btn>
             </template>
-            <v-list>
+            <v-list :elevation="0">
               <v-list-item v-if="isSuper" link :to="{ name: 'Advisors' }">
                 <v-list-item-title>Advisors</v-list-item-title>
               </v-list-item>
 
               <v-list-item
-                v-if="isFirmAdminOrGreater"
-                link
-                :to="{ name: 'Admin' }"
+                  v-if="isFirmAdminOrGreater"
+                  link
+                  :to="{ name: 'Admin' }"
               >
                 <v-list-item-title>Firm Admin</v-list-item-title>
               </v-list-item>
@@ -67,28 +67,29 @@
           <div class="mx-3">
             <router-link to="/login" custom v-slot="{ navigate, isActive }">
               <v-btn
-                @click="navigate"
-                role="link"
-                :class="{ 'font-weight-black': isActive }"
+                  @click="navigate"
+                  role="link"
+                  :class="{ 'font-weight-black': isActive }"
               >
                 Log In
               </v-btn>
             </router-link>
           </div>
         </template>
-      </v-row>
+      </div>
     </v-container>
   </v-app-bar>
 </template>
 
 <script setup>
-import { useUserStore } from '@/store/user';
-import { storeToRefs } from 'pinia';
-import { useRouter } from 'vue-router';
+import {useUserStore} from '@/store/user';
+import {storeToRefs} from 'pinia';
+import {useRouter} from 'vue-router';
+
 const router = useRouter();
 
-const { user, isLoggedIn, isFirmAdminOrGreater, isSuper } = storeToRefs(
-  useUserStore()
+const {user, isLoggedIn, isFirmAdminOrGreater, isSuper} = storeToRefs(
+    useUserStore()
 );
 
 const logout = async () => {
@@ -96,3 +97,27 @@ const logout = async () => {
   router.push('/login');
 };
 </script>
+
+<style>
+.nav_bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media only screen and (max-width: 700px) {
+
+  .nav_bar {
+    flex-direction: column;
+    justify-content: center;
+
+  }
+
+  .v-toolbar__content {
+    min-height: 150px;
+  }
+
+}
+
+</style>
