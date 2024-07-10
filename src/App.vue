@@ -27,6 +27,7 @@ import UiToast from '@/components/ui/Toast.vue';
 .gradient-background {
   background: linear-gradient(180deg, #E1EFFF 30%, #F9BBA9 80.05%);
   min-height: 87vh;
+  max-width: 100%;
 }
 
 @media only screen and (max-width: 700px) {
