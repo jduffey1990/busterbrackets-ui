@@ -539,10 +539,6 @@ const submitSurvey = () => {
     align-items: flex-start;
   }
 
-  .rows {
-    display: flex;
-    justify-content: center;
-  }
 
 }
 
@@ -555,6 +551,11 @@ const submitSurvey = () => {
 
   .v-slider-track__tick-label {
     font-size: x-small;
+  }
+
+  .rows {
+    display: flex;
+    justify-content: center;
   }
 
 }
