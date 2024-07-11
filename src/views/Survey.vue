@@ -14,7 +14,7 @@
   >Please do not include and exclude the same company in your selections.
   </v-alert>
 
-  <div v-if="survey" class="survey_div">
+  <div v-if="survey" class="survey_div trans-background">
     <v-stepper v-model="currentStep">
       <template v-slot:default="{ prev, next }">
         <v-stepper-header>

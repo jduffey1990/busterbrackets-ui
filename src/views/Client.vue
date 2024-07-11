@@ -9,7 +9,7 @@
         class="mb-2"
     ></v-progress-linear>
 
-    <div class="text-h6">Loading...</div>
+    <div class="text-h4">Loading...</div>
   </div>
 
   <div v-else>
@@ -54,7 +54,7 @@
         </v-alert>
 
         <div v-for="(value, i) in valuesProfile" class="mb-4">
-          <div class="text-h6 mb-2">{{ i }}</div>
+          <div class="text-h4 mb-2">{{ i }}</div>
 
           <v-table>
             <tbody>
@@ -89,7 +89,7 @@
         <div v-else>
 
           <div class="my-8" v-if="portfolioValues">
-            <div class="text-h6">Portfolio/Market</div>
+            <div class="text-h4">Portfolio/Market</div>
 
             <v-row>
               <v-col cols="6">
@@ -121,7 +121,7 @@
           <hr/>
 
           <div class="my-8" v-if="portfolioSectors">
-            <div class="text-h6">Sectors</div>
+            <div class="text-h4">Sectors</div>
 
             <v-row>
               <v-col cols="4">
@@ -155,7 +155,7 @@
           <hr/>
 
           <div class="my-8">
-            <div class="text-h6">Pomarium Allocations</div>
+            <div class="text-h4">Pomarium Allocations</div>
 
             <v-data-table
                 :items="allocations"

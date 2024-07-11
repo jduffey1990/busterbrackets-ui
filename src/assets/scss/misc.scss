@@ -1,85 +1,93 @@
+// misc.scss
+
 hr {
   border-color: rgba(0, 0, 0, 0.12);
 }
 
 p {
   color: var(--Primary-Dark, #07152A);
-  font-family: "Halyard Text";
+  font-family: "Halyard Text" !important;
   font-size: 20px;
   font-style: normal;
   font-weight: 300;
-  line-height: 130%; /* 26px */
+  line-height: 130%;
 }
 
-h1 {
+h1, .text-h1 {
   color: var(--Primary-Dark, #07152A);
-  font-family: "Halyard Display";
+  font-family: "Halyard Display" !important;
   font-size: 58px;
   font-style: normal;
   font-weight: 400;
-  line-height: 110%; /* 63.8px */
+  line-height: 110%;
 }
 
-h2 {
+h2, .text-h2 {
   color: var(--Primary-Dark, #07152A);
-  font-family: "Halyard Display";
+  font-family: "Halyard Display" !important;
   font-size: 46px;
   font-style: normal;
   font-weight: 400;
-  line-height: 110%; /* 50.6px */
+  line-height: 110%;
 }
 
-h3 {
+h3, .text-h3 {
   color: var(--Primary-Dark, #07152A);
-  font-family: "Halyard Display";
+  font-family: "Halyard Display" !important;
   font-size: 38px;
   font-style: normal;
   font-weight: 400;
-  line-height: 120%; /* 45.6px */
+  line-height: 120%;
   letter-spacing: -0.5px;
 }
 
-h4 {
+h4, .text-h4, .v-alert-title, .v-stepper-header, .survey_header, .group_header {
   color: var(--Primary-Dark, #07152A);
-  font-family: "Halyard Display";
+  font-family: "Halyard Display" !important;
   font-size: 26px;
   font-style: normal;
   font-weight: 400;
-  line-height: 120%; /* 31.2px */
+  line-height: 120%;
 }
 
-h5 {
+h5, .text-h5 {
   color: var(--Primary-Dark, #07152A);
   leading-trim: both;
   text-edge: cap;
-  font-family: "Halyard Display";
+  font-family: "Halyard Display" !important;
   font-size: 22px;
   font-style: normal;
   font-weight: 500;
-  line-height: 120%; /* 26.4px */
+  line-height: 120%;
   letter-spacing: 0.5px;
 }
 
-h6 {
+h6, .text-h6, .v-card, .v-alert__content {
   color: var(--Primary-Dark, #07152A);
   leading-trim: both;
   text-edge: cap;
-  font-family: "Halyard Text";
+  font-family: "Halyard Text" !important;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
-  line-height: 110%; /* 17.6px */
+  line-height: 110%;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 
-/* small text, for things like td, tables, data, etc. */
-
-.small {
+.small, .v-btn, .v-overlay, .v-data-table, .v-checkbox, .v-slider-track, .text-no-wrap {
   color: var(--Primary-Dark, #07152A);
-  font-family: "Halyard Text";
+  font-family: "Halyard Text" !important;
   font-size: 16px;
   font-style: normal;
   font-weight: 300;
-  line-height: 130%; /* 20.8px */
+  line-height: 130%;
+}
+
+.v-sheet, .v-table {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.v-btn {
+  border-radius: 16px;
 }

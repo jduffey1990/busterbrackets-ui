@@ -54,7 +54,7 @@
               >View Client
               </v-btn>
               <v-btn
-                  color="warning"
+                  color="secondary"
                   class="ml-2"
                   size="small"
                   @click="archiveClient(advisor.id, item)"

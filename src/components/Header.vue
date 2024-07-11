@@ -98,6 +98,7 @@ const logout = async () => {
 };
 </script>
 
+
 <style>
 .nav_bar {
   display: flex;
@@ -106,18 +107,18 @@ const logout = async () => {
   align-items: center;
 }
 
-@media only screen and (max-width: 700px) {
+.v-app-bar {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
 
+@media only screen and (max-width: 700px) {
   .nav_bar {
     flex-direction: column;
     justify-content: center;
-
   }
 
   .v-toolbar__content {
     min-height: 150px;
   }
-
 }
-
 </style>

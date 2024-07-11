@@ -1,10 +1,10 @@
 <template>
-  <v-app>
+  <v-app class="app-background">
     <Header/>
 
     <UiToast>
       <v-main>
-        <v-container class="gradient-background">
+        <v-container>
           <router-view></router-view>
         </v-container>
       </v-main
@@ -24,19 +24,22 @@ import UiToast from '@/components/ui/Toast.vue';
 
 <style>
 
-.gradient-background {
-  background: linear-gradient(180deg, #E1EFFF 30%, #F9BBA9 80.05%);
+.app-background {
+  background: linear-gradient(180deg, #E1EFFF 30%, #F9BBA9 80.05%) !important;
   min-height: 87vh;
   max-width: 100%;
 }
 
+.trans-background {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
 @media only screen and (max-width: 700px) {
 
-  .gradient-background {
-    margin-top: 71px;
+  .app-background {
+    padding-top: 80px;
   }
 
 }
-
 
 </style>

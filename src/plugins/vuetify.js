@@ -44,6 +44,7 @@ export default createVuetify({
                     success: '#FCC35B',
                     lightgrey: '#f6f9fc',
                     error: '#c6414f',
+                    translucent: 'rgba(255,255,255,0.2)'
                 },
             },
         },
