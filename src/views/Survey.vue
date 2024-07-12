@@ -55,7 +55,7 @@
                     v-for="group in section.survey_groups"
                     :cols="group.column_width"
                 >
-                  <div class="group_header">
+                  <div class="group_header text-h5">
                     {{ group.name }}
                     <v-checkbox
                         v-if="groupContainsCheckboxes(group)"
