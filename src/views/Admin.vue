@@ -28,9 +28,9 @@
               {{ !displayState[item.id]?.showClients ? displayState.hidden : displayState.shown }}
             </v-btn>
             <v-btn
-                color="primary"
+                color="secondary"
                 @click="viewProspects(item.id)"
-                class="ml-5"
+                class="ml-5 secondary-btn"
                 :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
             >
               {{ !displayState[item.id]?.showProspects ? displayState.hiddenProspects : displayState.shownProspects }}
