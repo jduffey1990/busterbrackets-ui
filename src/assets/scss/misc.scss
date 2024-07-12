@@ -75,7 +75,7 @@ h6, .text-h6, .v-card, .v-alert__content {
   text-transform: uppercase;
 }
 
-.small, .v-btn, .v-overlay, .v-data-table, .v-checkbox, .v-slider-track, .text-no-wrap {
+.small, .v-btn, .v-overlay, .v-data-table, .v-checkbox, .v-slider-track, .text-no-wrap, .v-row {
   color: var(--Primary-Dark, #07152A);
   font-family: "halyard-text" !important;
   font-size: 16px;
@@ -90,4 +90,10 @@ h6, .text-h6, .v-card, .v-alert__content {
 
 .v-btn {
   border-radius: 16px;
+}
+
+.secondary-btn {
+  background-color: #ffffff;
+  border: 2px solid #07152A;
+  color: #07152A; /* To set the text color to match the stroke */
 }

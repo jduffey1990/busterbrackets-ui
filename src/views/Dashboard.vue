@@ -12,7 +12,7 @@
           @click="copyText()"
           color="secondary"
           text="Copy Survey Link"
-          class="survey_button"
+          class="survey_button secondary-btn"
       ></v-btn>
 
       <v-btn
@@ -60,7 +60,8 @@
               >View Client
               </v-btn>
               <v-btn
-                  class="ml-2 custom-archive-btn"
+                  color="secondary"
+                  class="ml-2 secondary-btn"
                   size="small"
                   @click="archiveClient(item)"
               >Archive
@@ -88,15 +89,15 @@
             <template v-slot:item.actions="{ item }">
               <v-btn
                   color="secondary"
-                  class="ml-2"
+                  class="ml-2 secondary-btn"
                   size="small"
                   @click="acceptProspect(item)"
               >Accept
               </v-btn>
 
               <v-btn
-                  color="warning"
-                  class="ml-2"
+                  color="secondary"
+                  class="ml-2 secondary-btn"
                   size="small"
                   @click="archiveProspect(item)"
               >Archive
@@ -329,11 +330,6 @@ const toggleProspects = () => {
   margin-left: 10px;
 }
 
-.custom-archive-btn {
-  background-color: #ffffff;
-  border: 2px solid #07152A;
-  color: #07152A; /* To set the text color to match the stroke */
-}
 
 .client_display {
   display: flex;

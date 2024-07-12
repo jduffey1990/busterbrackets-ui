@@ -55,7 +55,7 @@
               </v-btn>
               <v-btn
                   color="secondary"
-                  class="ml-2"
+                  class="ml-2 secondary-btn"
                   size="small"
                   @click="archiveClient(advisor.id, item)"
               >Archive
@@ -77,8 +77,8 @@
               >Accept Prospect
               </v-btn>
               <v-btn
-                  color="warning"
-                  class="ml-2"
+                  color="secondary"
+                  class="ml-2 secondary-btn"
                   size="small"
                   @click="archiveProspect(advisor.id, item)"
               >Archive
