@@ -142,7 +142,10 @@
               <v-col cols="8">
                 <v-table>
                   <tbody>
-                  <tr v-for="p in portfolioSectors">
+                  <tr v-for="(p, index) in portfolioSectors" :key="index" class="pl-10">
+                    <div class="sector-dot">
+                      <v-icon :color="orderedColors[index]">mdi-circle</v-icon>
+                    </div>
                     <td class="text-no-wrap">{{ p.title }}</td>
                     <td class="w-100">{{ p.value }}%</td>
                   </tr>
@@ -340,6 +343,8 @@ const allocationHeaders = [
   },
   {},
 ];
+
+let orderedColors = ref([])
 
 const getPortfolios = async () => {
   portfoliosLoading.value = true;
@@ -587,8 +592,8 @@ watch(currentTab, (e) => {
 });
 
 const brandColors = [
-  '#07152A', '#E1EFFF', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4',
-  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA'
+  '#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#F28B82',
+  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#5BA19D'
 ];
 
 const getUniqueRandomColor = (colors, usedColors) => {
@@ -605,11 +610,13 @@ const getPieChart = (data) => {
   const labels = data.map((d) => d.title);
   const usedColors = new Set();
 
+  orderedColors.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
+
   return {
     labels,
     datasets: [
       {
-        backgroundColor: labels.map(() => getUniqueRandomColor(brandColors, usedColors)),
+        backgroundColor: orderedColors.value,
         data: data.map((d) => d.value),
       },
     ],
@@ -638,3 +645,9 @@ const getBarChart = (data) => {
 };
 
 </script>
+
+<style>
+.sector-dot {
+  transform: translateY(13px);
+}
+</style>
