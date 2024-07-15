@@ -42,12 +42,7 @@
   </v-footer>
 </template>
 
-<style scoped>
-.v-footer {
-  max-height: 80px;
-  background-color: rgba(255, 255, 255, 0.5) !important;
-}
-</style>
+
 <script>
 export default {
   data() {
@@ -57,3 +52,21 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.v-footer {
+  max-height: 60px;
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  padding: 0px 16px;
+}
+
+@media only screen and (max-width: 700px) {
+  .v-footer {
+    display: flex;
+    flex-direction: column;
+
+  }
+}
+</style>
+
+</style>

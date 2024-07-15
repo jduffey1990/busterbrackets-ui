@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar fixed :elevation="0" height="80">
+  <v-app-bar fixed :style="appBarStyle" :elevation="0" height="60">
     <v-container>
       <div class="nav_bar">
         <v-app-bar-title>
@@ -82,6 +82,7 @@
 </template>
 
 <script setup>
+import {ref, onMounted, onUnmounted, computed} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 import {useRouter} from 'vue-router';
@@ -96,6 +97,28 @@ const logout = async () => {
   await useUserStore().logout();
   router.push('/login');
 };
+
+const scrollPosition = ref(0);
+const opacity = ref(0.2);
+
+const handleScroll = () => {
+  scrollPosition.value = window.scrollY;
+  opacity.value = scrollPosition.value > 0 ? 0.95 : 0.2;
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
+
+const appBarStyle = computed(() => {
+  return {
+    backgroundColor: `rgba(255, 255, 255, ${opacity.value})`,
+  };
+});
 </script>
 
 
@@ -105,10 +128,6 @@ const logout = async () => {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-}
-
-.v-app-bar {
-  background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 @media only screen and (max-width: 700px) {
