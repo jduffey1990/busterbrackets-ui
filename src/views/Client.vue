@@ -163,6 +163,14 @@
                 :headers="allocationHeaders"
                 :items-per-page="-1"
             >
+                <template v-slot:item="{ item }">
+                    <tr>
+                      <td><img :src="getImagePathFromTicker(item.ticker)" alt="" style="display: flex; margin: auto; max-height: 20px; max-width: 40px;" ></td>
+                      <td style="text-wrap: nowrap;">{{ item.company }}</td>
+                      <td>{{ item.ticker }} </td>
+                      <td>{{ item.allocation }}</td>
+                  </tr>  
+                </template>
               <template #bottom></template>
             </v-data-table>
           </div>
@@ -321,6 +329,11 @@ const hasRequestedPortfolios = ref(false);
 const portfolioValues = ref();
 const portfoliosLoading = ref(false);
 const allocationHeaders = [
+  { 
+    title: '', 
+    key: 'image', 
+    width: 0, 
+    nowrap: true },
   {
     title: 'Company',
     key: 'company',
@@ -339,7 +352,7 @@ const allocationHeaders = [
     width: 0,
     nowrap: true,
   },
-  {},
+  {}
 ];
 
 let orderedColors = ref([])
@@ -399,12 +412,13 @@ const getPortfolios = async () => {
 
     allocations.value = labels
         .map((p) => ({
-          company: pomarium_names[p],
+          company: pomarium_names[p], //
           ticker: p,
           allocation: `${pomarium[p]}%`,
           value: pomarium[p],
         }))
         .sort((a, b) => b.value - a.value);
+        
   } catch (error) {
   }
 
@@ -491,7 +505,7 @@ const accountHeaders = [
     width: 0,
     nowrap: true,
   },
-  {},
+  ,
 ];
 
 const accounts = ref([]);
@@ -654,6 +668,10 @@ const getBarChart = (data) => {
     ],
   };
 };
+
+const getImagePathFromTicker = (tickerSymbol) => {
+    return `/Company-Logos/${tickerSymbol}.png`;
+}
 
 </script>
 
