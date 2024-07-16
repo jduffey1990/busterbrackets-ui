@@ -58,7 +58,7 @@
                   <div class="group_header text-h5">
                     {{ group.name }}
                     <v-checkbox
-                        v-if="groupContainsCheckboxes(group)"
+                        v-if="groupContainsCheckboxes(group) && section.name === 'Plant your Trees'"
                         v-model="group.selectAll"
                         @change="toggleAllCheckboxes(section)"
                         label="Select All"
@@ -82,7 +82,7 @@
                           location="top"
                       >
                         <template v-slot:activator="{ props }">
-                          <v-icon small v-bind="props" color="info" class="ml-2">mdi-information</v-icon>
+                          <v-icon small v-bind="props" color="grayblue" class="ml-2">mdi-information</v-icon>
                         </template>
                       </v-tooltip>
                     </div>
@@ -531,6 +531,10 @@ const submitSurvey = () => {
   justify-content: start; /* Space between the text and the checkbox */
 }
 
+.mdi-information {
+  transform: translateY(7px);
+}
+
 @media only screen and (max-width: 1275px) {
 
   .group_header {
@@ -538,7 +542,6 @@ const submitSurvey = () => {
     flex-direction: column; /* Change layout to column */
     align-items: flex-start;
   }
-
 
 }
 

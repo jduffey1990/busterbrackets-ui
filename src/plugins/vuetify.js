@@ -43,6 +43,7 @@ export default createVuetify({
                     warning: '#CF6232',
                     success: '#FCC35B',
                     lightgrey: '#f6f9fc',
+                    grayblue: "#677680",
                     error: '#c6414f',
                     translucent: 'rgba(255,255,255,0.2)'
                 },
