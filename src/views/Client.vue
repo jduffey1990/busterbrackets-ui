@@ -92,15 +92,12 @@
             <div class="text-h4">Portfolio/Market</div>
 
             <v-row>
-              <v-col cols="6">
+              <v-col cols="8">
                 <BarChart
                     :data="getBarChart(portfolioValues)"
-                    :options="{
-                    responsive: true,
-                  }"
                 />
               </v-col>
-              <v-col cols="6">
+              <v-col cols="4">
                 <v-table>
                   <tbody>
                   <tr>
@@ -143,9 +140,9 @@
                 <v-table>
                   <tbody>
                   <tr v-for="(p, index) in portfolioSectors" :key="index" class="pl-10">
-                    <div class="sector-dot">
+                    <td class="sector-dot">
                       <v-icon :color="orderedColors[index]">mdi-circle</v-icon>
-                    </div>
+                    </td>
                     <td class="text-no-wrap">{{ p.title }}</td>
                     <td class="w-100">{{ p.value }}%</td>
                   </tr>
@@ -154,6 +151,7 @@
               </v-col>
             </v-row>
           </div>
+
 
           <hr/>
 
@@ -631,15 +629,28 @@ const getBarChart = (data) => {
     labels: marketData.map((d) => d.title),
     datasets: [
       {
+        label: 'Market',
+        data: marketData.map((d) => d.value),
+        borderColor: 'rgba(207, 98, 50, 1)', // Rust color
+        backgroundColor: 'rgba(207, 98, 50, 0.4)', // Fully transparent background
+        borderWidth: {top: 10, left: 0, right: 0, bottom: 0}, // Custom border widths
+        borderSkipped: false, // Skip no border to apply custom widths
+        // backgroundColor: 'rgba(207, 98, 50, 1)',
+        // borderWidth: 10,
+        // pointRadius: 50, // Hide the points
+        // pointStyle: 'line',
+        // pointHoverRadius: 20, // Hide the hover points
+        // type: "line",
+        // fill: false, // Prevent the area under the line from being filled
+        // showLine: false,
+      },
+      {
         label: 'Pomarium',
         backgroundColor: '#07152A', // Primary dark
         data: pomariumData.map((d) => d.value),
       },
-      {
-        label: 'Market',
-        backgroundColor: '#CF6232', // Rust
-        data: marketData.map((d) => d.value),
-      },
+
+
     ],
   };
 };
@@ -647,7 +658,5 @@ const getBarChart = (data) => {
 </script>
 
 <style>
-.sector-dot {
-  transform: translateY(13px);
-}
+
 </style>
