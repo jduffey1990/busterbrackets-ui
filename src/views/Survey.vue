@@ -66,23 +66,35 @@
                     ></v-checkbox>
                   </div>
 
-                  <div v-for="q in group.survey_questions">
+                  <div v-for="q in group.survey_questions" :key="q.question.id">
 
-
-                    <!-- Tooltip added to info symbol -->
-                    <div v-if="q.question.response_type === 'checkbox'" class="d-flex">
+                    <div
+                        v-if="q.question.response_type === 'checkbox'"
+                        class="d-flex align-center"
+                        @mouseover="hoveredQuestion = q.question.id"
+                        @mouseleave="hoveredQuestion = null"
+                    >
                       <v-checkbox
                           v-model="q.question.default_value"
                           @input="updateResponse(q)"
                           :label="q.question.text"
+
                       ></v-checkbox>
                       <v-tooltip
-                          v-if="q.question.tooltip"
+                          v-if="q.question.tooltip && hoveredQuestion === q.question.id"
                           :text="q.question.tooltip"
                           location="top"
                       >
                         <template v-slot:activator="{ props }">
-                          <v-icon small v-bind="props" color="grayblue" class="ml-2">mdi-information</v-icon>
+                          <transition name="slide-fade" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+                            <v-icon
+                                v-if="hoveredQuestion === q.question.id"
+                                v-bind="props"
+                                small
+                                color="grayblue"
+                                class="ml-2">mdi-information
+                            </v-icon>
+                          </transition>
                         </template>
                       </v-tooltip>
                     </div>
@@ -235,6 +247,7 @@ const surveyResponses = [];
 const currentStep = ref();
 
 const isAdvisorSurvey = ref(advisor === advisor_id);
+const hoveredQuestion = ref(null)
 
 onMounted(async () => {
   const {data: surveyData} = await $axios.get('/api/surveys/');
@@ -456,6 +469,30 @@ const submitSurvey = () => {
     showNewProspectModal.value = true;
   }
 };
+
+function handleMouseOver(questionId) {
+  console.log('Mouse over:', questionId);
+  this.hoveredQuestion = questionId;
+}
+
+function handleMouseLeave() {
+  console.log('Mouse leave');
+  this.hoveredQuestion = null;
+}
+
+function beforeEnter(el) {
+  console.log('Before enter:', el);
+}
+
+function enter(el, done) {
+  console.log('Enter:', el);
+  done();
+}
+
+function leave(el, done) {
+  console.log('Leave:', el);
+  done();
+}
 </script>
 
 <style>
@@ -531,9 +568,24 @@ const submitSurvey = () => {
   justify-content: start; /* Space between the text and the checkbox */
 }
 
-.mdi-information {
-  transform: translateY(7px);
+/*
+  Enter and leave animations can use different
+  durations and timing functions.
+*/
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
 }
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
 
 @media only screen and (max-width: 1275px) {
 

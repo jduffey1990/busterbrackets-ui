@@ -590,7 +590,7 @@ watch(currentTab, (e) => {
 });
 
 const brandColors = [
-  '#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#F28B82',
+  '#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#636970',
   '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#5BA19D'
 ];
 
