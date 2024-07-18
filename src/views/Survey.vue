@@ -54,20 +54,20 @@
                 <v-col
                     v-for="group in section.survey_groups"
                     :cols="group.column_width"
+                    :key="group.name"
                 >
                   <div class="group_header text-h5">
                     {{ group.name }}
                     <v-checkbox
                         v-if="groupContainsCheckboxes(group) && section.name === 'Plant your Trees'"
-                        v-model="group.selectAll"
-                        @change="toggleAllCheckboxes(section)"
+                        :model-value="selectAll[group.name] || false"
+                        @change="toggleAllCheckboxes(group)"
                         label="Select All"
                         class="ml-3"
                     ></v-checkbox>
                   </div>
 
                   <div v-for="q in group.survey_questions" :key="q.question.id">
-
                     <div
                         v-if="q.question.response_type === 'checkbox'"
                         class="d-flex align-center"
@@ -86,7 +86,7 @@
                           location="top"
                       >
                         <template v-slot:activator="{ props }">
-                          <transition name="slide-fade" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+                          <transition name="slide-fade">
                             <v-icon
                                 v-if="hoveredQuestion === q.question.id"
                                 v-bind="props"
@@ -218,246 +218,156 @@
 </template>
 
 <script setup>
-import {useUserStore} from '@/store/user';
-import {reactive} from 'vue';
-import {onMounted} from 'vue';
-import {ref, inject} from 'vue';
+import {reactive, ref, onMounted, inject, computed} from 'vue';
 import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
+import {useUserStore} from '@/store/user';
 import {parseError} from '@/utils/error';
 
+// Composables
 const router = useRouter();
-
-const {
-  user: {id: advisor_id},
-  getValuesProfile,
-  isLoggedIn,
-} = useUserStore();
-
-const {
-  query: {user_id, advisor},
-} = useRoute();
-
+const route = useRoute();
 const $axios = inject('$axios');
 const {show} = inject('toast');
 
-const survey = ref();
+// Stores
+const {
+  user: {id: advisor_id},
+  getValuesProfile,
+  isLoggedIn
+} = useUserStore();
 
-const surveyResponses = [];
+// Route Params
+const user_id = route.query.user_id;
+const advisor = route.query.advisor;
 
-const currentStep = ref();
-
-const isAdvisorSurvey = ref(advisor === advisor_id);
-const hoveredQuestion = ref(null)
-
-onMounted(async () => {
-  const {data: surveyData} = await $axios.get('/api/surveys/');
-
-  let valuesProfile = [];
-
-  if (isLoggedIn && !isAdvisorSurvey.value) {
-    valuesProfile = await getValuesProfile({
-      advisor_id,
-      user_id,
-    });
-  }
-
-  for (let section of surveyData.survey_sections) {
-    for (let group of section.survey_groups) {
-      for (let q of group.survey_questions) {
-        const foundQuestion = valuesProfile.find(
-            (vp) => vp.question.id === q.question.id
-        );
-
-        if (foundQuestion) {
-          q.question.default_value = foundQuestion.value;
-        }
-
-        if (q.question.response_type === 'slider') {
-          if (q.question.default_value === undefined) {
-            q.question.default_value = 0;
-
-            updateResponse(q, true);
-          }
-        }
-      }
-    }
-  }
-
-  survey.value = surveyData;
-});
-
+// Reactive State
+const survey = ref(null);
+const surveyResponses = reactive([]);
+const currentStep = ref(null);
+const isAdvisorSurvey = computed(() => advisor === advisor_id);
+const hoveredQuestion = ref(null);
 const companies = ref([]);
-
-const getCompanies = async () => {
-  try {
-    const {data} = await $axios.get('/api/companies/');
-
-    companies.value = data.map((s) => ({
-      ...s,
-      name: `${s.name} (${s.ticker})`,
-    }));
-  } catch (error) {
-  }
-};
-
-getCompanies();
-
 const touched = ref(false);
 const showMultiSelectError = ref(false);
-const updateResponse = (q, setInitial) => {
-  const position = surveyResponses.findIndex(
-      (s) => s.question.id === q.question.id
-  );
+const hasSubmitted = ref(false);
+const showNewProspectModal = ref(false);
+const selectAll = ref({})
 
+// Initial State
+const initialState = {
+  first_name: undefined,
+  last_name: undefined,
+  email: undefined,
+};
+const newProspect = reactive({...initialState});
+
+// Utility Functions
+const groupContainsCheckboxes = (group) => {
+  return group.survey_questions.some(q => q.question.response_type === 'checkbox');
+};
+const toggleAllCheckboxes = (group) => {
+  if (!(group.name in selectAll.value)) {
+    selectAll.value[group.name] = true;
+  } else {
+    selectAll.value[group.name] = !selectAll.value[group.name];
+  }
+
+  group.survey_questions.forEach(q => {
+    if (q.question.response_type === 'checkbox') {
+      q.question.default_value = selectAll.value[group.name];
+    }
+  });
+};
+
+const updateResponse = (q, setInitial = false) => {
+  const position = surveyResponses.findIndex(s => s.question.id === q.question.id);
   if (position > -1) {
     surveyResponses.splice(position, 1);
   }
-
   surveyResponses.push(q);
-
   if (!setInitial) {
     touched.value = true;
   }
 
   const multiSelect = surveyResponses
-      .filter((r) => r.question.response_type === 'multi_select')
-      .map((r) => r.question.default_value);
+      .filter(r => r.question.response_type === 'multi_select')
+      .map(r => r.question.default_value);
 
   if (multiSelect.length > 1) {
     showMultiSelectError.value = !!multiSelect.reduce(
-        (p, c) => p.filter((e) => c.includes(e)).length
+        (p, c) => p.filter(e => c.includes(e)).length
     );
   }
 };
 
-function groupContainsCheckboxes(group) {
-  return group.survey_questions.some(q => q.question.response_type === 'checkbox');
-}
-
-function toggleAllCheckboxes(section) {
-  section.survey_groups.forEach(group => {
-    if (group.selectAll) {
-      group.survey_questions.forEach(q => {
-        if (q.question.response_type === 'checkbox') {
-          q.question.default_value = true;
-        }
-      });
-    } else {
-      group.survey_questions.forEach(q => {
-        if (q.question.response_type === 'checkbox') {
-          q.question.default_value = false;
-        }
-      });
-    }
-  });
-}
-
-addEventListener('beforeunload', (event) => {
-  if (touched.value && !hasSubmitted.value) {
-    if (!confirm('Do you really want to leave? you have unsaved changes!')) {
-      event.preventDefault();
-    }
-  }
-});
-
-onBeforeRouteLeave((to, from, next) => {
-  if (touched.value && !hasSubmitted.value) {
-    if (confirm('Do you really want to leave? you have unsaved changes!')) {
-      next();
-    }
-
-    return;
-  }
-
-  next();
-});
-
-const hasSubmitted = ref(false);
 const submit = async (prospect_id) => {
   try {
-    // if saving for a client
     const url = prospect_id
         ? `/api/prospects/${prospect_id}/responses/`
         : `/api/advisors/${advisor_id}/clients/${user_id}/responses/`;
 
     await $axios.post(
         url,
-        surveyResponses.map((sr) => ({
+        surveyResponses.map(sr => ({
           ...sr.question,
           default_value: JSON.stringify(sr.question.default_value),
         }))
     );
 
     if (!prospect_id) {
-      await $axios.post(
-          `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`
-      );
+      await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
     }
 
     show({message: 'Survey saved!'});
-
     hasSubmitted.value = true;
 
     setTimeout(() => {
-      router.push(
-          prospect_id ? '/?success=true' : `/clients/${user_id}#values`
-      );
+      router.push(prospect_id ? '/?success=true' : `/clients/${user_id}#values`);
     });
   } catch (error) {
     show({message: parseError(error), error: true});
   }
 };
 
+const getCompanies = async () => {
+  try {
+    const {data} = await $axios.get('/api/companies/');
+    companies.value = data.map(s => ({
+      ...s,
+      name: `${s.name} (${s.ticker})`,
+    }));
+  } catch (error) {
+    // Handle error
+  }
+};
 
 const getTicks = (ticks) => {
   const tickObj = {};
-
   for (let i in ticks) {
     tickObj[i] = ticks[i];
   }
-
   return tickObj;
 };
-
-const showNewProspectModal = ref(false);
-
-const initialState = {
-  first_name: undefined,
-  last_name: undefined,
-  email: undefined,
-};
-
-const newProspect = reactive({...initialState});
 
 const resetForm = () => {
   Object.assign(newProspect, initialState);
 };
 
-resetForm();
-
-let newProspectId;
+let newProspectId = null;
 const createNewProspect = async () => {
   try {
     if (!newProspectId) {
-      const {
-        data: {id},
-      } = await $axios.post('/api/prospects/', {
+      const {data: {id}} = await $axios.post('/api/prospects/', {
         ...newProspect,
         advisor,
       });
-
       newProspectId = id;
     }
-
     await submit(newProspectId);
   } catch (error) {
     if (error.response.status === 409) {
-      return show({
-        message: 'A user with that email already exists',
-        error: true,
-      });
+      return show({message: 'A user with that email already exists', error: true});
     }
-
     show({message: parseError(error), error: true});
   }
 };
@@ -470,30 +380,56 @@ const submitSurvey = () => {
   }
 };
 
-function handleMouseOver(questionId) {
-  console.log('Mouse over:', questionId);
-  this.hoveredQuestion = questionId;
-}
+// Lifecycle Hooks
+onMounted(async () => {
+  const {data: surveyData} = await $axios.get('/api/surveys/');
+  let valuesProfile = [];
 
-function handleMouseLeave() {
-  console.log('Mouse leave');
-  this.hoveredQuestion = null;
-}
+  if (isLoggedIn && !isAdvisorSurvey.value) {
+    valuesProfile = await getValuesProfile({
+      advisor_id,
+      user_id,
+    });
+  }
 
-function beforeEnter(el) {
-  console.log('Before enter:', el);
-}
+  for (let section of surveyData.survey_sections) {
+    for (let group of section.survey_groups) {
+      for (let q of group.survey_questions) {
+        const foundQuestion = valuesProfile.find(vp => vp.question.id === q.question.id);
+        if (foundQuestion) {
+          q.question.default_value = foundQuestion.value;
+        }
+        if (q.question.response_type === 'slider' && q.question.default_value === undefined) {
+          q.question.default_value = 0;
+          updateResponse(q, true);
+        }
+      }
+    }
+  }
 
-function enter(el, done) {
-  console.log('Enter:', el);
-  done();
-}
+  survey.value = surveyData;
+  await getCompanies();
+});
 
-function leave(el, done) {
-  console.log('Leave:', el);
-  done();
-}
+onBeforeRouteLeave((to, from, next) => {
+  if (touched.value && !hasSubmitted.value) {
+    if (confirm('Do you really want to leave? you have unsaved changes!')) {
+      next();
+    }
+    return;
+  }
+  next();
+});
+
+window.addEventListener('beforeunload', (event) => {
+  if (touched.value && !hasSubmitted.value) {
+    if (!confirm('Do you really want to leave? you have unsaved changes!')) {
+      event.preventDefault();
+    }
+  }
+});
 </script>
+
 
 <style>
 
