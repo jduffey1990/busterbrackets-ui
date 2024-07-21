@@ -16,13 +16,6 @@
       ></v-btn>
 
       <v-btn
-          @click="viewSurvey()"
-          color="info"
-          text="View Survey"
-          class="survey_button"
-      ></v-btn>
-
-      <v-btn
           @click="openCreateNewClientModal = true"
           color="primary"
           text="Take Survey with Client"
@@ -303,10 +296,6 @@ const copyText = () => {
   show({
     message: `<div>Link copied to clipboard!</div><br/><div>NOTE: Not mobile friendly yet but will be shortly</div>`,
   });
-};
-
-const viewSurvey = () => {
-  router.push(surveyLink);
 };
 
 // Toggle display functions
