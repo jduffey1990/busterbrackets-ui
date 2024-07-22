@@ -33,7 +33,7 @@
       <v-tabs-window-item :key="0">
         <v-alert
             title="No clients yet..."
-            type="info"
+            type="secondary"
             v-if="!clients.length"
             class="my-4"
         >Click "Take Survey with Client" to start adding clients to your list.
@@ -67,7 +67,7 @@
       <v-tabs-window-item :key="1">
         <v-alert
             title="No prospects yet..."
-            type="info"
+            type="secondary"
             v-if="!prospects.length"
             class="my-4"
         >Click the "Copy Survey Link" to send your unique firm survey to
@@ -325,7 +325,6 @@ const toggleProspects = () => {
   flex-direction: column;
   justify-content: start;
   margin-top: 20px;
-  margin-left: 20px;
 }
 
 .client_button {

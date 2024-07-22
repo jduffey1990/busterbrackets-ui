@@ -25,9 +25,9 @@ import UiToast from '@/components/ui/Toast.vue';
 <style>
 
 .app-background {
-  background: linear-gradient(180deg, #E1EFFF 30%, #F9BBA9 80.05%) !important;
+  background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%) !important;
   min-height: 87vh;
-  max-width: 100%;
+  width: 100% !important;
 }
 
 .trans-background {

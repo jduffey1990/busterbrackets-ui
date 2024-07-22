@@ -9,39 +9,39 @@
 
       <template v-if="canEdit">
         <v-btn
-          @click="router.push('/advisors')"
-          text="Back"
-          class="ml-2"
+            @click="router.push('/advisors')"
+            text="Back"
+            class="ml-2"
         ></v-btn>
 
         <v-btn
-          @click="saveFactorLevers()"
-          color="primary"
-          text="Save"
-          class="ml-2"
+            @click="saveFactorLevers()"
+            color="primary"
+            text="Save"
+            class="ml-2"
         ></v-btn>
       </template>
     </div>
 
-    <v-alert type="info" title="Super Admin Only" v-if="canEdit" class="mb-4">
+    <v-alert type="secondary" title="Super Admin Only" v-if="canEdit" class="mb-4">
       You are viewing this as a super admin.
     </v-alert>
-    <v-alert type="info" title="Read Only" v-else class="mb-4">
+    <v-alert type="secondary" title="Read Only" v-else class="mb-4">
       Your investment preferences are read only. Please contact
       support@pomarium.com if you need assistance.
     </v-alert>
 
     <div class="text-h6 mb-3">Factor Levers</div>
     <v-checkbox
-      :readonly="!canEdit"
-      v-model="factorLevers.momentum"
-      label="Momentum"
+        :readonly="!canEdit"
+        v-model="factorLevers.momentum"
+        label="Momentum"
     ></v-checkbox>
 
     <v-checkbox
-      :readonly="!canEdit"
-      v-model="factorLevers.quality"
-      label="Quality"
+        :readonly="!canEdit"
+        v-model="factorLevers.quality"
+        label="Quality"
     >
     </v-checkbox>
 
@@ -49,43 +49,44 @@
     </v-checkbox>
 
     <v-checkbox
-      :readonly="!canEdit"
-      v-model="factorLevers.low_volatility"
-      label="Low Volatility"
+        :readonly="!canEdit"
+        v-model="factorLevers.low_volatility"
+        label="Low Volatility"
     ></v-checkbox>
 
-    <hr class="my-10" />
+    <hr class="my-10"/>
 
     <div class="d-flex my-4">
       <div class="text-h6">Asset Allocation Guidelines</div>
       <v-spacer></v-spacer>
 
       <input
-        type="file"
-        accept="text/csv"
-        v-if="canEdit"
-        @change="onFileUpload($event)"
+          type="file"
+          accept="text/csv"
+          v-if="canEdit"
+          @change="onFileUpload($event)"
       />
     </div>
 
     <v-data-table :items="allocations" :items-per-page="-1" :headers="headers">
-      <template #bottom> </template>
+      <template #bottom></template>
     </v-data-table>
   </div>
 </template>
 
 <script setup>
-import { useUserStore } from '@/store/user';
-import { computed } from 'vue';
-import { onMounted } from 'vue';
-import { ref } from 'vue';
-import { inject } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import {useUserStore} from '@/store/user';
+import {computed} from 'vue';
+import {onMounted} from 'vue';
+import {ref} from 'vue';
+import {inject} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+
 const router = useRouter();
-const { show } = inject('toast');
+const {show} = inject('toast');
 
 const {
-  user: { id: advisor_id },
+  user: {id: advisor_id},
   isSuper,
 } = useUserStore();
 
@@ -94,19 +95,20 @@ const $axios = inject('$axios');
 const factorLevers = ref({});
 
 const {
-  params: { user_id },
+  params: {user_id},
 } = useRoute();
 
 const canEdit = computed(() => isSuper && user_id);
 
 const getFactorLevers = async () => {
   try {
-    const { data } = await $axios.get(
-      `/api/advisors/${user_id || advisor_id}/factor-levers/`
+    const {data} = await $axios.get(
+        `/api/advisors/${user_id || advisor_id}/factor-levers/`
     );
 
     factorLevers.value = data;
-  } catch (error) {}
+  } catch (error) {
+  }
 };
 
 getFactorLevers();
@@ -114,12 +116,13 @@ getFactorLevers();
 const allocations = ref([]);
 const getAllocations = async () => {
   try {
-    const { data } = await $axios.get(
-      `/api/advisors/${user_id || advisor_id}/allocations/`
+    const {data} = await $axios.get(
+        `/api/advisors/${user_id || advisor_id}/allocations/`
     );
 
     allocations.value = data;
-  } catch (error) {}
+  } catch (error) {
+  }
 };
 
 getAllocations();
@@ -152,12 +155,12 @@ const headers = [
   {},
 ];
 
-const onFileUpload = ({ target: { files } }) => {
+const onFileUpload = ({target: {files}}) => {
   const reader = new FileReader();
 
   reader.readAsText(files[0]);
 
-  reader.onload = async ({ target: { result } }) => {
+  reader.onload = async ({target: {result}}) => {
     allocations.value = [];
 
     const data = result.split('\r\n');
@@ -174,25 +177,26 @@ const onFileUpload = ({ target: { files } }) => {
         const min_risk = +allocation[2].replace('%', '');
         const max_risk = +allocation[3].replace('%', '');
 
-        allocations.value.push({ name, ticker, min_risk, max_risk });
+        allocations.value.push({name, ticker, min_risk, max_risk});
       }
     }
 
     if (data.length) {
       try {
         await $axios.post(
-          `/api/advisors/${user_id || advisor_id}/allocations/`,
-          {
-            allocations: allocations.value,
-          }
+            `/api/advisors/${user_id || advisor_id}/allocations/`,
+            {
+              allocations: allocations.value,
+            }
         );
 
-        show({ message: 'Advisor Allocations saved!' });
+        show({message: 'Advisor Allocations saved!'});
 
         getAllocations();
 
         return;
-      } catch (error) {}
+      } catch (error) {
+      }
     }
 
     show({
@@ -205,7 +209,7 @@ const onFileUpload = ({ target: { files } }) => {
 const currentAdvisor = ref();
 onMounted(async () => {
   if (canEdit.value) {
-    const { data } = await $axios.get(`/api/users/${user_id || advisor_id}/`);
+    const {data} = await $axios.get(`/api/users/${user_id || advisor_id}/`);
 
     currentAdvisor.value = data;
   }
@@ -214,13 +218,13 @@ onMounted(async () => {
 const saveFactorLevers = async () => {
   try {
     await $axios.patch(
-      `/api/advisors/${user_id || advisor_id}/factor-levers/`,
-      {
-        ...factorLevers.value,
-      }
+        `/api/advisors/${user_id || advisor_id}/factor-levers/`,
+        {
+          ...factorLevers.value,
+        }
     );
 
-    show({ message: 'Factor levers saved!' });
+    show({message: 'Factor levers saved!'});
   } catch (error) {
     show({
       message: `Couldn't save Factor Levers`,

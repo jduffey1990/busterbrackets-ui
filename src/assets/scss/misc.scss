@@ -98,11 +98,26 @@ h6, .text-h6, .v-card, .v-alert__content {
 }
 
 .v-btn {
-  border-radius: 16px;
+  border-radius: 50px;
+  box-shadow: none;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.v-btn:hover {
+  box-shadow: none !important;
+}
+
+.v-btn__content {
+  margin: 5px;
 }
 
 .secondary-btn {
   background-color: #ffffff;
   border: 2px solid #07152A;
   color: #07152A; /* To set the text color to match the stroke */
+}
+
+.v-alert--density-default {
+  padding-bottom: 26px !important;
 }

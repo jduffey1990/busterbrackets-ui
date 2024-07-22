@@ -48,7 +48,7 @@
 
         <v-alert
             title="No values profile yet..."
-            type="info"
+            type="secondary"
             v-if="!hasValuesProfile"
         >Please click "Start Values Profile" to fill out the survey!
         </v-alert>
@@ -79,7 +79,7 @@
       <v-tabs-window-item class="py-2">
         <v-alert
             title="No recommendations yet..."
-            type="info"
+            type="secondary"
             v-if="!allocations.length"
         >
           No recommendations have been generated yet. If you haven't taken the
@@ -163,14 +163,15 @@
                 :headers="allocationHeaders"
                 :items-per-page="-1"
             >
-                <template v-slot:item="{ item }">
-                    <tr>
-                      <td><img :src="getImagePathFromTicker(item.ticker)" alt="" style="display: flex; margin: auto; max-height: 20px; max-width: 40px;" ></td>
-                      <td style="text-wrap: nowrap;">{{ item.company }}</td>
-                      <td>{{ item.ticker }} </td>
-                      <td>{{ item.allocation }}</td>
-                  </tr>  
-                </template>
+              <template v-slot:item="{ item }">
+                <tr>
+                  <td><img :src="getImagePathFromTicker(item.ticker)" alt=""
+                           style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"></td>
+                  <td style="text-wrap: nowrap;">{{ item.company }}</td>
+                  <td>{{ item.ticker }}</td>
+                  <td>{{ item.allocation }}</td>
+                </tr>
+              </template>
               <template #bottom></template>
             </v-data-table>
           </div>
@@ -189,7 +190,7 @@
           </router-link>
         </div>
 
-        <v-alert title="No accounts yet..." type="info" v-if="!accounts.length"
+        <v-alert title="No accounts yet..." type="secondary" v-if="!accounts.length"
         >No accounts have been created yet. Please click "Create New Account"
           to do so.
         </v-alert>
@@ -329,11 +330,12 @@ const hasRequestedPortfolios = ref(false);
 const portfolioValues = ref();
 const portfoliosLoading = ref(false);
 const allocationHeaders = [
-  { 
-    title: '', 
-    key: 'image', 
-    width: 0, 
-    nowrap: true },
+  {
+    title: '',
+    key: 'image',
+    width: 0,
+    nowrap: true
+  },
   {
     title: 'Company',
     key: 'company',
@@ -418,7 +420,7 @@ const getPortfolios = async () => {
           value: pomarium[p],
         }))
         .sort((a, b) => b.value - a.value);
-        
+
   } catch (error) {
   }
 
@@ -670,7 +672,7 @@ const getBarChart = (data) => {
 };
 
 const getImagePathFromTicker = (tickerSymbol) => {
-    return `/Company-Logos/${tickerSymbol}.png`;
+  return `/Company-Logos/${tickerSymbol}.png`;
 }
 
 </script>

@@ -129,7 +129,7 @@
     </v-dialog>
   </div>
 
-  <v-alert title="No Firm" type="warning" v-else
+  <v-alert title="No Firm" type="secondary" v-else
   >You need to be associated to a firm to manage your advisors.
   </v-alert>
 </template>

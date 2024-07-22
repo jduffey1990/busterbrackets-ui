@@ -3,7 +3,7 @@
 
   <v-alert
       title="Advisor Survey"
-      type="info"
+      type="secondary"
       v-if="isAdvisorSurvey"
       class="mb-4"
   >You are taking this survey as an advisor. You will need to approve this

@@ -99,11 +99,11 @@ const logout = async () => {
 };
 
 const scrollPosition = ref(0);
-const opacity = ref(0.2);
+const opacity = ref(0);
 
 const handleScroll = () => {
   scrollPosition.value = window.scrollY;
-  opacity.value = scrollPosition.value > 0 ? 0.95 : 0.2;
+  opacity.value = scrollPosition.value > 0 ? 0.95 : 0;
 };
 
 onMounted(() => {
