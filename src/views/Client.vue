@@ -507,7 +507,7 @@ const accountHeaders = [
     width: 0,
     nowrap: true,
   },
-  ,
+  
 ];
 
 const accounts = ref([]);
@@ -517,6 +517,9 @@ const getAccounts = async () => {
         `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`
     );
 
+    // Log the raw API response data
+    console.log("API Response Data:", data);
+    
     accounts.value = data.map((d) => ({
       ...d,
       value: currencyFormat(d.value),
@@ -527,9 +530,11 @@ const getAccounts = async () => {
     const accountsTab = tabs.value.find((t) => t.label === 'Accounts');
 
     accountsTab.count = accounts.value.length;
+    console.log(accounts.value);
 
     accountsTab.showAlertBadge = !accountsTab.count;
   } catch (error) {
+    console.error("Error fetching accounts:", error);
   }
 };
 
