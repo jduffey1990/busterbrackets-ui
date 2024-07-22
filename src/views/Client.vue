@@ -516,9 +516,6 @@ const getAccounts = async () => {
     const {data} = await $axios.get(
         `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`
     );
-
-    // Log the raw API response data
-    console.log("API Response Data:", data);
     
     accounts.value = data.map((d) => ({
       ...d,
@@ -530,7 +527,7 @@ const getAccounts = async () => {
     const accountsTab = tabs.value.find((t) => t.label === 'Accounts');
 
     accountsTab.count = accounts.value.length;
-    console.log(accounts.value);
+  
 
     accountsTab.showAlertBadge = !accountsTab.count;
   } catch (error) {
