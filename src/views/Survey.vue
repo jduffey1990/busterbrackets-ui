@@ -275,6 +275,7 @@ const toggleAllCheckboxes = (group) => {
   group.survey_questions.forEach(q => {
     if (q.question.response_type === 'checkbox') {
       q.question.default_value = selectAll.value[group.name];
+      updateResponse(q, true)
     }
   });
 };
