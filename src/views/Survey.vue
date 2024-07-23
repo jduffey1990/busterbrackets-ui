@@ -1,6 +1,10 @@
 <template>
   <div class="text-h4 mb-4">Values Profile</div>
 
+  <!--this component is the survey page that advisors will either send to their clients to take alone, or they
+  may take the survey with them. Updated survey re-runs the algorithm, which is our current use case to see
+  changes as nothing else triggers re-run. -->
+
   <v-alert
       title="Advisor Survey"
       type="secondary"
@@ -14,6 +18,9 @@
   >Please do not include and exclude the same company in your selections.
   </v-alert>
 
+
+  <!--steps are "weeds" "trees" "boundaries". First step into the survey_seed file found
+  at app/surveys/management/survey_seed.py by accessing the section to create the header -->
   <div v-if="survey" class="survey_div trans-background">
     <v-stepper v-model="currentStep">
       <template v-slot:default="{ prev, next }">
@@ -30,6 +37,8 @@
           </template>
         </v-stepper-header>
 
+
+        <!--One step into the sections here. Accessing description and sub header-->
         <v-stepper-window>
           <v-stepper-window-item
               v-for="(section, i) in survey.survey_sections"
@@ -50,6 +59,10 @@
                 ></div>
               </div>
 
+
+              <!--now we are getting the questions. We can very nicely get the groups and questions, and
+              dynamically populate the form. Added are some conditionals that help differentiate different
+              windows based on the question type a la multi-select or checkbox etc -->
               <v-row class="rows">
                 <v-col
                     v-for="group in section.survey_groups"
@@ -58,6 +71,10 @@
                 >
                   <div class="group_header text-h5">
                     {{ group.name }}
+
+
+                    <!--this checkbox is the select all. Toggles the associated checkboxes and selectAll state managed
+                    by the group.name and updates the survey state -->
                     <v-checkbox
                         v-if="groupContainsCheckboxes(group) && section.name === 'Plant your Trees'"
                         :model-value="selectAll[group.name] || false"
@@ -67,6 +84,9 @@
                     ></v-checkbox>
                   </div>
 
+
+                  <!--checkboxes and tooltips. Tooltips were added to survey_seed.py. Transition is not functional
+                  but is a TODO to make them not just immediately appear and disappear.-->
                   <div v-for="q in group.survey_questions" :key="q.question.id">
                     <div
                         v-if="q.question.response_type === 'checkbox'"
@@ -127,15 +147,22 @@
             <v-container class="flex-container justify-center mt-6">
               <v-row class="d-flex justify-center">
                 <v-col cols="12" md="8">
+
+                  <!--confusing looking v-model and :label, but remember the survey_seed structure, just getting down
+                  the tree to the level of the question names and such. The companies are the Russell 1000 index
+                  companies and Nathan is updating manually versus automatically at this time.-->
                   <v-autocomplete
-                      v-if="section.survey_groups.some(group => group.survey_questions.some(q => q.question.response_type === 'multi_select'))"
-                      v-model="section.survey_groups.find(group => group.survey_questions.some(q => q.question.response_type === 'multi_select')).survey_questions.find(q => q.question.response_type === 'multi_select').question.default_value"
+                      v-if="section.survey_groups.some(group => group.survey_questions
+                        .some(q => q.question.response_type === 'multi_select'))"
+                      v-model="section.survey_groups.find(group => group.survey_questions
+                        .some(q => q.question.response_type === 'multi_select')).survey_questions
+                        .find(q => q.question.response_type === 'multi_select').question.default_value"
                       :items="companies"
                       item-title="name"
                       item-value="ticker"
                       :label="section.survey_groups.find(group => group.survey_questions
-                      .some(q => q.question.response_type === 'multi_select')).survey_questions
-                      .find(q => q.question.response_type === 'multi_select').question.text"
+                        .some(q => q.question.response_type === 'multi_select')).survey_questions
+                        .find(q => q.question.response_type === 'multi_select').question.text"
                       chips
                       closable-chips
                       multiple
@@ -176,6 +203,7 @@
       </template>
     </v-stepper>
 
+    <!--For prospects, will show up at the submit stage to include propect's basic info-->
     <v-dialog max-width="500" v-model="showNewProspectModal">
       <v-card title="Register">
         <v-card-text>
@@ -266,12 +294,14 @@ const groupContainsCheckboxes = (group) => {
   return group.survey_questions.some(q => q.question.response_type === 'checkbox');
 };
 const toggleAllCheckboxes = (group) => {
+  //updates selectALL state.  Needed a non-db variable so created selectALL for that function
   if (!(group.name in selectAll.value)) {
     selectAll.value[group.name] = true;
   } else {
     selectAll.value[group.name] = !selectAll.value[group.name];
   }
 
+  //updates the checkbox and the question in the survey state
   group.survey_questions.forEach(q => {
     if (q.question.response_type === 'checkbox') {
       q.question.default_value = selectAll.value[group.name];
@@ -294,6 +324,7 @@ const updateResponse = (q, setInitial = false) => {
       .filter(r => r.question.response_type === 'multi_select')
       .map(r => r.question.default_value);
 
+  //cannot have the same value in both included and excluded, thus it would be in there more than once
   if (multiSelect.length > 1) {
     showMultiSelectError.value = !!multiSelect.reduce(
         (p, c) => p.filter(e => c.includes(e)).length
@@ -301,6 +332,7 @@ const updateResponse = (q, setInitial = false) => {
   }
 };
 
+//submit is called in the client pathway without an id.  it is called in createNewProspect with the prospect_id
 const submit = async (prospect_id) => {
   try {
     const url = prospect_id
@@ -333,15 +365,18 @@ const submit = async (prospect_id) => {
 const getCompanies = async () => {
   try {
     const {data} = await $axios.get('/api/companies/');
+    //update the companies state using the db values for the russell 1000 companies
     companies.value = data.map(s => ({
       ...s,
       name: `${s.name} (${s.ticker})`,
     }));
   } catch (error) {
     // Handle error
+    show({message: parseError(error), error: true});
   }
 };
 
+//I am unsure why the list of ticks needs to be moved into an object, but it doesn't take much space so...
 const getTicks = (ticks) => {
   const tickObj = {};
   for (let i in ticks) {
@@ -386,13 +421,14 @@ onMounted(async () => {
   const {data: surveyData} = await $axios.get('/api/surveys/');
   let valuesProfile = [];
 
+  //mounting previous results to valuesProfile if they are present
   if (isLoggedIn && !isAdvisorSurvey.value) {
     valuesProfile = await getValuesProfile({
       advisor_id,
       user_id,
     });
   }
-
+  //adding values profile to visual state of the survey.  small survey so not super concerned about O = n^3
   for (let section of surveyData.survey_sections) {
     for (let group of section.survey_groups) {
       for (let q of group.survey_questions) {
