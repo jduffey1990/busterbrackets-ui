@@ -1,13 +1,16 @@
 <template>
   <div>
+    <!-- Top section with user dashboard header and buttons -->
     <div class="top_line_dash mb-6">
       <div>
+        <!-- User dashboard title displaying either full name or email -->
         <div class="text-h4 mb-2 justify-center">
           {{ user.full_name || user.email }}'s Dashboard
         </div>
       </div>
       <v-spacer></v-spacer>
 
+      <!-- Button to copy the survey link -->
       <v-btn
           @click="copyText()"
           color="secondary"
@@ -15,6 +18,7 @@
           class="survey_button secondary-btn"
       ></v-btn>
 
+      <!-- Button to open the modal for creating a new client -->
       <v-btn
           @click="openCreateNewClientModal = true"
           color="primary"
@@ -23,28 +27,37 @@
       ></v-btn>
     </div>
 
+    <!-- Tabs for switching between clients and prospects -->
     <v-tabs v-model="currentTab">
       <v-tab>Clients ({{ clients.length }})</v-tab>
       <v-tab>Prospects ({{ prospects.length }})</v-tab>
     </v-tabs>
 
+    <!-- Content of the selected tab -->
     <v-tabs-window v-model="currentTab">
-
+      <!-- Clients tab content -->
       <v-tabs-window-item :key="0">
+        <!-- Alert if there are no clients -->
         <v-alert
             title="No clients yet..."
             type="secondary"
             v-if="!clients.length"
             class="my-4"
-        >Click "Take Survey with Client" to start adding clients to your list.
+        >
+          Click "Take Survey with Client" to start adding clients to your list.
         </v-alert>
 
+        <!-- Clients display section -->
         <div v-else class="client_display">
+          <!-- Button to toggle the display of clients -->
           <v-btn color="primary" @click="toggleClients" class="client_button">
             {{ !displayState.showClients ? `${displayState.hidden}` : `${displayState.shown}` }}
           </v-btn>
+
+          <!-- Data table for clients -->
           <v-data-table v-if="displayState.showClients" :headers="headers" :items="clients">
             <template v-slot:item.actions="{ item }">
+              <!-- Button to view client details -->
               <v-btn
                   color="primary"
                   class="ml-2"
@@ -52,6 +65,8 @@
                   @click="goToClient(item)"
               >View Client
               </v-btn>
+
+              <!-- Button to archive a client -->
               <v-btn
                   color="secondary"
                   class="ml-2 secondary-btn"
@@ -64,22 +79,30 @@
         </div>
       </v-tabs-window-item>
 
+      <!-- Prospects tab content -->
       <v-tabs-window-item :key="1">
+        <!-- Alert if there are no prospects -->
         <v-alert
             title="No prospects yet..."
             type="secondary"
             v-if="!prospects.length"
             class="my-4"
-        >Click the "Copy Survey Link" to send your unique firm survey to
+        >
+          Click the "Copy Survey Link" to send your unique firm survey to
           referrals or use to market and build a list of prospects.
         </v-alert>
 
+        <!-- Prospects display section -->
         <div v-else class="mt-10 px-10">
+          <!-- Button to toggle the display of prospects -->
           <v-btn color="primary" @click="toggleProspects" class="mb-4">
             {{ !displayState.showProspects ? `${displayState.hiddenProspects}` : `${displayState.shownProspects}` }}
           </v-btn>
+
+          <!-- Data table for prospects -->
           <v-data-table v-if="displayState.showProspects" :items="prospects" :headers="headers">
             <template v-slot:item.actions="{ item }">
+              <!-- Button to accept a prospect -->
               <v-btn
                   color="secondary"
                   class="ml-2 secondary-btn"
@@ -88,6 +111,7 @@
               >Accept
               </v-btn>
 
+              <!-- Button to archive a prospect -->
               <v-btn
                   color="secondary"
                   class="ml-2 secondary-btn"
@@ -101,9 +125,11 @@
       </v-tabs-window-item>
     </v-tabs-window>
 
+    <!-- Dialog for creating a new client -->
     <v-dialog max-width="500" v-model="openCreateNewClientModal">
       <v-card title="Create New Client">
         <v-card-text>
+          <!-- Input fields for new client details -->
           <v-text-field
               v-model="newClient.first_name"
               label="First name"
@@ -124,6 +150,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
+          <!-- Button to cancel client creation and reset the form -->
           <v-btn
               text="Cancel"
               @click="
@@ -131,12 +158,14 @@
               resetForm();
             "
           ></v-btn>
+          <!-- Button to save the new client -->
           <v-btn text="Save" color="primary" @click="createNewClient()"></v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
 </template>
+
 
 <script setup>
 import {useUserStore} from '@/store/user';
@@ -170,6 +199,9 @@ const initialState = {
   email: undefined,
 };
 const newClient = reactive({...initialState});
+const clients = ref([]);
+const advisors = ref([]);
+const prospects = ref([]);
 
 // Display state
 const displayState = reactive({
@@ -189,11 +221,6 @@ const headers = [
   {title: 'Last Survey Date', key: 'last_survey_taken_date', width: 0, nowrap: true},
   {},
 ];
-
-// Clients and Prospects data
-const clients = ref([]);
-const advisors = ref([]);
-const prospects = ref([]);
 
 // Fetch clients data
 const getClients = async () => {

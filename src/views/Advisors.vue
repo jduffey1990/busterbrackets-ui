@@ -1,79 +1,80 @@
 <template>
+  <!-- Header for the Advisors section -->
   <div class="text-h4 my-4">Advisors</div>
 
+  <!-- Data table displaying the list of advisors with action buttons -->
   <v-data-table :items="advisors" :headers="headers">
     <template v-slot:item.actions="{ item }">
+      <!-- Button to edit advisor preferences -->
       <v-btn
-        color="primary"
-        @click="editPreferences(item)"
-        size="small"
-        class="ml-2"
-        >Edit Preferences
+          color="primary"
+          @click="editPreferences(item)"
+          size="small"
+          class="ml-2"
+      >
+        Edit Preferences
       </v-btn>
 
+      <!-- Button to copy reset password URL to clipboard -->
       <v-btn
-        color="info"
-        @click="copyText(item)"
-        size="small"
-        v-if="item.reset_password_link"
-        class="ml-2"
-        >Get Reset Password URL
+          color="info"
+          @click="copyText(item)"
+          size="small"
+          v-if="item.reset_password_link"
+          class="ml-2"
+      >
+        Get Reset Password URL
       </v-btn>
     </template>
   </v-data-table>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { inject } from 'vue';
-import { useRouter } from 'vue-router';
+import {ref} from 'vue'; // Importing ref for reactive variables
+import {inject} from 'vue'; // Importing inject for dependency injection
+import {useRouter} from 'vue-router';
+import {parseError} from "@/utils/error"; // Importing useRouter for navigation
+
+// Injecting axios and toast services
+const $axios = inject('$axios');
+const {show} = inject('toast');
+
+// Initializing router instance
 const router = useRouter();
 
-const $axios = inject('$axios');
-const { show } = inject('toast');
-
+// Headers for the data table
 const headers = [
-  {
-    key: 'actions',
-    sortable: false,
-    width: 0,
-    nowrap: true,
-  },
-  {
-    title: 'Full Name',
-    key: 'full_name',
-    width: 0,
-    nowrap: true,
-  },
-  {
-    title: 'Email',
-    key: 'email',
-    width: 0,
-    nowrap: true,
-  },
+  {key: 'actions', sortable: false, width: 0, nowrap: true},
+  {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
+  {title: 'Email', key: 'email', width: 0, nowrap: true},
   {},
 ];
 
+// Reactive variable to store the list of advisors
 const advisors = ref([]);
+
+// Function to fetch the list of advisors from the API
 const getAdvisors = async () => {
   try {
-    const { data } = await $axios.get(`/api/advisors/`);
-
+    const {data} = await $axios.get(`/api/advisors/`);
     advisors.value = data;
-  } catch (error) {}
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
 };
 
+// Fetch the list of advisors on component mount
 getAdvisors();
 
+// Function to navigate to the advisor's preferences page
 const editPreferences = (item) => {
   router.push(`/advisors/${item.id}/preferences`);
 };
 
+// Function to copy the reset password URL to clipboard and show a toast notification
 const copyText = (item) => {
   navigator.clipboard.writeText(item.reset_password_link);
-
-  show({
-    message: `Link copied to clipboard!`,
-  });
+  show({message: `Link copied to clipboard!`});
 };
 </script>
+

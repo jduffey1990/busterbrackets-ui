@@ -1,19 +1,24 @@
 <template>
   <div>
+    <!-- Header section with advisor's name and action buttons -->
     <div class="d-flex my-4">
       <div class="text-h4">
+        <!-- Display current advisor's full name if available -->
         <span v-if="currentAdvisor">{{ currentAdvisor.full_name }}</span>
         Investment Preferences
       </div>
       <v-spacer></v-spacer>
 
+      <!-- Buttons for navigation and saving preferences, shown only if canEdit (super admin) is true -->
       <template v-if="canEdit">
+        <!-- Button to navigate back to advisors list -->
         <v-btn
             @click="router.push('/advisors')"
             text="Back"
             class="ml-2"
         ></v-btn>
 
+        <!-- Button to save factor levers -->
         <v-btn
             @click="saveFactorLevers()"
             color="primary"
@@ -23,31 +28,41 @@
       </template>
     </div>
 
+    <!-- Alert indicating user is a super admin, shown if canEdit is true -->
     <v-alert type="secondary" title="Super Admin Only" v-if="canEdit" class="mb-4">
       You are viewing this as a super admin.
     </v-alert>
+
+    <!-- Alert indicating read-only access, shown if canEdit (not superuser) is false -->
     <v-alert type="secondary" title="Read Only" v-else class="mb-4">
       Your investment preferences are read only. Please contact
       support@pomarium.com if you need assistance.
     </v-alert>
 
+    <!-- Section for factor levers -->
     <div class="text-h6 mb-3">Factor Levers</div>
+    <!-- Checkbox for Momentum factor -->
     <v-checkbox
         :readonly="!canEdit"
         v-model="factorLevers.momentum"
         label="Momentum"
     ></v-checkbox>
 
+    <!-- Checkbox for Quality factor -->
     <v-checkbox
         :readonly="!canEdit"
         v-model="factorLevers.quality"
         label="Quality"
-    >
-    </v-checkbox>
+    ></v-checkbox>
 
-    <v-checkbox :readonly="!canEdit" v-model="factorLevers.value" label="Value">
-    </v-checkbox>
+    <!-- Checkbox for Value factor -->
+    <v-checkbox
+        :readonly="!canEdit"
+        v-model="factorLevers.value"
+        label="Value"
+    ></v-checkbox>
 
+    <!-- Checkbox for Low Volatility factor -->
     <v-checkbox
         :readonly="!canEdit"
         v-model="factorLevers.low_volatility"
@@ -56,10 +71,12 @@
 
     <hr class="my-10"/>
 
+    <!-- Section for asset allocation guidelines -->
     <div class="d-flex my-4">
       <div class="text-h6">Asset Allocation Guidelines</div>
       <v-spacer></v-spacer>
 
+      <!-- File input for uploading CSV, shown if canEdit (superadmin only) is true -->
       <input
           type="file"
           accept="text/csv"
@@ -68,11 +85,13 @@
       />
     </div>
 
+    <!-- Data table for displaying asset allocations -->
     <v-data-table :items="allocations" :items-per-page="-1" :headers="headers">
       <template #bottom></template>
     </v-data-table>
   </div>
 </template>
+
 
 <script setup>
 import {useUserStore} from '@/store/user';
@@ -82,51 +101,30 @@ import {ref} from 'vue';
 import {inject} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 
+
+//injected dependencies
 const router = useRouter();
 const {show} = inject('toast');
+const $axios = inject('$axios');
 
+//User store... user for session control and isSuper for auth
 const {
   user: {id: advisor_id},
   isSuper,
 } = useUserStore();
 
-const $axios = inject('$axios');
-
+//state management
 const factorLevers = ref({});
+const allocations = ref([]);
+const canEdit = computed(() => isSuper && user_id);
+const currentAdvisor = ref();
 
+//Router parameter
 const {
   params: {user_id},
 } = useRoute();
 
-const canEdit = computed(() => isSuper && user_id);
-
-const getFactorLevers = async () => {
-  try {
-    const {data} = await $axios.get(
-        `/api/advisors/${user_id || advisor_id}/factor-levers/`
-    );
-
-    factorLevers.value = data;
-  } catch (error) {
-  }
-};
-
-getFactorLevers();
-
-const allocations = ref([]);
-const getAllocations = async () => {
-  try {
-    const {data} = await $axios.get(
-        `/api/advisors/${user_id || advisor_id}/allocations/`
-    );
-
-    allocations.value = data;
-  } catch (error) {
-  }
-};
-
-getAllocations();
-
+//table headers
 const headers = [
   {
     title: 'Name',
@@ -155,7 +153,38 @@ const headers = [
   {},
 ];
 
+//Utility Functions and calls
+const getFactorLevers = async () => {
+  try {
+    const {data} = await $axios.get(
+        `/api/advisors/${user_id || advisor_id}/factor-levers/`
+    );
+
+    factorLevers.value = data;
+  } catch (error) {
+  }
+};
+
+getFactorLevers();
+
+
+const getAllocations = async () => {
+  try {
+    const {data} = await $axios.get(
+        `/api/advisors/${user_id || advisor_id}/allocations/`
+    );
+
+    allocations.value = data;
+  } catch (error) {
+  }
+};
+
+getAllocations();
+
+
+//DB management and access
 const onFileUpload = ({target: {files}}) => {
+  //takes the drag and drop csv and parses and conforms it
   const reader = new FileReader();
 
   reader.readAsText(files[0]);
@@ -163,12 +192,13 @@ const onFileUpload = ({target: {files}}) => {
   reader.onload = async ({target: {result}}) => {
     allocations.value = [];
 
+    //breaks .csv into indices of text by linebreak
     const data = result.split('\r\n');
     for (const i in data) {
       if (!+i) {
         continue;
       }
-
+      //commas further break down each line, for the next step to assign values
       const allocation = data[i].split(',').filter((a) => a.length);
 
       if (allocation.length) {
@@ -206,7 +236,7 @@ const onFileUpload = ({target: {files}}) => {
   };
 };
 
-const currentAdvisor = ref();
+
 onMounted(async () => {
   if (canEdit.value) {
     const {data} = await $axios.get(`/api/users/${user_id || advisor_id}/`);

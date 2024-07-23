@@ -1,9 +1,10 @@
 <template>
+  <!-- Main container that checks if the user is associated with a firm -->
   <div v-if="user.firm">
+    <!-- Header section with the firm name and button to create a new advisor -->
     <div class="d-flex my-4">
       <div class="text-h4">{{ user.firm?.name }} Admin Dashboard</div>
       <v-spacer></v-spacer>
-
       <v-btn
           @click="openCreateNewAdvisorModal = true"
           color="primary"
@@ -12,14 +13,18 @@
       ></v-btn>
     </div>
 
+    <!-- Tabs for navigation, showing the number of advisors -->
     <v-tabs v-model="currentTab">
       <v-tab>Advisors ({{ advisors.length }})</v-tab>
     </v-tabs>
 
+    <!-- Content of the selected tab -->
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item>
+        <!-- Table displaying advisors and action buttons -->
         <v-data-table :items="advisors" :headers="baseHeaders">
           <template v-slot:item.actions="{ item }">
+            <!-- Button to view clients of the advisor -->
             <v-btn
                 color="primary"
                 @click="viewClients(item.id)"
@@ -27,6 +32,7 @@
             >
               {{ !displayState[item.id]?.showClients ? displayState.hidden : displayState.shown }}
             </v-btn>
+            <!-- Button to view prospects of the advisor -->
             <v-btn
                 color="secondary"
                 @click="viewProspects(item.id)"
@@ -38,14 +44,16 @@
           </template>
         </v-data-table>
 
-
+        <!-- Dynamic tables for clients and prospects of each advisor -->
         <template v-for="advisor in advisors" :key="advisor.id">
+          <!-- Table for clients -->
           <v-data-table
               v-if="displayState[advisor.id]?.showClients"
               :headers="clientHeaders"
               :items="displayState[advisor.id]?.clients"
           >
             <template v-slot:item.actions="{ item }">
+              <!-- Button to view a client -->
               <v-btn
                   color="primary"
                   class="ml-2"
@@ -53,6 +61,7 @@
                   @click="goToClient(item)"
               >View Client
               </v-btn>
+              <!-- Button to archive a client -->
               <v-btn
                   color="secondary"
                   class="ml-2 secondary-btn"
@@ -63,12 +72,14 @@
             </template>
           </v-data-table>
 
+          <!-- Table for prospects -->
           <v-data-table
               v-if="displayState[advisor.id]?.showProspects"
               :headers="clientHeaders"
               :items="displayState[advisor.id]?.prospects"
           >
             <template v-slot:item.actions="{ item }">
+              <!-- Button to accept a prospect -->
               <v-btn
                   color="primary"
                   class="ml-2"
@@ -76,6 +87,7 @@
                   @click="acceptProspect(advisor.id, item)"
               >Accept Prospect
               </v-btn>
+              <!-- Button to archive a prospect -->
               <v-btn
                   color="secondary"
                   class="ml-2 secondary-btn"
@@ -89,9 +101,11 @@
       </v-tabs-window-item>
     </v-tabs-window>
 
+    <!-- Dialog for creating a new advisor -->
     <v-dialog max-width="500" v-model="openCreateNewAdvisorModal">
       <v-card title="Create New Advisor">
         <v-card-text>
+          <!-- Input fields for new advisor details -->
           <v-text-field
               v-model="newAdvisor.first_name"
               label="First name"
@@ -111,7 +125,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-
+          <!-- Buttons to cancel or save the new advisor -->
           <v-btn
               text="Cancel"
               @click="
@@ -122,68 +136,63 @@
           <v-btn
               text="Save"
               color="primary"
-              @click="createNewAdvisor()"
+              @click="createNewAdvisor"
           ></v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
 
-  <v-alert title="No Firm" type="secondary" v-else
-  >You need to be associated to a firm to manage your advisors.
+  <!-- Alert displayed when user is not associated with a firm -->
+  <v-alert title="No Firm" type="secondary" v-else>
+    You need to be associated to a firm to manage your advisors.
   </v-alert>
 </template>
+
 
 <script setup>
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
-import {reactive} from 'vue';
-import {ref} from 'vue';
-import {inject} from 'vue';
+import {reactive, ref, inject} from 'vue';
 import {parseError} from '@/utils/error';
 import {useRouter} from 'vue-router';
-import moment from "moment";
+import moment from 'moment';
 
+// Injecting services and router
 const $axios = inject('$axios');
 const {show} = inject('toast');
-const router = useRouter()
+const router = useRouter();
 
+// Accessing user data from the store
 const {user} = storeToRefs(useUserStore());
 
+// State variables
 const openCreateNewAdvisorModal = ref(false);
-
 const currentTab = ref();
+const advisors = ref([]);
+const clients = ref([]);
+const prospects = ref([]);
 
+// Initial state for new advisor form
 const initialState = {
   first_name: undefined,
   last_name: undefined,
   email: undefined,
 };
 
+// Reactive state for new advisor form
 const newAdvisor = reactive({...initialState});
 
+// Function to reset the new advisor form
 const resetForm = () => {
   Object.assign(newAdvisor, initialState);
 };
 
+// Headers for data tables
 const baseHeaders = [
-  {
-    title: 'Full Name',
-    key: 'full_name',
-    width: 0,
-    nowrap: true,
-  },
-  {
-    title: 'Email',
-    key: 'email',
-    width: 0,
-    nowrap: true,
-  },
-  {
-    text: 'Actions',
-    value: 'actions',
-    sortable: false
-  },
+  {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
+  {title: 'Email', key: 'email', width: 0, nowrap: true},
+  {text: 'Actions', value: 'actions', sortable: false},
 ];
 
 const clientHeaders = [
@@ -194,9 +203,7 @@ const clientHeaders = [
   {},
 ];
 
-const advisors = ref([]);
-const clients = ref([]);
-const prospects = ref([])
+// Display state for clients and prospects
 const displayState = reactive({
   hidden: 'Display Clients',
   shown: 'Hide Clients',
@@ -205,11 +212,9 @@ const displayState = reactive({
   currentAdvisorViewing: null,
 });
 
+// Function to fetch advisors from the API
 const getAdvisors = async () => {
-  const {data} = await $axios.get(
-      `/api/firms/${user.value.firm.id}/advisors/`
-  );
-
+  const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors/`);
   advisors.value = data;
 };
 
@@ -231,20 +236,18 @@ const getProspects = async (advisorId) => {
   }));
 };
 
+// Fetch advisors if the user is associated with a firm
 if (user.value.firm) {
   getAdvisors();
 }
 
+// Function to create a new advisor
 const createNewAdvisor = async () => {
   try {
     await $axios.post(`/api/firms/${user.value.firm.id}/advisors/`, newAdvisor);
-
     openCreateNewAdvisorModal.value = false;
-
     getAdvisors();
-
     resetForm();
-
     show({message: 'Advisor created!'});
   } catch (error) {
     show({message: parseError(error), error: true});
@@ -281,10 +284,12 @@ const viewProspects = (advisorId) => {
   displayState[advisorId].showClients = false; // Ensure clients are hidden
 };
 
+// Navigate to client details page
 const goToClient = ({id}) => {
   router.push(`/clients/${id}#values`);
 };
 
+// Archive a client
 const archiveClient = async (advisorId, {id}) => {
   if (confirm('Are you sure you want to archive this client?')) {
     try {
@@ -297,6 +302,7 @@ const archiveClient = async (advisorId, {id}) => {
   }
 };
 
+// Accept a prospect and convert to client
 const acceptProspect = async (advisorId, {id}) => {
   if (confirm('Are you sure you want to accept this prospect as a client?')) {
     try {
@@ -311,6 +317,7 @@ const acceptProspect = async (advisorId, {id}) => {
   }
 };
 
+// Archive a prospect
 const archiveProspect = async (advisorId, {id}) => {
   if (confirm('Are you sure you want to archive this prospect?')) {
     try {
@@ -323,3 +330,4 @@ const archiveProspect = async (advisorId, {id}) => {
   }
 };
 </script>
+
