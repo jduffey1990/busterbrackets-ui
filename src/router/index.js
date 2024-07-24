@@ -9,6 +9,7 @@ import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import {useUserStore} from '@/store/user';
 import Admin from '@/views/Admin.vue';
+import Billing from '@/views/Billing.vue';
 import Settings from '@/views/Settings.vue';
 import Accounts from '@/views/Accounts.vue';
 import Advisors from '@/views/Advisors.vue';
@@ -84,6 +85,20 @@ const router = createRouter({
             path: '/admin',
             name: 'Admin',
             component: Admin,
+            beforeEnter: (to, from, next) => {
+                const {isFirmAdminOrGreater} = useUserStore();
+
+                if (isFirmAdminOrGreater) {
+                    return next();
+                }
+
+                next('/');
+            },
+        },
+        {
+            path: '/billing',
+            name: 'Billing',
+            component: Billing,
             beforeEnter: (to, from, next) => {
                 const {isFirmAdminOrGreater} = useUserStore();
 

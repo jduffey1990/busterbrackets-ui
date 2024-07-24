@@ -48,6 +48,14 @@
                 <v-list-item-title>Firm Admin</v-list-item-title>
               </v-list-item>
 
+              <v-list-item
+                  v-if="isFirmAdminOrGreater"
+                  link
+                  :to="{ name: 'Billing' }"
+              >
+                <v-list-item-title>Billing</v-list-item-title>
+              </v-list-item>
+
               <v-list-item link :to="{ name: 'Settings' }">
                 <v-list-item-title>Settings</v-list-item-title>
               </v-list-item>
