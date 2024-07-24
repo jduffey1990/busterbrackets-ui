@@ -85,6 +85,11 @@
       />
     </div>
 
+    <!-- Alert indicating default allocations, shown if isDefaultAllocation is true -->
+    <v-alert type="info" v-if="isDefaultAllocation" class="mb-4">
+      You are currently using the default allocations.
+    </v-alert>
+
     <!-- Data table for displaying asset allocations -->
     <v-data-table :items="allocations" :items-per-page="-1" :headers="headers">
       <template #bottom></template>
@@ -167,11 +172,16 @@ const getFactorLevers = async () => {
 
 getFactorLevers();
 
+let isDefaultAllocation = false;
 
 const getAllocations = async () => {
   try {
     const {data} = await $axios.get(
         `/api/advisors/${user_id || advisor_id}/allocations/`
+    );
+    //check if default allocation is present and remove it and set isDefaultAllocation to true
+    isDefaultAllocation = data.some(
+        (allocation) => allocation.is_default
     );
 
     allocations.value = data;
