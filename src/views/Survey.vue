@@ -87,7 +87,7 @@
 
                   <!--checkboxes and tooltips. Tooltips were added to survey_seed.py. Transition is not functional
                   but is a TODO to make them not just immediately appear and disappear.-->
-                  <div v-for="q in group.survey_questions" :key="q.question.id">
+                  <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
                     <div
                         v-if="q.question.response_type === 'checkbox'"
                         class="d-flex align-center"
@@ -308,6 +308,32 @@ const toggleAllCheckboxes = (group) => {
       updateResponse(q, true)
     }
   });
+};
+
+//dev tools showed the position value was created for
+const sortValues = (values) => {
+  if (values[0].question.response_type === 'checkbox') {
+    let switched;
+    do {
+      switched = false;
+      for (let i = 0; i < values.length - 1; i++) {
+        if (values[i].question.text > values[i + 1].question.text) {
+          // Swap the question objects
+          let temp = values[i];
+          values[i] = values[i + 1];
+          values[i + 1] = temp;
+
+          // Swap the positions
+          let tempPosition = values[i].position;
+          values[i].position = values[i + 1].position;
+          values[i + 1].position = tempPosition;
+
+          switched = true;
+        }
+      }
+    } while (switched);
+  }
+  return values;
 };
 
 const updateResponse = (q, setInitial = false) => {
