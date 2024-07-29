@@ -69,7 +69,7 @@
                     :cols="group.column_width"
                     :key="group.name"
                 >
-                  <div class="group_header text-h5">
+                  <div v-if="groupContainsCheckboxes(group)" class="group_header text-h5">
                     {{ group.name }}
 
 
