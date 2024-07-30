@@ -87,7 +87,7 @@
 
     <!-- Alert indicating default allocations, shown if isDefaultAllocation is true -->
     <v-alert type="info" v-if="isDefaultAllocation" class="mb-4">
-      You are currently using the default allocations.
+      You are currently using the default allocations. Reach out to support@getpomarium.com to set up your preferred allocations.
     </v-alert>
 
     <!-- Data table for displaying asset allocations -->
