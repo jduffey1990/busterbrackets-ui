@@ -44,7 +44,7 @@
               v-for="(section, i) in survey.survey_sections"
               :value="i + 1"
           >
-            <v-container class="flex-container">
+            <v-container class="flex-container description">
               <div
                   class="survey_header"
                   v-if="section.description"
@@ -530,12 +530,11 @@ window.addEventListener('beforeunload', (event) => {
   text-align: center;
   margin-bottom: 20px;
   align-items: center;
-  border: 2px solid #5CBBF6;
+  border: 2px solid rgba(99, 105, 112, 0.5);
   border-radius: 8px;
   font-size: 1.5rem;
-  background-color: #f0f4f8;
   color: #333;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: None;
   font-weight: 600;
   letter-spacing: 1px;
 }
