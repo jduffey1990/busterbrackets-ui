@@ -32,7 +32,7 @@
         >
       </v-data-table>
 
-      <v-data-table
+      <!-- <v-data-table
         :headers="payStatusHeaders"
         :items="billingDataSuper"
         :items-per-page="10"
@@ -45,7 +45,7 @@
             
           </template>
 
-      </v-data-table>
+      </v-data-table> -->
    </div>
     
 
@@ -80,12 +80,12 @@ const billingHeaders = [
   {title: 'Total', key: 'total'},
 ];
 
-const payStatusHeaders = [
-  {title: 'Firm Name', key: 'firm_name'},
-  {title: 'Account Name', key: 'account_name'},
-  {title: 'Amount', key: 'total'},
-  {title: 'Payment Status', key: 'payment_status', nowrap: true, width: 0},
-];
+// const payStatusHeaders = [
+//   {title: 'Firm Name', key: 'firm_name'},
+//   {title: 'Account Name', key: 'account_name'},
+//   {title: 'Amount', key: 'total'},
+//   {title: 'Payment Status', key: 'payment_status', nowrap: true, width: 0},
+// ];
 
 const fetchBillingData = async () => {
   try {
