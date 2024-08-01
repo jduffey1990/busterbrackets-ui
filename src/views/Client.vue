@@ -96,6 +96,14 @@
               <v-col class="bar_graph">
                 <BarChart
                     :data="getBarChart(portfolioValues)"
+                    :options="{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                      },
+                    }"
                 />
               </v-col>
               <v-col class="bar_graph_table">
@@ -655,14 +663,6 @@ const getBarChart = (data) => {
         backgroundColor: 'rgba(207, 98, 50, 0.4)', // Fully transparent background
         borderWidth: {top: 10, left: 0, right: 0, bottom: 0}, // Custom border widths
         borderSkipped: false, // Skip no border to apply custom widths
-        // backgroundColor: 'rgba(207, 98, 50, 1)',
-        // borderWidth: 10,
-        // pointRadius: 50, // Hide the points
-        // pointStyle: 'line',
-        // pointHoverRadius: 20, // Hide the hover points
-        // type: "line",
-        // fill: false, // Prevent the area under the line from being filled
-        // showLine: false,
       },
       {
         label: 'Pomarium',
@@ -682,29 +682,24 @@ const getImagePathFromTicker = (tickerSymbol) => {
 </script>
 
 <style>
-/* Base styles for bar chart section */
+
 .bar_div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  /* Adjust the gap between grid items as needed */
   justify-content: center;
+  padding: 0 16px; /* Add padding to prevent cutting off edges */
+  box-sizing: border-box; /* Include padding in element's total width/height */
 }
 
 .bar_graph {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  max-width: 1200px;
-  min-width: 1000px;
+  grid-column: span 7;
   width: 100%;
 }
 
 .bar_graph_table {
-  max-width: 800px;
+  grid-column: span 5;
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 /* Base styles for pie chart section */
@@ -713,45 +708,45 @@ const getImagePathFromTicker = (tickerSymbol) => {
   grid-template-columns: repeat(12, 1fr);
   gap: 16px; /* Adjust the gap between grid items as needed */
   justify-content: center;
+  padding: 0 16px; /* Add padding to prevent cutting off edges */
+  box-sizing: border-box;
 }
 
 .pie_graph {
   grid-column: span 4;
+  width: 100%;
 }
 
 .pie_table {
   grid-column: span 8;
+  width: 100%;
 }
 
-/* Responsive adjustments for pie section */
+/* Responsive adjustments for bar and pie sections */
 @media only screen and (max-width: 1275px) {
-  .bar_div {
-    flex-direction: column;
-  }
-
-  .bar_graph {
-    min-width: 500px;
-
-  }
-
+  .bar_section,
   .pie_section {
     grid-template-columns: 1fr;
   }
 
+  .bar_graph,
   .pie_graph {
     grid-column: span 12;
   }
 
+  .bar_graph_table,
   .pie_table {
     grid-column: span 12;
   }
 }
 
 @media only screen and (max-width: 700px) {
+  .bar_graph,
   .pie_graph {
     grid-column: span 12;
   }
 
+  .bar_graph_table,
   .pie_table {
     grid-column: span 12;
   }
