@@ -57,7 +57,8 @@ import {ref, onMounted, inject, computed,} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 import {parseError} from '@/utils/error';
-import { addCommas, formatDate, feeRatePercentage, addCommasNoDecimal, totalCalc, downloadCSV } from '@/utils/string';
+import { addCommas, formatDate, feeRatePercentage } from '@/utils/string';
+import { downloadCSV } from '@/utils/file';
 
 const $axios = inject('$axios');
 const {show} = inject('toast');
@@ -134,11 +135,12 @@ for (const firm of allFirms.value) {
   try {
     const response = await $axios.get(`/api/billing/${firm.id}/data/`);
     const newData = response.data.map((data) => {
-      const total = totalCalc(data.value, data.fee_rate);
+      const total = totalCalc(Number(data.value), data.fee_rate);
       const totalWithCommas = addCommas(total);
       const createdAt = formatDate(data.created_at);
       const feeRate = feeRatePercentage(data.fee_rate);
-      const valueWithCommas = addCommas(data.value, true);
+      const valueWithCommas = addCommas(Number(data.value), true);
+      console.log(data.value);
       return {
         ...data,
         total: totalWithCommas,
@@ -154,6 +156,10 @@ for (const firm of allFirms.value) {
     show({ type: 'error', message: parsedError.message });
   }
 }
+};
+
+const totalCalc = (value, fee_rate) => {
+  return (value * fee_rate).toFixed(2);
 };
 
 // Fetch billing data based on the user role

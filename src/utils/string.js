@@ -1,50 +1,13 @@
 import moment from "moment";
 
-export const addCommas = (total, roundToWholeNumber = false) => {
-    if (roundToWholeNumber) {
-        return Math.round(total).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    } else {
-        return total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
+export const formatDate = (date, format = 'MM/DD/YYYY') => {
+  return moment(date).format(format);
 };
 
-export const formatDate = (date) => {
-    return moment(date).format('MM/DD/YYYY');
-  };
-
-  export const feeRatePercentage = (fee_rate) => {
-    return (fee_rate * 100).toFixed(3) + '%';
-  };
-  
-  export const addCommasNoDecimal = (value) => {
-    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',').split('.')[0];
-  };
-
-  export const totalCalc = (value, fee_rate) => {
-    return (value * fee_rate).toFixed(2);
-  };
-
-export const downloadCSV = (data, headers, title) => {
-    const csvHeaders = headers.map(header => header.title).join(",");
-
-    let csvContent = csvHeaders + "\n";
-
-    data.forEach(row => {
-        const rowContent = headers.map(header => {
-            const value = row[header.key];
-            return `"${String(value).replace(/"/g, '""')}"`;
-        }).join(",");
-        csvContent += rowContent + "\n";
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `${title}.csv`);
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+//round to 3 decimal because the fee rate is .0000017
+export const feeRatePercentage = (fee_rate) => {
+  return (fee_rate * 100).toFixed(3) + "%";
 };
+
+//having the .toString saved in a variable breaks it so doing this instead
+export const addCommas = (total, roundToWholeNumber = false) => roundToWholeNumber ? Math.round(total).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
