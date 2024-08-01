@@ -126,3 +126,34 @@ h6, .text-h6, .v-card, .v-alert__content {
 .v-alert--density-default {
   padding-bottom: 26px !important;
 }
+
+.v-container {
+  width: 100%;
+  padding: 16px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 960px) {
+  .v-container {
+    max-width: 90%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .v-container {
+    max-width: 90%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .v-container {
+    max-width: 90%;
+  }
+}
+
+@media (min-width: 2560px) {
+  .v-container {
+    max-width: 90%;
+  }
+}
