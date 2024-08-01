@@ -91,37 +91,39 @@
           <div class="my-8" v-if="portfolioValues">
             <div class="text-h4">Portfolio/Market</div>
 
-            <v-row>
-              <v-col cols="8">
+
+            <div class="bar_div">
+              <v-col class="bar_graph">
                 <BarChart
                     :data="getBarChart(portfolioValues)"
                 />
               </v-col>
-              <v-col cols="4">
+              <v-col class="bar_graph_table">
                 <v-table>
                   <tbody>
                   <tr>
                     <th>Client Value</th>
-                    <th>Pomarium vs. Market</th>
+                    <th class="text-center">Pomarium vs. Market</th>
                   </tr>
                   <tr v-for="p in portfolioValuesComparison">
                     <td class="text-no-wrap">{{ p.title }}</td>
-                    <td class="w-100">
+                    <td class="w-100 text-center">
                       {{ p.value }}
                     </td>
                   </tr>
                   </tbody>
                 </v-table>
               </v-col>
-            </v-row>
+            </div>
+
           </div>
           <hr/>
 
           <div class="my-8" v-if="portfolioSectors">
             <div class="text-h4">Sectors</div>
 
-            <v-row>
-              <v-col cols="4">
+            <div class="pie_section">
+              <v-col class="pie_graph">
                 <div class="d-flex justify-center align-center h-100">
                   <PieChart
                       :data="getPieChart(portfolioSectors)"
@@ -136,7 +138,7 @@
                   />
                 </div>
               </v-col>
-              <v-col cols="8">
+              <v-col class="pie_table">
                 <v-table>
                   <tbody>
                   <tr v-for="(p, index) in portfolioSectors" :key="index" class="pl-10">
@@ -149,7 +151,7 @@
                   </tbody>
                 </v-table>
               </v-col>
-            </v-row>
+            </div>
           </div>
 
 
@@ -507,7 +509,7 @@ const accountHeaders = [
     width: 0,
     nowrap: true,
   },
-  
+
 ];
 
 const accounts = ref([]);
@@ -516,7 +518,7 @@ const getAccounts = async () => {
     const {data} = await $axios.get(
         `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`
     );
-    
+
     accounts.value = data.map((d) => ({
       ...d,
       value: currencyFormat(d.value),
@@ -527,7 +529,7 @@ const getAccounts = async () => {
     const accountsTab = tabs.value.find((t) => t.label === 'Accounts');
 
     accountsTab.count = accounts.value.length;
-  
+
 
     accountsTab.showAlertBadge = !accountsTab.count;
   } catch (error) {
@@ -680,5 +682,74 @@ const getImagePathFromTicker = (tickerSymbol) => {
 </script>
 
 <style>
+/* Base styles for bar chart section */
+.bar_div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.bar_graph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  min-width: 1000px;
+  width: 100%;
+}
+
+.bar_graph_table {
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Base styles for pie chart section */
+.pie_section {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px; /* Adjust the gap between grid items as needed */
+  justify-content: center;
+}
+
+.pie_graph {
+  grid-column: span 4;
+}
+
+.pie_table {
+  grid-column: span 8;
+}
+
+/* Responsive adjustments for pie section */
+@media only screen and (max-width: 1275px) {
+  .bar_graph {
+    min-width: 500px;
+  }
+
+  .pie_section {
+    grid-template-columns: 1fr;
+  }
+
+  .pie_graph {
+    grid-column: span 12;
+  }
+
+  .pie_table {
+    grid-column: span 12;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .pie_graph {
+    grid-column: span 12;
+  }
+
+  .pie_table {
+    grid-column: span 12;
+  }
+}
 
 </style>
