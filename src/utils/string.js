@@ -1,9 +1,15 @@
-export const addCommas = (total) => {
-    return total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
+import moment from "moment";
 
-export const trimDate = (date) => {
-    return date.split('T')[0];
+export const addCommas = (total, roundToWholeNumber = false) => {
+    if (roundToWholeNumber) {
+        return Math.round(total).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    } else {
+        return total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+};
+
+export const formatDate = (date) => {
+    return moment(date).format('MM/DD/YYYY');
   };
 
   export const feeRatePercentage = (fee_rate) => {
@@ -18,27 +24,27 @@ export const trimDate = (date) => {
     return (value * fee_rate).toFixed(2);
   };
 
-  export const downloadCSV = (data, headers) => {
+export const downloadCSV = (data, headers, title) => {
     const csvHeaders = headers.map(header => header.title).join(",");
-  
+
     let csvContent = csvHeaders + "\n";
-  
+
     data.forEach(row => {
-      const rowContent = headers.map(header => {
-        const value = row[header.key];
-        return `"${String(value).replace(/"/g, '""')}"`;
-      }).join(",");
-      csvContent += rowContent + "\n";
+        const rowContent = headers.map(header => {
+            const value = row[header.key];
+            return `"${String(value).replace(/"/g, '""')}"`;
+        }).join(",");
+        csvContent += rowContent + "\n";
     });
-  
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "billingData.csv");
+    link.setAttribute("download", `${title}.csv`);
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  };
+};

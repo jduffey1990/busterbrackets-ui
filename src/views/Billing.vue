@@ -13,7 +13,7 @@
 
   <v-btn
         color="primary"
-        @click="downloadCSV(billingData, billingHeaders)"
+        @click="downloadCSV(billingData, billingHeaders, 'billing')"
         size="small"
         class="mb-4 mt-4 float-right"
     >Download CSV
@@ -34,7 +34,7 @@
 
     <v-btn
         color="primary"
-        @click="downloadCSV(billingDataSuper, billingHeaders)"
+        @click="downloadCSV(billingDataSuper, billingHeaders, 'billing')"
         size="small"
         class="mb-4 mt-4 float-right"
     >Download CSV
@@ -57,7 +57,7 @@ import {ref, onMounted, inject, computed,} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 import {parseError} from '@/utils/error';
-import { addCommas, trimDate, feeRatePercentage, addCommasNoDecimal, totalCalc, downloadCSV } from '@/utils/string';
+import { addCommas, formatDate, feeRatePercentage, addCommasNoDecimal, totalCalc, downloadCSV } from '@/utils/string';
 
 const $axios = inject('$axios');
 const {show} = inject('toast');
@@ -89,8 +89,8 @@ try {
   // Calculate the total for each billing data
   billingData.value.forEach((data) => {
     data.total = totalCalc(data.value, data.fee_rate);
-    data.created_at = trimDate(data.created_at);
-    data.value = addCommasNoDecimal(data.value);
+    data.created_at = formatDate(data.created_at);
+    data.value = addCommas(data.value, true);
     data.fee_rate = feeRatePercentage(data.fee_rate);
     data.total = addCommas(data.total);
   });
@@ -136,9 +136,9 @@ for (const firm of allFirms.value) {
     const newData = response.data.map((data) => {
       const total = totalCalc(data.value, data.fee_rate);
       const totalWithCommas = addCommas(total);
-      const createdAt = trimDate(data.created_at);
+      const createdAt = formatDate(data.created_at);
       const feeRate = feeRatePercentage(data.fee_rate);
-      const valueWithCommas = addCommasNoDecimal(data.value);
+      const valueWithCommas = addCommas(data.value, true);
       return {
         ...data,
         total: totalWithCommas,
