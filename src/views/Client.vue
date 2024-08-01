@@ -685,7 +685,7 @@ const getImagePathFromTicker = (tickerSymbol) => {
 /* Base styles for bar chart section */
 .bar_div {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
 }
@@ -725,8 +725,13 @@ const getImagePathFromTicker = (tickerSymbol) => {
 
 /* Responsive adjustments for pie section */
 @media only screen and (max-width: 1275px) {
+  .bar_div {
+    flex-direction: column;
+  }
+
   .bar_graph {
     min-width: 500px;
+
   }
 
   .pie_section {
