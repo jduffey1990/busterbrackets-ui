@@ -43,7 +43,7 @@
         color="primary"
         variant="text"
     ></v-btn>
-    <div class="footer-text">
+    <div class="footer-text px-4">
       {{ new Date().getFullYear() }} — <strong>Pomarium</strong>
     </div>
 
