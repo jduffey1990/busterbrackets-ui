@@ -46,6 +46,7 @@
         :readonly="!canEdit"
         v-model="factorLevers.momentum"
         label="Momentum"
+        :disabled="!canEdit"
     ></v-checkbox>
 
     <!-- Checkbox for Quality factor -->
@@ -53,6 +54,7 @@
         :readonly="!canEdit"
         v-model="factorLevers.quality"
         label="Quality"
+        :disabled="!canEdit"
     ></v-checkbox>
 
     <!-- Checkbox for Value factor -->
@@ -60,6 +62,7 @@
         :readonly="!canEdit"
         v-model="factorLevers.value"
         label="Value"
+        :disabled="!canEdit"
     ></v-checkbox>
 
     <!-- Checkbox for Low Volatility factor -->
@@ -67,7 +70,9 @@
         :readonly="!canEdit"
         v-model="factorLevers.low_volatility"
         label="Low Volatility"
+        :disabled="!canEdit"
     ></v-checkbox>
+
 
     <hr class="my-10"/>
 
@@ -87,7 +92,8 @@
 
     <!-- Alert indicating default allocations, shown if isDefaultAllocation is true -->
     <v-alert type="info" v-if="isDefaultAllocation" class="mb-4">
-      You are currently using the default allocations. Reach out to support@getpomarium.com to set up your preferred allocations.
+      You are currently using the default allocations. Reach out to support@getpomarium.com to set up your preferred
+      allocations.
     </v-alert>
 
     <!-- Data table for displaying asset allocations -->
@@ -273,3 +279,10 @@ const saveFactorLevers = async () => {
   }
 };
 </script>
+
+
+<style>
+.no-hover-shadow .v-input--selection-controls__ripple {
+  display: none;
+}
+</style>
