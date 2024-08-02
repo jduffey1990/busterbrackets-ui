@@ -110,12 +110,12 @@
                 <v-table>
                   <tbody>
                   <tr>
-                    <th>Client Value</th>
-                    <th class="text-center">Pomarium vs. Market</th>
+                    <th class="text-h6">Client Value</th>
+                    <th class="text-center text-h6">Pomarium vs. Market</th>
                   </tr>
                   <tr v-for="p in portfolioValuesComparison">
                     <td class="text-no-wrap">{{ p.title }}</td>
-                    <td class="w-100 text-center">
+                    <td class="text-no-wrap text-center">
                       {{ p.value }}
                     </td>
                   </tr>
