@@ -154,7 +154,7 @@
                       <v-icon :color="orderedColors[index]">mdi-circle</v-icon>
                     </td>
                     <td class="text-no-wrap">{{ p.title }}</td>
-                    <td class="w-100">{{ p.value }}%</td>
+                    <td class="text-no-wrap">{{ p.value }}%</td>
                   </tr>
                   </tbody>
                 </v-table>
