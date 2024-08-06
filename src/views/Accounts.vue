@@ -165,9 +165,7 @@ const setAccountData = (data) => {
 
 //function to remove commas from 1,000,000 to 1000000
 const removeCommas = (value) => {
-  
   return account.value = Number(value.replace(/,/g, ''));
-
 };
 
 
@@ -180,6 +178,7 @@ onMounted(async () => {
   let initialAccountData;
   if (account_id) {
     const {data: accountData} = await $axios.get(`/api/accounts/${account_id}/`);
+    accountData.value = addCommas(accountData.value);
     initialAccountData = accountData;
   }
   setAccountData(initialAccountData);

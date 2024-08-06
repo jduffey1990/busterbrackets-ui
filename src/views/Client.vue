@@ -236,10 +236,8 @@
           </template>
           <template #bottom v-if="accounts.length < 10"></template>
         </v-data-table>
-      </v-tabs-window-item>
-
-      <v-tabs-window-item class="py-2">
-        <v-row>
+        
+        <v-row class="py-2 pt-6">
           <v-col cols="6">
             <v-text-field
                 label="First Name"
@@ -267,6 +265,9 @@
             </div>
           </v-col>
         </v-row>
+      </v-tabs-window-item>
+
+      <v-tabs-window-item class="py-2">
       </v-tabs-window-item>
     </v-tabs-window>
   </div>

@@ -25,6 +25,18 @@
     :items-per-page="10"
     class="elevation-1"
     >
+    <!-- template for account name to be a link to the account edit page -->
+    <template #item.account_name="{ item }">
+      <router-link 
+        :to="{
+          name: 'Accounts',
+          params: { user_id: item.user_id },
+          query: { account_id: item.id },
+        }">
+        {{ item.account_name }}
+      </router-link>
+    </template>
+
     <template #bottom v-if="billingData.length < 10"></template>
   </v-data-table>
 
@@ -47,6 +59,17 @@
       :items-per-page="10"
       class="elevation-1"
       >
+      <!-- template for account name to be a link to the account edit page -->
+    <template #item.account_name="{ item }">
+      <router-link 
+        :to="{
+          name: 'Accounts',
+          params: { user_id: item.user_id },
+          query: { account_id: item.id },
+        }">
+        {{ item.account_name }}
+      </router-link>
+    </template>
     <template #bottom v-if="billingDataSuper.length < 10"></template>
     </v-data-table>
  </div>
