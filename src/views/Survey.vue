@@ -494,9 +494,8 @@ window.addEventListener('beforeunload', (event) => {
 </script>
 
 
-<style>
-
-.v-overlay__content {
+<style scoped>
+/deep/ .v-overlay__content {
   max-width: 40% !important;
 }
 
@@ -609,6 +608,10 @@ window.addEventListener('beforeunload', (event) => {
   .rows {
     display: flex;
     justify-content: center;
+  }
+
+  /deep/ .v-overlay__content {
+    max-width: 70% !important;
   }
 
 }
