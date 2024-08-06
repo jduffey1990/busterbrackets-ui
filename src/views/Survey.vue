@@ -463,7 +463,7 @@ onMounted(async () => {
           q.question.default_value = foundQuestion.value;
         }
         if (q.question.response_type === 'slider' && q.question.default_value === undefined) {
-          q.question.default_value = 0;
+          q.question.default_value = 1;
           updateResponse(q, true);
         }
       }
