@@ -86,7 +86,7 @@
 
 <script setup>
 // Import necessary modules and functions from Vue
-import {ref, reactive, onMounted, inject, computed, watch} from 'vue';
+import {ref, reactive, onMounted, inject} from 'vue';
 import {useRoute, useRouter, onBeforeRouteLeave} from 'vue-router';
 import {useUserStore} from '@/store/user';
 import {parseError} from '@/utils/error';
