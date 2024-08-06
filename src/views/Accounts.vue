@@ -40,7 +40,9 @@
             class="mb-4"
             v-model="account.value"
             label="Account Market Value"
-            type="number"
+            type="text"
+            @keydown="removeCommas(account.value)"
+            @keyup="account.value = addCommas(account.value)"
         ></v-text-field>
 
         <!-- Risk Tolerance Select -->
@@ -84,11 +86,12 @@
 
 <script setup>
 // Import necessary modules and functions from Vue
-import {ref, reactive, onMounted, inject} from 'vue';
+import {ref, reactive, onMounted, inject, computed, watch} from 'vue';
 import {useRoute, useRouter, onBeforeRouteLeave} from 'vue-router';
 import {useUserStore} from '@/store/user';
 import {parseError} from '@/utils/error';
 import {isEqual, cloneDeep} from 'lodash';
+import { addCommas } from '@/utils/string';
 
 // Inject axios and toast services
 const $axios = inject('$axios');
@@ -134,9 +137,11 @@ let accountCopy = {};
 const save = async () => {
   try {
     if (account_id) {
+      removeCommas(account.value);
       await $axios.patch(`/api/accounts/${account_id}/`, account);
       show({message: 'Account saved!'});
     } else {
+      removeCommas(account.value);
       await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/accounts/`, account);
       show({message: 'Account created!'});
     }
@@ -157,6 +162,15 @@ const setAccountData = (data) => {
   Object.assign(account, data || initialState);
   accountCopy = cloneDeep(account);
 };
+
+//function to remove commas from 1,000,000 to 1000000
+const removeCommas = (value) => {
+  
+  return account.value = Number(value.replace(/,/g, ''));
+
+};
+
+
 
 // Fetch account types and initial account data on component mount
 onMounted(async () => {

@@ -205,7 +205,7 @@
           to do so.
         </v-alert>
 
-        <v-data-table v-else :items="accounts" :headers="accountHeaders">
+        <v-data-table v-else :items="accounts" :headers="accountHeaders" :items-per-page="-1">
           <template v-slot:item.actions="{ item }">
             <v-btn
                 color="primary"
@@ -234,6 +234,7 @@
               </v-btn>
             </router-link>
           </template>
+          <template #bottom v-if="accounts.length < 10"></template>
         </v-data-table>
       </v-tabs-window-item>
 

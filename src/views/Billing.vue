@@ -25,6 +25,7 @@
     :items-per-page="10"
     class="elevation-1"
     >
+    <template #bottom v-if="billingData.length < 10"></template>
   </v-data-table>
 
 </div>
@@ -46,6 +47,7 @@
       :items-per-page="10"
       class="elevation-1"
       >
+    <template #bottom v-if="billingDataSuper.length < 10"></template>
     </v-data-table>
  </div>
   

@@ -75,6 +75,7 @@
               >Archive
               </v-btn>
             </template>
+            <template #bottom v-if="clients.length < 10"></template>
           </v-data-table>
         </div>
       </v-tabs-window-item>
