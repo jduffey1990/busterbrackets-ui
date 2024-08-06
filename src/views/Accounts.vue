@@ -2,7 +2,7 @@
   <!-- Form for creating a new account -->
   <v-form @submit.prevent="save">
     <div class="d-flex my-4 align-center">
-      <div class="text-h4 my-4">Create New Account</div>
+      <div class="text-h4 my-4">Account Details</div>
     </div>
 
     <v-row>
