@@ -167,23 +167,37 @@
 
           <div class="my-8">
             <div class="text-h4">Pomarium Allocations</div>
-
             <v-data-table
                 :items="allocations"
                 :headers="allocationHeaders"
                 :items-per-page="-1"
             >
+              <!-- Dynamic Slot Names for Headers -->
+              <template v-for="h in headers" v-slot:[`header.${h.key}`]="{ header }">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ attrs }">
+                    <span v-on="attrs">{{ h.title }}</span>
+                  </template>
+                  <span>{{ h.tooltip }}</span>
+                </v-tooltip>
+              </template>
+
               <template v-slot:item="{ item }">
                 <tr>
-                  <td><img :src="getImagePathFromTicker(item.ticker)" alt=""
-                           style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"></td>
-                  <td style="text-wrap: nowrap;">{{ item.company }}</td>
+                  <td>
+                    <img :src="getImagePathFromTicker(item.ticker)" alt=""
+                         style="display: flex; margin: auto; max-height: 20px; max-width: 40px;">
+                  </td>
+                  <td style="white-space: nowrap;">{{ item.company }}</td>
                   <td>{{ item.ticker }}</td>
                   <td>{{ item.allocation }}</td>
+                  <td>{{ item.values_fit }}</td>
+                  <td>{{ item.investment_fit }}</td>
                 </tr>
               </template>
               <template #bottom></template>
             </v-data-table>
+
           </div>
         </div>
       </v-tabs-window-item>
@@ -374,7 +388,20 @@ const allocationHeaders = [
     width: 0,
     nowrap: true,
   },
-  {}
+  {
+    title: 'Values Fit',
+    key: 'values_fit',
+    width: 0,
+    nowrap: true,
+    tooltip: 'The fit of the company based on values criteria'
+  },
+  {
+    title: 'Investment Fit',
+    key: 'investment_fit',
+    width: 0,
+    nowrap: true,
+    tooltip: 'The fit of the company based on investment criteria'
+  }
 ];
 
 let orderedColors = ref([])
@@ -423,7 +450,7 @@ const getPortfolios = async () => {
 
     const {
       allocations: {pomarium},
-      portfolio_data: {pomarium_names},
+      portfolio_data: {pomarium_names, values_fit, investment_fit}
     } = data[0];
 
     for (let i in pomarium) {
@@ -434,18 +461,21 @@ const getPortfolios = async () => {
 
     allocations.value = labels
         .map((p) => ({
-          company: pomarium_names[p], //
+          company: pomarium_names[p],
           ticker: p,
           allocation: `${pomarium[p]}%`,
           value: pomarium[p],
+          values_fit: values_fit && values_fit[p] ? `${Math.round(values_fit[p] * 100) / 100}%` : "",
+          investment_fit: investment_fit && investment_fit[p] ? `${Math.round(investment_fit[p] * 100) / 100}%` : ""
         }))
         .sort((a, b) => b.value - a.value);
+    console.log('Processed allocations:', allocations.value);
 
   } catch (error) {
+    console.error('Error in getPortfolios:', error);
   }
 
   hasRequestedPortfolios.value = true;
-
   portfoliosLoading.value = false;
 };
 
@@ -623,7 +653,10 @@ onMounted(async () => {
 
 watch(currentTab, (e) => {
   if (e === 1 && !hasRequestedPortfolios.value) {
-    getPortfolios();
+    console.log('Tab 1 selected and portfolios not yet requested');
+    getPortfolios().then(() => {
+      console.log('Allocations after fetching', allocations.value);
+    });
   }
 });
 
