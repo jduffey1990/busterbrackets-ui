@@ -189,6 +189,41 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
+        <v-row class="py-2 pt-6">
+          <v-col cols="6">
+
+            <v-alert style="background-color: white;"> 
+              <div class="pb-6">
+                <p>Profile</p>
+              </div>
+
+            <v-text-field
+                label="First Name"
+                type="text"
+                v-model="client.first_name"
+                class="mb-4"
+            ></v-text-field>
+
+            <v-text-field
+                label="Last Name"
+                type="text"
+                v-model="client.last_name"
+                class="mb-4"
+            ></v-text-field>
+
+            <v-text-field
+                label="Email"
+                type="email"
+                v-model="client.email"
+                class="mb-4"
+            ></v-text-field>
+            <div class="d-flex justify-end">
+              <v-btn @click="saveClient()" color="primary"> Save</v-btn>
+            </div>
+          </v-alert>
+          </v-col>
+        </v-row>
+
         <div class="d-flex justify-end mb-4">
           <router-link
               :to="{ name: 'Accounts', params: { user_id } }"
@@ -237,34 +272,7 @@
           <template #bottom v-if="accounts.length < 10"></template>
         </v-data-table>
         
-        <v-row class="py-2 pt-6">
-          <v-col cols="6">
-            <v-text-field
-                label="First Name"
-                type="text"
-                v-model="client.first_name"
-                class="mb-4"
-            ></v-text-field>
-
-            <v-text-field
-                label="Last Name"
-                type="text"
-                v-model="client.last_name"
-                class="mb-4"
-            ></v-text-field>
-
-            <v-text-field
-                label="Email"
-                type="email"
-                v-model="client.email"
-                class="mb-4"
-            ></v-text-field>
-
-            <div class="d-flex justify-end mb-4">
-              <v-btn @click="saveClient()" color="primary"> Save</v-btn>
-            </div>
-          </v-col>
-        </v-row>
+        
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
