@@ -171,16 +171,30 @@
                 :items="allocations"
                 :headers="allocationHeaders"
                 :items-per-page="-1"
+                hide-default-header
             >
-              <!-- Dynamic Slot Names for Headers -->
-              <template v-for="h in headers" v-slot:[`header.${h.key}`]="{ header }">
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ attrs }">
-                    <span v-on="attrs">{{ h.title }}</span>
+              <!-- Custom Header Slot -->
+              <template
+                  v-for="header in allocationHeaders"
+                  :key="header.key"
+                  v-slot:[`header.${header.key}`]="{ column }">
+                <span>{{ column.title }}</span>
+                <v-tooltip
+                    v-if="column.tooltip"
+                    :text="column.tooltip"
+                    location="top"
+                >
+                  <template v-slot:activator="{ props }">
+                    <v-icon
+                        v-bind="props"
+                        small
+                        color="grayblue"
+                        class="ml-2">mdi-information
+                    </v-icon>
                   </template>
-                  <span>{{ h.tooltip }}</span>
                 </v-tooltip>
               </template>
+
 
               <template v-slot:item="{ item }">
                 <tr>
@@ -368,7 +382,7 @@ const allocationHeaders = [
     title: '',
     key: 'image',
     width: 0,
-    nowrap: true
+    nowrap: true,
   },
   {
     title: 'Company',
@@ -387,20 +401,23 @@ const allocationHeaders = [
     key: 'allocation',
     width: 0,
     nowrap: true,
+    tooltip: "Percent Allocation of your funded account to this stock."
   },
   {
     title: 'Values Fit',
     key: 'values_fit',
     width: 0,
     nowrap: true,
-    tooltip: 'The fit of the company based on values criteria'
+    tooltip: 'A percentage description of how well this company meets your values, as calculated by our algorithm.  ' +
+        'Please resubmit your survey if these numbers are not populated.',
   },
   {
     title: 'Investment Fit',
     key: 'investment_fit',
     width: 0,
     nowrap: true,
-    tooltip: 'The fit of the company based on investment criteria'
+    tooltip: 'A percentage description of how well this company meets your investment preferences, as calculated by ' +
+        'our algorithm.  Please resubmit your survey if these numbers are not populated.'
   }
 ];
 
@@ -469,7 +486,6 @@ const getPortfolios = async () => {
           investment_fit: investment_fit && investment_fit[p] ? `${Math.round(investment_fit[p] * 100) / 100}%` : ""
         }))
         .sort((a, b) => b.value - a.value);
-    console.log('Processed allocations:', allocations.value);
 
   } catch (error) {
     console.error('Error in getPortfolios:', error);
@@ -653,10 +669,7 @@ onMounted(async () => {
 
 watch(currentTab, (e) => {
   if (e === 1 && !hasRequestedPortfolios.value) {
-    console.log('Tab 1 selected and portfolios not yet requested');
-    getPortfolios().then(() => {
-      console.log('Allocations after fetching', allocations.value);
-    });
+    getPortfolios()
   }
 });
 
@@ -724,7 +737,7 @@ const getImagePathFromTicker = (tickerSymbol) => {
 
 </script>
 
-<style>
+<style scoped>
 
 .bar_div {
   display: grid;
@@ -738,6 +751,8 @@ const getImagePathFromTicker = (tickerSymbol) => {
 .bar_graph {
   grid-column: span 7;
   width: 100%;
+  justify-content: center;
+  align-items: center;
 }
 
 .bar_graph_table {
@@ -751,6 +766,7 @@ const getImagePathFromTicker = (tickerSymbol) => {
   grid-template-columns: repeat(12, 1fr);
   gap: 16px; /* Adjust the gap between grid items as needed */
   justify-content: center;
+  align-items: center;
   padding: 0 16px; /* Add padding to prevent cutting off edges */
   box-sizing: border-box;
 }
@@ -765,6 +781,11 @@ const getImagePathFromTicker = (tickerSymbol) => {
   width: 100%;
 }
 
+/deep/ .v-overlay__content {
+  max-width: 40% !important;
+}
+
+
 /* Responsive adjustments for bar and pie sections */
 @media only screen and (max-width: 1275px) {
   .bar_section,
@@ -772,7 +793,10 @@ const getImagePathFromTicker = (tickerSymbol) => {
     grid-template-columns: 1fr;
   }
 
-  .bar_graph,
+  .bar_graph {
+    grid-column: span 12;
+  }
+
   .pie_graph {
     grid-column: span 12;
   }
