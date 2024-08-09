@@ -211,7 +211,6 @@
               </template>
               <template #bottom></template>
             </v-data-table>
-
           </div>
         </div>
       </v-tabs-window-item>
@@ -220,7 +219,7 @@
         <v-row class="py-2 pt-6">
           <v-col cols="6">
 
-            <v-alert style="background-color: white;"> 
+            <v-alert style="background-color: white;">
               <div class="pb-6">
                 <p>Profile</p>
               </div>
@@ -299,11 +298,13 @@
           </template>
           <template #bottom v-if="accounts.length < 10"></template>
         </v-data-table>
-        
-        
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
+        <Analytics
+            :metrics="metrics"
+            :metrics-loading="metricsLoading"
+            :get-metrics="getMetrics"/>
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
@@ -321,6 +322,7 @@ import {groupBy, round} from 'lodash';
 import {watch} from 'vue';
 import {currencyFormat} from '@/utils/number';
 import {parseError} from '@/utils/error';
+import Analytics from "@/views/Analytics.vue";
 
 const {
   user: {id: advisor_id},
@@ -669,7 +671,9 @@ onMounted(async () => {
 
 watch(currentTab, (e) => {
   if (e === 1 && !hasRequestedPortfolios.value) {
-    getPortfolios()
+    getPortfolios();
+  } else if (e === 3 && !Object.keys(metrics.value).length) {
+    getMetrics();
   }
 });
 
@@ -734,6 +738,22 @@ const getBarChart = (data) => {
 const getImagePathFromTicker = (tickerSymbol) => {
   return `/Company-Logos/${tickerSymbol}.png`;
 }
+
+const metrics = ref({});
+const metricsLoading = ref(false);
+
+const getMetrics = async () => {
+  metricsLoading.value = true;
+  try {
+    const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/metrics`);
+    metrics.value = data;
+    console.log(metrics.value);
+  } catch (error) {
+    show({message: `Couldn't retrieve metrics information`, error: true});
+    metrics.value = {}; // Clear metrics on error
+  }
+  metricsLoading.value = false;
+};
 
 </script>
 
