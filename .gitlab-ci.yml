@@ -1,38 +1,42 @@
-# ---- variables ----
-
-variables:
-  FF_USE_FASTZIP: "true"
-  ARTIFACT_COMPRESSION_LEVEL: "fast"
-  CACHE_COMPRESSION_LEVEL: "fast"
-
-# ---- caches ----
-
-.node_modules-cache: &node_modules-cache
-  key:
-    files:
-      - yarn.lock
-  paths:
-    - node_modules
-
-.yarn-cache: &yarn-cache
-  key: yarn-$CI_JOB_IMAGE
-  paths:
-    - .yarn
-
-.yarn-build-cache: &yarn-build-cache
-  key: build-$CI_JOB_IMAGE
-  paths:
-      - .cache
-      - public
-  policy: pull-push
-
 # ---- stages ----
 
 stages:
+  - build-predev
+  - deploy-predev
   - build-dev
   - deploy-dev
   - deploy-beta
-  - deploy-dev-firebase
+
+# ---- Cloud Run Pre-Dev ----
+
+build-predev:
+  stage: build-predev
+  except:
+    - development
+    - main
+  when: manual
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
+    - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
+    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $UI_IMAGE:$CI_COMMIT_SHORT_SHA
+
+deploy-predev:
+  stage: deploy-dev
+  needs:
+    - build-predev
+  except:
+    - development
+    - main
+  image: google/cloud-sdk:467.0.0-alpine
+  script:
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
+    - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
+    - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
+    - gcloud config set project $GOOGLE_CLOUD_DEV_PROJECT
+    - gcloud run deploy ui-predev --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
 
 # ---- Cloud Run Dev ----
 
@@ -77,29 +81,3 @@ deploy-beta:
     - gcloud config set project $GOOGLE_CLOUD_BETA_PROJECT
     - gcloud run deploy ui --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
 
-# ---- firebase (going away) ----
-
-dev-firebase-deploy:
-  image: node:lts-alpine3.19
-  before_script:
-    - apk --no-cache add curl bash
-    - npm i -g firebase-tools
-  stage: deploy-dev-firebase
-  when: manual
-  cache:
-    - <<: *node_modules-cache
-      policy: pull-push
-    - <<: *yarn-build-cache
-      policy: pull-push
-  variables:
-    GOOGLE_APPLICATION_CREDENTIALS: ".secure_files/google-service-key.json"
-  script:
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - yarn install
-    - yarn build
-    - firebase deploy --only hosting --project inicio-dev-975fe
-  only:
-    - development
-  artifacts:
-    paths:
-      - dist/
