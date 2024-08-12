@@ -303,7 +303,8 @@
         <Analytics
             :metrics="metrics"
             :metrics-loading="metricsLoading"
-            :get-metrics="getMetrics"/>
+            :no-metrics="noMetrics"
+            :client="client"/>
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
@@ -741,15 +742,20 @@ const getImagePathFromTicker = (tickerSymbol) => {
 
 const metrics = ref({});
 const metricsLoading = ref(false);
+const noMetrics = ref(true)
 
 const getMetrics = async () => {
   metricsLoading.value = true;
   try {
     const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/metrics`);
     metrics.value = data;
-    console.log(metrics.value);
+    noMetrics.value = false; // Set to false if metrics are successfully fetched
   } catch (error) {
-    show({message: `Couldn't retrieve metrics information`, error: true});
+    if (error.response && error.response.status === 404) {
+      noMetrics.value = true; // Set to true if there's a 404 error
+    } else {
+      show({message: `Couldn't retrieve metrics information`, error: true});
+    }
     metrics.value = {}; // Clear metrics on error
   }
   metricsLoading.value = false;
