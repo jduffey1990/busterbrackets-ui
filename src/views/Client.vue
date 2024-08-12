@@ -1,6 +1,6 @@
 <template>
   <div
-      v-if="clientLoading || portfoliosLoading || valuesLoading"
+      v-if="clientLoading || portfoliosLoading || valuesLoading || metricsLoading"
       class="text-center"
   >
     <v-progress-linear
@@ -224,30 +224,30 @@
                 <p>Profile</p>
               </div>
 
-            <v-text-field
-                label="First Name"
-                type="text"
-                v-model="client.first_name"
-                class="mb-4"
-            ></v-text-field>
+              <v-text-field
+                  label="First Name"
+                  type="text"
+                  v-model="client.first_name"
+                  class="mb-4"
+              ></v-text-field>
 
-            <v-text-field
-                label="Last Name"
-                type="text"
-                v-model="client.last_name"
-                class="mb-4"
-            ></v-text-field>
+              <v-text-field
+                  label="Last Name"
+                  type="text"
+                  v-model="client.last_name"
+                  class="mb-4"
+              ></v-text-field>
 
-            <v-text-field
-                label="Email"
-                type="email"
-                v-model="client.email"
-                class="mb-4"
-            ></v-text-field>
-            <div class="d-flex justify-end">
-              <v-btn @click="saveClient()" color="primary"> Save</v-btn>
-            </div>
-          </v-alert>
+              <v-text-field
+                  label="Email"
+                  type="email"
+                  v-model="client.email"
+                  class="mb-4"
+              ></v-text-field>
+              <div class="d-flex justify-end">
+                <v-btn @click="saveClient()" color="primary"> Save</v-btn>
+              </div>
+            </v-alert>
           </v-col>
         </v-row>
 
@@ -299,7 +299,6 @@
           <template #bottom v-if="accounts.length < 10"></template>
         </v-data-table>
       </v-tabs-window-item>
-
       <v-tabs-window-item class="py-2">
         <Analytics
             :metrics="metrics"
@@ -327,6 +326,7 @@ import Analytics from "@/views/Analytics.vue";
 const {
   user: {id: advisor_id},
   getValuesProfile,
+  isSuper
 } = useUserStore();
 
 const {
@@ -384,7 +384,7 @@ const allocationHeaders = [
     title: '',
     key: 'image',
     width: 0,
-    nowrap: true,
+    nowrap: true
   },
   {
     title: 'Company',
@@ -615,7 +615,7 @@ const tabs = ref([
   {label: 'Values'},
   {label: 'Recommendations'},
   {label: 'Accounts'},
-  {label: 'Profile'},
+  ...(isSuper ? [{label: 'Analytics'}] : []),
 ]);
 
 const getValue = (response) => {
