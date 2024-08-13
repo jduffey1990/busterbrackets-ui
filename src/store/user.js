@@ -47,6 +47,7 @@ export const useUserStore = defineStore('user', {
             const {data} = await this.$axios('/api/users/session/');
 
             this.user = data;
+
             this.initializePendo();
         },
         async register(credentials) {
@@ -90,8 +91,8 @@ export const useUserStore = defineStore('user', {
                         role: this.user.role
                     },
                     account: {
-                        id: this.user.firm,
-                        accountName: this.user.advisor_id,
+                        id: this.user.firm.id,
+                        accountName: this.user.firm.name,
                         payingStatus: this.user.is_archived ? 'inactive' : 'active',
                     }
                 });
