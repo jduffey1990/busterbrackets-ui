@@ -93,7 +93,6 @@ export const useUserStore = defineStore('user', {
                     account: {
                         id: this.user.firm.id,
                         name: this.user.firm.name,
-                        is_paying: this.user.is_archived ? 'inactive' : 'active',
                         planLevel: this.user.firm.fee_rate
                     }
                 });
