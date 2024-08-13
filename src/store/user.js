@@ -81,19 +81,20 @@ export const useUserStore = defineStore('user', {
             this.user = {};
         },
         initializePendo() {
+            console.log("user info", this.user)
             if (this.user && Object.keys(this.user).length !== 0) {
                 pendo.initialize({
                     visitor: {
                         id: this.user.id,
                         email: this.user.email,
-                        firstName: this.user.firstName,
-                        lastName: this.user.lastName,
+                        full_name: this.user.full_name,
                         role: this.user.role
                     },
                     account: {
                         id: this.user.firm.id,
-                        accountName: this.user.firm.name,
-                        payingStatus: this.user.is_archived ? 'inactive' : 'active',
+                        name: this.user.firm.name,
+                        is_paying: this.user.is_archived ? 'inactive' : 'active',
+                        planLevel: this.user.firm.fee_rate
                     }
                 });
             }
