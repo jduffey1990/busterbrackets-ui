@@ -25,13 +25,15 @@
                 z = e.getElementsByTagName(n)[0];
                 z.parentNode.insertBefore(y, z);
             })(window, document, 'script', 'pendo');
-        })('1821b81f-56b6-447c-6f28-78492ad14828');
+        })(import.meta.env.VITE_PENDO_API_KEY);
     </script>
 </head>
 
 <body>
 <div id="app"></div>
 <script type="module" src="/src/main.js"></script>
-<script data-jsd-embedded data-key="1baa1c63-199d-4ee4-99b6-2265e853f0d2" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+<script data-jsd-embedded data-key="1baa1c63-199d-4ee4-99b6-2265e853f0d2"
+        data-base-url="https://jsd-widget.atlassian.com"
+        src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
 </body>
 </html>
