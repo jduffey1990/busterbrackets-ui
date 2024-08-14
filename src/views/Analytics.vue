@@ -54,9 +54,6 @@ const props = defineProps({
 // Use a computed property to safely access client
 const client = computed(() => props.client);
 
-// Log the client to see when it becomes available
-console.log("the client is", client.value);
-
 // Define headers for the v-data-table
 const metricHeaders = [
   {
