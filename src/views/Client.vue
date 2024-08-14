@@ -167,6 +167,14 @@
 
           <div class="my-8">
             <div class="text-h4">Pomarium Allocations</div>
+            <div class="d-flex justify-end" v-if="!edditingAllocations">
+              <v-btn  class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
+              <v-btn color="primary" @click="refresh">Refresh Survey</v-btn>
+            </div>
+            <div class="d-flex justify-end" v-else>
+              <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
+              <v-btn @click="switchEditAllocations">Cancel</v-btn>
+            </div>
             <v-data-table
                 :items="allocations"
                 :headers="allocationHeaders"
@@ -198,6 +206,7 @@
 
               <template v-slot:item="{ item }">
                 <tr>
+                  <td><v-checkbox-btn v-if="edditingAllocations" @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn></td>
                   <td>
                     <img :src="getImagePathFromTicker(item.ticker)" alt=""
                          style="display: flex; margin: auto; max-height: 20px; max-width: 40px;">
@@ -212,6 +221,10 @@
               <template #bottom></template>
             </v-data-table>
 
+            <div class="d-flex justify-end" v-if="edditingAllocations">
+              <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
+              <v-btn @click="switchEditAllocations">Cancel</v-btn>
+            </div>
           </div>
         </div>
       </v-tabs-window-item>
@@ -378,10 +391,19 @@ const saveClient = async () => {
 
 const portfolioSectors = ref();
 const allocations = ref([]);
+const allocationsToDel = ref([]);
+const allocationsDelDisplay = ref([]);
 const hasRequestedPortfolios = ref(false);
 const portfolioValues = ref();
 const portfoliosLoading = ref(false);
 const allocationHeaders = [
+  {
+    title: '',
+    key: 'actions',
+    sortable: false,
+    width: 0,
+    nowrap: true,
+  },
   {
     title: '',
     key: 'image',
@@ -762,6 +784,80 @@ const getMetrics = async () => {
   metricsLoading.value = false;
 };
 
+const edditingAllocations = ref(false);
+const switchEditAllocations = () => {
+  edditingAllocations.value = !edditingAllocations.value;
+  let indexA = valuesProfile.value['Pull your Weeds'].length - 1;
+  return allocationsToDel.value.push(...Object.values(valuesProfile.value['Pull your Weeds'][indexA].value));
+}
+
+//function to add or remove allocations from the list of allocations to delete if the checkbox is checked or unchecked
+const addOrRemoveAllocationToDelete = (allocation) => {
+  if (allocationsToDel.value.includes(allocation)) {
+    allocationsToDel.value = allocationsToDel.value.filter((a) => a !== allocation);
+    allocationsDelDisplay.value = allocationsDelDisplay.value.filter((a) => a !== allocation);
+  } else {
+    allocationsToDel.value.push(allocation);
+    allocationsDelDisplay.value.push(allocation);
+  }
+}
+
+const updateAvoidedCompanies = [
+  {
+    id: 'd6ab10a1-3619-4e93-9238-a7ae4cc2eb70',
+    position: 0,
+    question: {
+      default_value: allocationsToDel.value,
+      id: 'f13c6d5a-686e-49aa-81d2-c9b2452a4630',
+      response_type: 'multi_select',
+      slider_ticks: null,
+      tag: 'areThereAnySpecificCompaniesYouWouldAvoidInvestingIn',
+      text: 'Are there any specific companies you would avoid investing in?',
+      tooltip: null
+    }
+  }
+];
+
+const saveAllocationsToDelete = () => {
+
+  if (confirm(`Do you really want to delete these companies from your allocations? ${allocationsDelDisplay.value}`)) {
+      submitSurvey();
+  }
+  else {
+    switchEditAllocations();
+  }
+};
+
+const submitSurvey = async () => {
+  try {
+    await $axios.post(
+      `/api/advisors/${advisor_id}/clients/${user_id}/responses/`, 
+      updateAvoidedCompanies.map(uac => ({
+          ...uac.question,
+          default_value: JSON.stringify(uac.question.default_value),
+      }))
+
+    );
+    await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
+
+    show({message: 'Submitted!'});
+    location.reload();
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+};
+
+const refresh = () => {
+  if (confirm('Do you want to refresh the survey?')) {
+      try {
+        $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
+      } catch (error) {
+        show({message: parseError(error), error: true});
+      }
+      location.reload();
+  } 
+};
+
 </script>
 
 <style scoped>
@@ -808,7 +904,7 @@ const getMetrics = async () => {
   width: 100%;
 }
 
-/deep/ .v-overlay__content {
+:deep(.v-overlay__content)  {
   max-width: 40% !important;
 }
 
