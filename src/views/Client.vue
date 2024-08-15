@@ -784,14 +784,31 @@ const getMetrics = async () => {
   metricsLoading.value = false;
 };
 
+let updateAvoidedCompanies = [
+    {
+      id: '',
+      position: 0,
+      question: {
+        default_value: allocationsToDel.value,
+        id: '',
+        response_type: 'multi_select',
+        slider_ticks: null,
+        tag: 'areThereAnySpecificCompaniesYouWouldAvoidInvestingIn',
+        text: 'Are there any specific companies you would avoid investing in?',
+        tooltip: null
+      }
+    }
+];
+
 const edditingAllocations = ref(false);
 const switchEditAllocations = () => {
   edditingAllocations.value = !edditingAllocations.value;
   let indexA = valuesProfile.value['Pull your Weeds'].length - 1;
-  return allocationsToDel.value.push(...Object.values(valuesProfile.value['Pull your Weeds'][indexA].value));
-}
+  allocationsToDel.value.push(...Object.values(valuesProfile.value['Pull your Weeds'][indexA].value));
+  updateAvoidedCompanies[0].question.id = valuesProfile.value['Pull your Weeds'][0].sections.survey_groups[0].survey_questions[0].question.id;
+  updateAvoidedCompanies[0].id = valuesProfile.value['Pull your Weeds'][0].sections.survey_groups[0].survey_questions[0].id;
+};
 
-//function to add or remove allocations from the list of allocations to delete if the checkbox is checked or unchecked
 const addOrRemoveAllocationToDelete = (allocation) => {
   if (allocationsToDel.value.includes(allocation)) {
     allocationsToDel.value = allocationsToDel.value.filter((a) => a !== allocation);
@@ -802,24 +819,7 @@ const addOrRemoveAllocationToDelete = (allocation) => {
   }
 }
 
-const updateAvoidedCompanies = [
-  {
-    id: 'd6ab10a1-3619-4e93-9238-a7ae4cc2eb70',
-    position: 0,
-    question: {
-      default_value: allocationsToDel.value,
-      id: 'f13c6d5a-686e-49aa-81d2-c9b2452a4630',
-      response_type: 'multi_select',
-      slider_ticks: null,
-      tag: 'areThereAnySpecificCompaniesYouWouldAvoidInvestingIn',
-      text: 'Are there any specific companies you would avoid investing in?',
-      tooltip: null
-    }
-  }
-];
-
 const saveAllocationsToDelete = () => {
-
   if (confirm(`Do you really want to delete these companies from your allocations? ${allocationsDelDisplay.value}`)) {
       submitSurvey();
   }
@@ -835,9 +835,8 @@ const submitSurvey = async () => {
       updateAvoidedCompanies.map(uac => ({
           ...uac.question,
           default_value: JSON.stringify(uac.question.default_value),
-      }))
+      })));
 
-    );
     await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
 
     show({message: 'Submitted!'});
@@ -857,7 +856,6 @@ const refresh = () => {
       location.reload();
   } 
 };
-
 </script>
 
 <style scoped>
