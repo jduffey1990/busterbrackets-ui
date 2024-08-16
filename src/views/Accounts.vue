@@ -152,15 +152,10 @@ const save = async () => {
   }
 };
 
-//get second to last url
 const lastUrl = window.history.state.back;
 
-// Function to navigate back to the previous page
 const goBack = () => {
   lastUrl === "/billing" ? router.push(lastUrl) : router.push(`/clients/${user_id}#accounts`);;
-  console.log(lastUrl);
-  // router.go(-1);
-  // router.push(`/clients/${user_id}#accounts`);
 };
 
 // Function to set account data and make a copy for comparison
