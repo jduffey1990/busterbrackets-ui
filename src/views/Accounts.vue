@@ -155,7 +155,7 @@ const save = async () => {
 const lastUrl = window.history.state.back;
 
 const goBack = () => {
-  lastUrl === "/billing" ? router.push(lastUrl) : router.push(`/clients/${user_id}#accounts`);;
+  lastUrl === "/billing" ? router.push(lastUrl) : router.push(`/clients/${user_id}#accounts`);
 };
 
 // Function to set account data and make a copy for comparison
