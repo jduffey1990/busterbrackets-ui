@@ -207,7 +207,7 @@
               <template v-slot:item="{ item }">
                 <tr>
                   <td><v-checkbox-btn v-if="edditingAllocations" @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn></td>
-                  <td>
+                  <td style="padding: 0px;">
                     <img :src="getImagePathFromTicker(item.ticker)" alt=""
                          style="display: flex; margin: auto; max-height: 20px; max-width: 40px;">
                   </td>
@@ -398,11 +398,12 @@ const portfolioValues = ref();
 const portfoliosLoading = ref(false);
 const allocationHeaders = [
   {
-    title: '',
+    title: 'Delete',
     key: 'actions',
     sortable: false,
     width: 0,
     nowrap: true,
+    tooltip: 'Click edit to select companies to remove from your allocations.'
   },
   {
     title: '',
