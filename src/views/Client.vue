@@ -445,7 +445,8 @@ const allocationHeaders = [
     nowrap: true,
     tooltip: 'A percentage description of how well this company meets your investment preferences, as calculated by ' +
         'our algorithm.  Please resubmit your survey if these numbers are not populated.'
-  }
+  },
+  {}
 ];
 
 let orderedColors = ref([])
