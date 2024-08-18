@@ -166,7 +166,6 @@ for (const firm of allFirms.value) {
       const createdAt = formatDate(data.created_at);
       const feeRate = feeRatePercentage(data.fee_rate);
       const valueWithCommas = addCommas(Number(data.value), true);
-      console.log(data.value);
       return {
         ...data,
         total: totalWithCommas,
