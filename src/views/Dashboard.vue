@@ -54,8 +54,22 @@
             {{ !displayState.showClients ? `${displayState.hidden}` : `${displayState.shown}` }}
           </v-btn>
 
+          <v-text-field
+            v-model="searchInput"
+            append-inner-icon="mdi-magnify"
+            density="compact"
+            label="Search for a client"
+            variant="solo"
+            hide-details
+            single-line
+            @click:append-inner="findClient(searchInput)"
+            @keydown.enter="findClient(searchInput)"
+            style="width: 400px;"
+            class="mb-4"
+          ></v-text-field>
+
           <!-- Data table for clients -->
-          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clients">
+          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown">
             <template v-slot:item.actions="{ item }">
               <!-- Button to view client details -->
               <v-btn
@@ -100,8 +114,22 @@
             {{ !displayState.showProspects ? `${displayState.hiddenProspects}` : `${displayState.shownProspects}` }}
           </v-btn>
 
+          <v-text-field
+            v-model="searchInputP"
+            append-inner-icon="mdi-magnify"
+            density="compact"
+            label="Search for a client"
+            variant="solo"
+            hide-details
+            single-line
+            @click:append-inner="findProspect(searchInputP)"
+            @keydown.enter="findProspect(searchInputP)"
+            style="width: 400px;"
+            class="mb-4"
+          ></v-text-field>
+
           <!-- Data table for prospects -->
-          <v-data-table v-if="displayState.showProspects" :items="prospects" :headers="headers">
+          <v-data-table v-if="displayState.showProspects" :headers="headers" :items="prospectsShown">
             <template v-slot:item.actions="{ item }">
               <!-- Button to accept a prospect -->
               <v-btn
@@ -203,6 +231,12 @@ const newClient = reactive({...initialState});
 const clients = ref([]);
 const advisors = ref([]);
 const prospects = ref([]);
+const clientsShown = ref([]);
+const searchInput = ref('');
+const foundClient = ref([]);
+const searchInputP = ref('');
+const foundProspect = ref([]);
+const prospectsShown = ref([]);
 
 // Display state
 const displayState = reactive({
@@ -212,6 +246,8 @@ const displayState = reactive({
   shown: 'Hide Clients',
   hiddenProspects: 'Display Prospects',
   shownProspects: 'Hide Prospects',
+  searched: false,
+  searchedProspects: false,
 });
 
 // Data tables headers
@@ -329,10 +365,41 @@ const copyText = () => {
 // Toggle display functions
 const toggleClients = () => {
   displayState.showClients = !displayState.showClients;
+  displayState.searched = false;
+  clientsToShow();
 };
 
 const toggleProspects = () => {
   displayState.showProspects = !displayState.showProspects;
+  displayState.searchedProspects = false;
+  prospectsToShow();
+};
+
+// Find client function for search bar 
+const findClient = (search) => {
+  foundClient.value = clients.value.filter((client) => {
+    return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
+  });
+  displayState.searched = true;
+  clientsToShow();
+  displayState.showClients = true;
+};
+
+const findProspect = (search) => {
+  foundProspect.value = prospects.value.filter((prospect) => {
+    return prospect.full_name.toLowerCase().includes(search.toLowerCase()) || prospect.email.toLowerCase().includes(search.toLowerCase());
+  });
+  displayState.searchedProspects = true;
+  prospectsToShow();
+  displayState.showProspects = true;
+};
+
+const clientsToShow = () => {
+  return displayState.searched ? clientsShown.value=foundClient.value : clientsShown.value=clients.value;
+};
+
+const prospectsToShow = () => {
+  return displayState.searchedProspects ? prospectsShown.value=foundProspect.value : prospectsShown.value=prospects.value;
 };
 </script>
 
