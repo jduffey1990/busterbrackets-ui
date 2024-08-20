@@ -45,6 +45,16 @@
             @keyup="account.value = addCommas(account.value)"
         ></v-text-field>
 
+        <!-- Live Account Select -->
+        <v-select
+            label="Fractional Account"
+            class="mb-4"
+            v-model="account.fractional"
+            :items="yesNoBooleans"
+            item-title="title"
+            item-value="value"
+        ></v-select>
+
         <!-- Risk Tolerance Select -->
         <v-select
             label="Risk Tolerance"
@@ -91,7 +101,7 @@ import {useRoute, useRouter, onBeforeRouteLeave} from 'vue-router';
 import {useUserStore} from '@/store/user';
 import {parseError} from '@/utils/error';
 import {isEqual, cloneDeep} from 'lodash';
-import { addCommas } from '@/utils/string';
+import {addCommas} from '@/utils/string';
 
 // Inject axios and toast services
 const $axios = inject('$axios');
@@ -168,7 +178,6 @@ const setAccountData = (data) => {
 const removeCommas = (value) => {
   return account.value = Number(value.replace(/,/g, ''));
 };
-
 
 
 // Fetch account types and initial account data on component mount

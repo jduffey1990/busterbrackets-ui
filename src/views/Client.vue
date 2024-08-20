@@ -168,7 +168,7 @@
           <div class="my-8">
             <div class="text-h4">Pomarium Allocations</div>
             <div class="d-flex justify-end" v-if="!edditingAllocations">
-              <v-btn  class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
+              <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
               <v-btn color="primary" @click="refresh">Refresh Survey</v-btn>
             </div>
             <div class="d-flex justify-end" v-else>
@@ -206,7 +206,10 @@
 
               <template v-slot:item="{ item }">
                 <tr>
-                  <td><v-checkbox-btn v-if="edditingAllocations" @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn></td>
+                  <td>
+                    <v-checkbox-btn v-if="edditingAllocations"
+                                    @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
+                  </td>
                   <td style="padding: 0px;">
                     <img :src="getImagePathFromTicker(item.ticker)" alt=""
                          style="display: flex; margin: auto; max-height: 20px; max-width: 40px;">
@@ -318,7 +321,9 @@
             :metrics="metrics"
             :metrics-loading="metricsLoading"
             :no-metrics="noMetrics"
-            :client="client"/>
+            :client="client"
+            :brand-colors="brandColors"
+            :get-unique-random-color="getUniqueRandomColor"/>
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
@@ -589,12 +594,12 @@ const accountHeaders = [
     width: 0,
     nowrap: true,
   },
-  // {
-  //   title: 'Fractional',
-  //   key: 'fractional',
-  //   width: 0,
-  //   nowrap: true,
-  // },
+  {
+    title: 'Fractional',
+    key: 'fractional',
+    width: 0,
+    nowrap: true,
+  },
   {
     title: 'Risk Tolerance',
     key: 'risk_tolerance',
@@ -614,7 +619,7 @@ const getAccounts = async () => {
     accounts.value = data.map((d) => ({
       ...d,
       value: currencyFormat(d.value),
-      // fractional: d.fractional ? 'Yes' : 'No',
+      fractional: d.fractional ? 'Yes' : 'No',
       active: d.active ? 'Yes' : 'No',
     }));
 
@@ -641,7 +646,7 @@ const tabs = ref([
   {label: 'Values'},
   {label: 'Recommendations'},
   {label: 'Accounts'},
-  ...(isSuper ? [{label: 'Analytics'}] : []),
+  {label: 'Analytics'},
 ]);
 
 const getValue = (response) => {
@@ -787,19 +792,19 @@ const getMetrics = async () => {
 };
 
 let updateAvoidedCompanies = [
-    {
+  {
+    id: '',
+    position: 0,
+    question: {
+      default_value: allocationsToDel.value,
       id: '',
-      position: 0,
-      question: {
-        default_value: allocationsToDel.value,
-        id: '',
-        response_type: 'multi_select',
-        slider_ticks: null,
-        tag: 'areThereAnySpecificCompaniesYouWouldAvoidInvestingIn',
-        text: 'Are there any specific companies you would avoid investing in?',
-        tooltip: null
-      }
+      response_type: 'multi_select',
+      slider_ticks: null,
+      tag: 'areThereAnySpecificCompaniesYouWouldAvoidInvestingIn',
+      text: 'Are there any specific companies you would avoid investing in?',
+      tooltip: null
     }
+  }
 ];
 
 const edditingAllocations = ref(false);
@@ -823,9 +828,8 @@ const addOrRemoveAllocationToDelete = (allocation) => {
 
 const saveAllocationsToDelete = () => {
   if (confirm(`Do you really want to delete these companies from your allocations? ${allocationsDelDisplay.value}`)) {
-      submitSurvey();
-  }
-  else {
+    submitSurvey();
+  } else {
     switchEditAllocations();
   }
 };
@@ -833,11 +837,11 @@ const saveAllocationsToDelete = () => {
 const submitSurvey = async () => {
   try {
     await $axios.post(
-      `/api/advisors/${advisor_id}/clients/${user_id}/responses/`, 
-      updateAvoidedCompanies.map(uac => ({
+        `/api/advisors/${advisor_id}/clients/${user_id}/responses/`,
+        updateAvoidedCompanies.map(uac => ({
           ...uac.question,
           default_value: JSON.stringify(uac.question.default_value),
-      })));
+        })));
 
     await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
 
@@ -850,13 +854,13 @@ const submitSurvey = async () => {
 
 const refresh = () => {
   if (confirm('Do you want to refresh the survey?')) {
-      try {
-        $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
-      } catch (error) {
-        show({message: parseError(error), error: true});
-      }
-      location.reload();
-  } 
+    try {
+      $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
+    } catch (error) {
+      show({message: parseError(error), error: true});
+    }
+    location.reload();
+  }
 };
 </script>
 
@@ -904,7 +908,7 @@ const refresh = () => {
   width: 100%;
 }
 
-:deep(.v-overlay__content)  {
+:deep(.v-overlay__content) {
   max-width: 40% !important;
 }
 

@@ -19,20 +19,68 @@
     </router-link>
   </div>
   <div v-else>
+    <div class="scatter_section">
+      <v-col class="scatter_graph">
+        <div class="d-flex justify-center align-center h-100">
+          <ScatterChart
+              :data="getScatterChartData(wholeTableData)"
+              :options="{
+            responsive: true,
+            plugins: {
+              legend: {
+                display: true,
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Volatility (%)'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: '3 Year Return (%)'
+                }
+              }
+            }
+
+          }"
+          />
+        </div>
+      </v-col>
+    </div>
+
     <v-data-table
-        :items="tableData"
+        :items="metricTableData"
         :headers="metricHeaders"
         :items-per-page="-1"
-        class="elevation-1"
+        class="elevation-1 mt-10"
     >
       <template v-slot:top>
-        <v-toolbar flat>
+        <v-toolbar flat color="secondary">
           <v-toolbar-title>Metrics Comparison</v-toolbar-title>
         </v-toolbar>
       </template>
       <template #bottom v-if="metricHeaders.length < 10"></template>
     </v-data-table>
-    <div>
+
+    <v-data-table
+        :items="wholeTableData"
+        :headers="wholeHeaders"
+        :items-per-page="-1"
+        class="elevation-1 mt-10"
+    >
+      <template v-slot:top>
+        <v-toolbar flat color="secondary">
+          <v-toolbar-title>Whole Portfolio Analysis</v-toolbar-title>
+        </v-toolbar>
+      </template>
+      <template #bottom v-if="wholeHeaders.length < 10"></template>
+    </v-data-table>
+
+    <div class="mt-2 mb-10">
       <h6>
         <sup>*</sup> This comparison is from data that is valid as of {{ formatDate(props.metrics.as_of) }}
       </h6>
@@ -40,15 +88,19 @@
   </div>
 </template>
 
-
 <script setup>
 import {computed} from "vue";
+
+import ScatterChart from '../components/ScatterChart.vue';
+
 // Props
 const props = defineProps({
   metrics: Object,
   client: Object,
   metricsLoading: Boolean,
   noMetrics: Boolean,
+  getUniqueRandomColor: Function,
+  brandColors: Array,
 });
 
 // Use a computed property to safely access client
@@ -73,8 +125,40 @@ const metricHeaders = [
   },
 ];
 
-// Prepare data for the table only if metrics are available and structured correctly
-const tableData = computed(() => {
+const wholeHeaders = [
+  {
+    title: "",
+    key: 'metric',
+    sortable: false,
+  },
+  {
+    title: "Very Low",
+    key: 'veryLow',
+    sortable: false,
+  },
+  {
+    title: 'Low',
+    key: 'low',
+    sortable: false,
+  },
+  {
+    title: 'Medium',
+    key: 'medium',
+    sortable: false,
+  },
+  {
+    title: 'High',
+    key: 'high',
+    sortable: false,
+  },
+  {
+    title: 'Very High',
+    key: 'veryHigh',
+    sortable: false,
+  },
+];
+
+const metricTableData = computed(() => {
   if (!props.metrics || !props.metrics.pomarium || !props.metrics.market) {
     return [];
   }
@@ -82,79 +166,153 @@ const tableData = computed(() => {
   return [
     {
       metric: '1yr Return',
-      pomariumValue: props.metrics.pomarium["1yr return"],
-      marketValue: props.metrics.market["1yr return"],
+      pomariumValue: toPercentage(props.metrics.pomarium["1yr return"]),
+      marketValue: toPercentage(props.metrics.market["1yr return"]),
     },
     {
       metric: '3yr Return',
-      pomariumValue: props.metrics.pomarium["3yr return"],
-      marketValue: props.metrics.market["3yr return"],
+      pomariumValue: toPercentage(props.metrics.pomarium["3yr return"]),
+      marketValue: toPercentage(props.metrics.market["3yr return"]),
     },
     {
       metric: '5yr Return',
-      pomariumValue: props.metrics.pomarium["5yr return"],
-      marketValue: props.metrics.market["5yr return"],
+      pomariumValue: toPercentage(props.metrics.pomarium["5yr return"]),
+      marketValue: toPercentage(props.metrics.market["5yr return"]),
     },
     {
       metric: '5yr Max Drawdown',
-      pomariumValue: props.metrics.pomarium["5yr max drawdown"],
-      marketValue: props.metrics.market["5yr max drawdown"],
+      pomariumValue: toPercentage(props.metrics.pomarium["5yr max drawdown"]),
+      marketValue: toPercentage(props.metrics.market["5yr max drawdown"]),
     },
     {
       metric: 'Volatility',
-      pomariumValue: props.metrics.pomarium["volatility"],
-      marketValue: props.metrics.market["volatility"],
+      pomariumValue: toPercentage(props.metrics.pomarium["volatility"]),
+      marketValue: toPercentage(props.metrics.market["volatility"]),
     },
     {
       metric: 'Tracking Error',
-      pomariumValue: props.metrics.pomarium["tracking_error"],
-      marketValue: props.metrics.market["tracking_error"],
+      pomariumValue: toPercentage(props.metrics.pomarium["tracking_error"]),
+      marketValue: toPercentage(props.metrics.market["tracking_error"]),
     },
     {
       metric: 'Beta (Market Exposure Metric)',
-      pomariumValue: props.metrics.pomarium["beta"],
-      marketValue: props.metrics.market["beta"],
+      pomariumValue: props.metrics.pomarium["beta"].toFixed(2), // Beta usually isn't a percentage
+      marketValue: props.metrics.market["beta"].toFixed(2),
     },
     {
       metric: 'Investment Fit Score',
-      pomariumValue: props.metrics.pomarium["investment_fit"],
-      marketValue: props.metrics.market["investment_fit"],
+      pomariumValue: `${props.metrics.pomarium["investment_fit"].toFixed(2)}%`,
+      marketValue: `${props.metrics.market["investment_fit"].toFixed(2)}%`,
     },
     {
       metric: 'Values Fit Score',
-      pomariumValue: props.metrics.pomarium["values_fit"],
-      marketValue: props.metrics.market["values_fit"],
+      pomariumValue: `${props.metrics.pomarium["values_fit"].toFixed(2)}%`,
+      marketValue: `${props.metrics.market["values_fit"].toFixed(2)}%`,
     },
   ];
 });
 
+// Prepare data for the table only if metrics are available and structured correctly
+const wholeTableData = computed(() => {
+  if (!props.metrics || !props.metrics.full_portfolio) {
+    return [];
+  }
+
+  return [
+    {
+      metric: 'Volatility',
+      veryLow: toPercentage(props.metrics.full_portfolio[0]["volatility"]),
+      low: toPercentage(props.metrics.full_portfolio[1]["volatility"]),
+      medium: toPercentage(props.metrics.full_portfolio[2]["volatility"]),
+      high: toPercentage(props.metrics.full_portfolio[3]["volatility"]),
+      veryHigh: toPercentage(props.metrics.full_portfolio[4]["volatility"]),
+    },
+    {
+      metric: 'Max Drawdown',
+      veryLow: toPercentage(props.metrics.full_portfolio[0]['5yr max drawdown']),
+      low: toPercentage(props.metrics.full_portfolio[1]['5yr max drawdown']),
+      medium: toPercentage(props.metrics.full_portfolio[2]['5yr max drawdown']),
+      high: toPercentage(props.metrics.full_portfolio[3]['5yr max drawdown']),
+      veryHigh: toPercentage(props.metrics.full_portfolio[4]['5yr max drawdown']),
+    },
+    {
+      metric: '3 Year Return (Net of fees)',
+      veryLow: toPercentage(props.metrics.full_portfolio[0]['3yr return']),
+      low: toPercentage(props.metrics.full_portfolio[1]['3yr return']),
+      medium: toPercentage(props.metrics.full_portfolio[2]['3yr return']),
+      high: toPercentage(props.metrics.full_portfolio[3]['3yr return']),
+      veryHigh: toPercentage(props.metrics.full_portfolio[4]['3yr return']),
+    },
+    {
+      metric: 'Expense Ratio',
+      veryLow: props.metrics.full_portfolio[0]['expense_ratio'].toFixed(2),
+      low: props.metrics.full_portfolio[1]['expense_ratio'].toFixed(2),
+      medium: props.metrics.full_portfolio[2]['expense_ratio'].toFixed(2),
+      high: props.metrics.full_portfolio[3]['expense_ratio'].toFixed(2),
+      veryHigh: props.metrics.full_portfolio[4]['expense_ratio'].toFixed(2),
+    },
+  ];
+});
+
+const getScatterChartData = (data) => {
+  const volatilityEntry = data.find(metric => metric.metric === 'Volatility');
+  const returnEntry = data.find(metric => metric.metric === '3 Year Return (Net of fees)');
+
+  if (!volatilityEntry || !returnEntry) {
+    return {datasets: []};
+  }
+
+  const usedColors = new Set()
+  const datasets = ['veryLow', 'low', 'medium', 'high', 'veryHigh'].map((riskCategory, colorIndex) => ({
+    label: riskCategory,
+    data: [{
+      x: parseFloat(volatilityEntry[riskCategory]), // x-axis is Volatility
+      y: parseFloat(returnEntry[riskCategory]), // y-axis is 3 Year Return
+    }],
+    backgroundColor: props.getUniqueRandomColor(props.brandColors, usedColors),
+    radius: 6
+  }));
+
+  return {datasets};
+};
+
+
 function formatDate(dateString) {
-  if (dateString === '' || dateString === null || dateString === undefined) {
-    return dateString
+  if (!dateString) {
+    return '';
   }
   const [year, month, day] = dateString.split('-');
-  const date = new Date(Date.UTC(year, month - 1, day));  // Treat the date as UTC
+  const date = new Date(Date.UTC(year, month - 1, day)); // Treat the date as UTC
 
   const options = {year: 'numeric', month: 'long', day: 'numeric'};
   return date.toLocaleDateString('en-US', options);
 }
+
+function toPercentage(value) {
+  return `${(value * 100).toFixed(2)}%`;
+}
 </script>
 
-
-<style scoped>
-.elevation-1 {
-  margin-top: 20px;
+<style>
+.scatter_section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-h6 {
-  margin-top: 10px;
-  font-style: italic;
-  color: #666; /* Adjust color to fit with your design */
+.scatter_graph {
+  max-width: 60%;
 }
 
-h6 sup {
-  font-size: 0.8em; /* Smaller superscript */
-  vertical-align: center; /* Align the superscript properly */
-  color: #000; /* Superscript color, can be adjusted */
+@media only screen and (max-width: 1275px) {
+  .scatter_graph {
+    max-width: 80%;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .scatter_graph {
+    max-width: 100%;
+  }
 }
 </style>
