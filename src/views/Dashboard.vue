@@ -57,6 +57,7 @@
           <v-text-field
             v-model="searchInput"
             append-inner-icon="mdi-magnify"
+            append-icon="mdi-close"
             density="compact"
             label="Search for a client"
             variant="solo"
@@ -64,8 +65,9 @@
             single-line
             @click:append-inner="findClient(searchInput)"
             @keydown.enter="findClient(searchInput)"
-            style="width: 400px;"
-            class="mb-4"
+            @click:append="searchInput = ''"
+            style="width: 400px; font-family: halyard-text;"
+            class="mb-4 "
           ></v-text-field>
 
           <!-- Data table for clients -->
@@ -117,6 +119,7 @@
           <v-text-field
             v-model="searchInputP"
             append-inner-icon="mdi-magnify"
+            append-icon="mdi-close"
             density="compact"
             label="Search for a client"
             variant="solo"
@@ -124,7 +127,8 @@
             single-line
             @click:append-inner="findProspect(searchInputP)"
             @keydown.enter="findProspect(searchInputP)"
-            style="width: 400px;"
+            @click:append="searchInputP = ''"
+            style="width: 400px; font-family: halyard-text;"
             class="mb-4"
           ></v-text-field>
 
@@ -377,21 +381,31 @@ const toggleProspects = () => {
 
 // Find client function for search bar 
 const findClient = (search) => {
-  foundClient.value = clients.value.filter((client) => {
-    return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
-  });
-  displayState.searched = true;
-  clientsToShow();
-  displayState.showClients = true;
+  if (search === '') {
+    displayState.searched = false;
+    displayState.showClients = false;
+  } else {
+    foundClient.value = clients.value.filter((client) => {
+      return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
+    });
+    displayState.searched = true;
+    clientsToShow();
+    displayState.showClients = true;
+  }
 };
 
 const findProspect = (search) => {
-  foundProspect.value = prospects.value.filter((prospect) => {
-    return prospect.full_name.toLowerCase().includes(search.toLowerCase()) || prospect.email.toLowerCase().includes(search.toLowerCase());
-  });
-  displayState.searchedProspects = true;
-  prospectsToShow();
-  displayState.showProspects = true;
+  if (search === '') {
+    displayState.searchedProspects = false;
+    displayState.showProspects = false;
+  } else {
+    foundProspect.value = prospects.value.filter((prospect) => {
+      return prospect.full_name.toLowerCase().includes(search.toLowerCase()) || prospect.email.toLowerCase().includes(search.toLowerCase());
+    });
+    displayState.searchedProspects = true;
+    prospectsToShow();
+    displayState.showProspects = true;
+  }
 };
 
 const clientsToShow = () => {
