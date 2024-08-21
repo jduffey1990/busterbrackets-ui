@@ -201,13 +201,13 @@ const metricTableData = computed(() => {
     },
     {
       metric: 'Investment Fit Score',
-      pomariumValue: `${props.metrics.pomarium["investment_fit"].toFixed(2)}%`,
-      marketValue: `${props.metrics.market["investment_fit"].toFixed(2)}%`,
+      pomariumValue: `${Math.round(props.metrics.pomarium["investment_fit"])}%`,
+      marketValue: `${Math.round(props.metrics.market["investment_fit"])}%`,
     },
     {
       metric: 'Values Fit Score',
-      pomariumValue: `${props.metrics.pomarium["values_fit"].toFixed(2)}%`,
-      marketValue: `${props.metrics.market["values_fit"].toFixed(2)}%`,
+      pomariumValue: `${Math.round(props.metrics.pomarium["values_fit"])}%`,
+      marketValue: `${Math.round(props.metrics.market["values_fit"])}%`,
     },
   ];
 });

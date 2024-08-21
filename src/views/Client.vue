@@ -504,7 +504,7 @@ const getPortfolios = async () => {
     } = data[0];
 
     for (let i in pomarium) {
-      pomarium[i] = Math.round(pomarium[i] * 100 * 100) / 100;
+      pomarium[i] = (Math.round(pomarium[i] * 100 * 100) / 100).toFixed(2);
     }
 
     const labels = Object.keys(pomarium);
@@ -515,8 +515,8 @@ const getPortfolios = async () => {
           ticker: p,
           allocation: `${pomarium[p]}%`,
           value: pomarium[p],
-          values_fit: values_fit && values_fit[p] ? `${Math.round(values_fit[p] * 100) / 100}%` : "",
-          investment_fit: investment_fit && investment_fit[p] ? `${Math.round(investment_fit[p] * 100) / 100}%` : ""
+          values_fit: values_fit && values_fit[p] ? `${(Math.round(values_fit[p] * 100) / 100).toFixed(0)}%` : "",
+          investment_fit: investment_fit && investment_fit[p] ? `${(Math.round(investment_fit[p] * 100) / 100).toFixed(0)}%` : ""
         }))
         .sort((a, b) => b.value - a.value);
 
