@@ -646,7 +646,7 @@ const tabs = ref([
   {label: 'Values'},
   {label: 'Recommendations'},
   {label: 'Accounts'},
-  {label: 'Analytics'},
+  ...(isSuper ? [{label: 'Analytics'}] : []),
 ]);
 
 const getValue = (response) => {
