@@ -678,7 +678,7 @@ const getValue = (response) => {
 
 const valuesProfile = ref({});
 const valuesLoading = ref(false);
-onMounted(async () => {
+const fetchValuesProfile = async () => {
   valuesLoading.value = true;
 
   getClient();
@@ -696,8 +696,12 @@ onMounted(async () => {
       vp.filter((v) => v.value !== false),
       'sections.name'
   );
-
+  console.log("here is values profile", valuesProfile.value)
   valuesLoading.value = false;
+}
+
+onMounted(async () => {
+  await fetchValuesProfile()
 });
 
 watch(currentTab, (e) => {
@@ -842,6 +846,8 @@ const submitSurvey = async () => {
           ...uac.question,
           default_value: JSON.stringify(uac.question.default_value),
         })));
+
+    fetchValuesProfile()
 
     await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
 

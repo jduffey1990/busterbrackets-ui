@@ -365,12 +365,15 @@ const submit = async (prospect_id) => {
         ? `/api/prospects/${prospect_id}/responses/`
         : `/api/advisors/${advisor_id}/clients/${user_id}/responses/`;
 
+    let mappedSurveyResponses = surveyResponses.map(sr => ({
+      ...sr.question,
+      default_value: JSON.stringify(sr.question.default_value),
+    }))
+    console.log("here is your map", mappedSurveyResponses)
+
     await $axios.post(
         url,
-        surveyResponses.map(sr => ({
-          ...sr.question,
-          default_value: JSON.stringify(sr.question.default_value),
-        }))
+        mappedSurveyResponses
     );
 
     if (!prospect_id) {
@@ -495,7 +498,7 @@ window.addEventListener('beforeunload', (event) => {
 
 
 <style scoped>
-/deep/ .v-overlay__content {
+::v-deep(.v-overlay__content) {
   max-width: 40% !important;
 }
 
@@ -610,7 +613,7 @@ window.addEventListener('beforeunload', (event) => {
     justify-content: center;
   }
 
-  /deep/ .v-overlay__content {
+  ::v-deep(.v-overlay__content) {
     max-width: 70% !important;
   }
 

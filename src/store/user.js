@@ -26,9 +26,15 @@ export const useUserStore = defineStore('user', {
     },
     actions: {
         async getValuesProfile({advisor_id, user_id}) {
-            const {data} = await this.$axios.get(
-                `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
-            );
+            let data
+            if (this.user.values_profile !== null) {
+                data = this.user.values_profile
+            } else {
+                const response = await this.$axios.get(
+                    `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
+                );
+                data = response.data
+            }
 
             return data
                 .map((d) => ({
@@ -43,6 +49,7 @@ export const useUserStore = defineStore('user', {
                         a.question.text.localeCompare(b.question.text)
                 );
         },
+
         async getSession() {
             const {data} = await this.$axios('/api/users/session/');
 
