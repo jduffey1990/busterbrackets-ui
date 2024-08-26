@@ -846,8 +846,6 @@ const submitSurvey = async () => {
           default_value: JSON.stringify(uac.question.default_value),
         })));
 
-    fetchValuesProfile()
-
     await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
 
     show({message: 'Submitted!'});
