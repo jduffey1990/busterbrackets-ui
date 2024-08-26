@@ -26,28 +26,37 @@ export const useUserStore = defineStore('user', {
     },
     actions: {
         async getValuesProfile({advisor_id, user_id}) {
-            let data
-            if (this.user.values_profile !== null) {
-                data = this.user.values_profile
-            } else {
-                const response = await this.$axios.get(
-                    `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
-                );
-                data = response.data
+            // Helper function to map, filter, and sort the data (Original code wrapped for multi-use)
+            function mappedData(apiResponse) {
+                return apiResponse
+                    .map((data) => ({
+                        ...data,
+                        value: JSON.parse(data.value),
+                    }))
+                    .filter((data) => data.question.value !== false)
+                    .sort(
+                        (a, b) =>
+                            a.sections.position - b.sections.position ||
+                            a.question.response_type.localeCompare(b.question.response_type) ||
+                            a.question.text.localeCompare(b.question.text)
+                    );
             }
 
-            return data
-                .map((d) => ({
-                    ...d,
-                    value: JSON.parse(d.value),
-                }))
-                .filter((d) => d.question.value !== false)
-                .sort(
-                    (a, b) =>
-                        a.sections.position - b.sections.position ||
-                        a.question.response_type.localeCompare(b.question.response_type) ||
-                        a.question.text.localeCompare(b.question.text)
+            // First attempt: Fetch values profile directly from the new endpoint
+            const response1 = await this.$axios.get(`/api/users/${user_id}/values-profile/`);
+            const data1 = response1.data;
+
+            if (data1.length) {
+                return mappedData(data1);  // Return the mapped data if available
+            } else {
+                // If the array is empty, fall back to the original endpoint
+                const response2 = await this.$axios.get(
+                    `/api/advisors/${advisor_id}/clients/${user_id}/responses/`
                 );
+                const data2 = response2.data;
+
+                return mappedData(data2);  // Return the mapped data from the second endpoint
+            }
         },
 
         async getSession() {

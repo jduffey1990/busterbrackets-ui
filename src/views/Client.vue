@@ -696,7 +696,6 @@ const fetchValuesProfile = async () => {
       vp.filter((v) => v.value !== false),
       'sections.name'
   );
-  console.log("here is values profile", valuesProfile.value)
   valuesLoading.value = false;
 }
 
