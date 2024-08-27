@@ -41,8 +41,8 @@
             v-model="account.value"
             label="Account Market Value"
             type="text"
-            @keydown="removeCommas(account.value)"
-            @keyup="account.value = addCommas(account.value)"
+            @keydown="handleKeyDown"
+            @keyup="handleKeyUp"
         ></v-text-field>
 
         <!-- Live Account Select -->
@@ -214,5 +214,13 @@ const initialState = {
   value: '',
   risk_tolerance: undefined,
   last_four: undefined,
+};
+
+const handleKeyDown = () => {
+  if (account.value) removeCommas(account.value);
+};
+
+const handleKeyUp = () => {
+  if (account.value) account.value = addCommas(account.value);
 };
 </script>
