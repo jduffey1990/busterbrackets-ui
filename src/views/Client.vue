@@ -818,7 +818,6 @@ const getExclusionsQuestionIDs = async () => {
   try {
     const response = await $axios.get(`/api/surveys/idtodelete/${excludedTag}/`);  // Use 'await' and provide correct endpoint
     excludedQuestionIDs.value = response.data; // Ensure proper handling of response data
-    console.log("Here are the ID's you want", excludedQuestionIDs.value)
 
   } catch (error) {
     show({message: parseError(error), error: true});
@@ -829,8 +828,8 @@ const switchEditAllocations = () => {
   edditingAllocations.value = !edditingAllocations.value;
   let indexA = valuesProfile.value['Pull your Weeds'].length - 1;
   allocationsToDel.value.push(...Object.values(valuesProfile.value['Pull your Weeds'][indexA].value));
-  updateAvoidedCompanies[0].question.id = valuesProfile.value['Pull your Weeds'][0].sections.survey_groups[2].survey_questions[0].question.id;
-  updateAvoidedCompanies[0].id = valuesProfile.value['Pull your Weeds'][0].sections.survey_groups[2].survey_questions[0].id;
+  updateAvoidedCompanies[0].question.id = excludedQuestionIDs.value.base_id;
+  updateAvoidedCompanies[0].id = excludedQuestionIDs.value.related_question_id;
 };
 
 const addOrRemoveAllocationToDelete = (allocation) => {
