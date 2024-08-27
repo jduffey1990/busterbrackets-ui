@@ -211,7 +211,7 @@ const initialState = {
   active: true,
   account_type: undefined,
   custodian: undefined,
-  value: undefined,
+  value: '',
   risk_tolerance: undefined,
   last_four: undefined,
 };
