@@ -359,6 +359,7 @@ const {show} = inject('toast');
 
 const client = ref({});
 const clientLoading = ref(false);
+const excludedQuestionIDs = ref('')
 
 const hasValuesProfile = computed(
     () => !!Object.keys(valuesProfile.value).length
@@ -811,6 +812,19 @@ let updateAvoidedCompanies = [
 ];
 
 const edditingAllocations = ref(false);
+
+const getExclusionsQuestionIDs = async () => {
+  let excludedTag = 'areThereAnySpecificCompaniesYouWouldAvoidInvestingIn';
+  try {
+    const response = await $axios.get(`/api/surveys/idtodelete/${excludedTag}/`);  // Use 'await' and provide correct endpoint
+    excludedQuestionIDs.value = response.data; // Ensure proper handling of response data
+    console.log("Here are the ID's you want", excludedQuestionIDs.value)
+
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+};
+getExclusionsQuestionIDs()
 const switchEditAllocations = () => {
   edditingAllocations.value = !edditingAllocations.value;
   let indexA = valuesProfile.value['Pull your Weeds'].length - 1;
