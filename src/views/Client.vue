@@ -816,7 +816,7 @@ const switchEditAllocations = () => {
   let indexA = valuesProfile.value['Pull your Weeds'].length - 1;
   allocationsToDel.value.push(...Object.values(valuesProfile.value['Pull your Weeds'][indexA].value));
   updateAvoidedCompanies[0].question.id = valuesProfile.value['Pull your Weeds'][0].sections.survey_groups[2].survey_questions[0].question.id;
-  updateAvoidedCompanies[0].id = valuesProfile.value['Pull your Weeds'][0].sections.survey_groups[0].survey_questions[2].id;
+  updateAvoidedCompanies[0].id = valuesProfile.value['Pull your Weeds'][0].sections.survey_groups[2].survey_questions[0].id;
 };
 
 const addOrRemoveAllocationToDelete = (allocation) => {
