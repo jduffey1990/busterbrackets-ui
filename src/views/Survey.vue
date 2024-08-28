@@ -366,6 +366,11 @@ const updateResponse = (q, setInitial = false) => {
 
 //submit is called in the client pathway without an id.  it is called in createNewProspect with the prospect_id
 const submit = async (prospect_id) => {
+  overlayStore.openOverlay(
+      'Thank you for submitting your survey!',
+      'Consult with your advisor for next steps',
+      '/UI-IMGs/Values-ss.png'
+  );
   try {
     const url = prospect_id
         ? `/api/prospects/${prospect_id}/responses/`
@@ -388,12 +393,6 @@ const submit = async (prospect_id) => {
 
     show({message: 'Survey saved!'});
     hasSubmitted.value = true;
-
-    overlayStore.openOverlay(
-        'Thank you for submitting your survey!',
-        'Consult with your advisor for next steps',
-        '/UI-IMGs/Values-ss.png'
-    );
 
     setTimeout(() => {
       router.push(prospect_id ? '/?success=true' : `/clients/${user_id}#values`);
