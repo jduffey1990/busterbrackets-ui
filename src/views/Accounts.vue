@@ -218,13 +218,13 @@ const initialState = {
 };
 
 const handleKeyDown = (event) => {
-  if (event.key >= '0' && event.key <= '9') {
+  if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
     account.value = removeCommas(account.value);
   }
 };
 
 const handleKeyUp = (event) => {
-  if (event.key >= '0' && event.key <= '9') {
+  if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
     account.value = addCommas(account.value);
   }
 };
