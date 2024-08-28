@@ -34,15 +34,11 @@ const props = defineProps({
   }
 });
 
-// Log the props to verify they are received correctly
-console.log('Overlay component initialized with props:', props);
-
 // Define emits
 const emit = defineEmits(['close']);
 
 // Method to close the overlay
 const closeOverlay = () => {
-  console.log('Overlay close button clicked');
   emit('close');
 };
 </script>
@@ -69,6 +65,8 @@ const closeOverlay = () => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 8px; /* Add some rounding to the content box */
   overflow: hidden; /* Clip the text if it overflows the container */
+  max-width: 80%;
+  max-height: 80%;
 }
 
 .close-button {
@@ -109,6 +107,25 @@ const closeOverlay = () => {
   color: #07152A;
   font-size: 16px;
   z-index: 1; /* Ensure the text is on top of the image */
+}
+
+@media only screen and (max-width: 700px) {
+
+  .overlay-content {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .overlay-text {
+    position: absolute;
+    top: 100px; /* Adjust this value as needed to place text where desired */
+    left: 20px;
+    right: 20px;
+    color: #07152A;
+    font-size: 12px;
+    z-index: 1; /* Ensure the text is on top of the image */
+  }
+
 }
 </style>
 

@@ -20,7 +20,6 @@ export const useOverlayStore = defineStore('overlay', () => {
     // Action to close overlay
     const closeOverlay = () => {
         showOverlay.value = false;
-        console.log("Overlay closed");
     };
 
     return {showOverlay, overlayContent, openOverlay, closeOverlay};

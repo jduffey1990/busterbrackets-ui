@@ -380,7 +380,6 @@ const submit = async (prospect_id) => {
       ...sr.question,
       default_value: JSON.stringify(sr.question.default_value),
     }))
-    console.log("here is your map", mappedSurveyResponses)
 
     await $axios.post(
         url,
