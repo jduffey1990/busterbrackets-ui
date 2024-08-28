@@ -3,7 +3,9 @@
   <div class="overlay">
     <div class="overlay-content">
       <!-- Close button positioned in the upper right corner -->
-      <button class="close-button" @click="closeOverlay">X</button>
+      <button class="close-button" @click="closeOverlay">
+        <v-icon>mdi-close</v-icon>
+      </button>
       <h2 class="overlay-title">{{ title }}</h2>
       <img :src="backgroundImage" alt="Overlay Image" class="overlay-image"/>
       <p class="overlay-text">{{ text }}</p>
@@ -75,10 +77,12 @@ const closeOverlay = () => {
   right: 10px;
   background: none;
   border: none;
-  color: black;
+  color: grey;
+  font-family: "halyard-text" !important;
   font-size: 20px;
   cursor: pointer;
   z-index: 100; /* Ensure button stays on top of other content */
+  
 }
 
 .overlay-image {
