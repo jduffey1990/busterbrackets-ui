@@ -64,7 +64,7 @@ const closeOverlay = () => {
 .overlay-content {
   position: relative; /* To position child elements like the close button */
   background: white;
-  padding: 20px;
+  padding: 30px;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 8px; /* Add some rounding to the content box */

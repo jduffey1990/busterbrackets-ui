@@ -391,7 +391,7 @@ const submit = async (prospect_id) => {
 
     overlayStore.openOverlay(
         'Thank you for submitting your survey!',
-        'Consult with your advisor for next steps!',
+        'Consult with your advisor for next steps',
         '/UI-IMGs/Values-ss.png'
     );
 
