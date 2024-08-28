@@ -18,7 +18,6 @@
   >Please do not include and exclude the same company in your selections.
   </v-alert>
 
-
   <!--steps are "weeds" "trees" "boundaries". First step into the survey_seed file found
   at app/surveys/management/survey_seed.py by accessing the section to create the header -->
   <div v-if="survey" class="survey_div trans-background">
@@ -250,12 +249,18 @@ import {reactive, ref, onMounted, inject, computed} from 'vue';
 import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
 import {useUserStore} from '@/store/user';
 import {parseError} from '@/utils/error';
+import {useOverlayStore} from "@/store/overlay";
+
+const overlayStore = useOverlayStore();
 
 // Composables
 const router = useRouter();
 const route = useRoute();
 const $axios = inject('$axios');
 const {show} = inject('toast');
+
+//imported components
+import Overlay from '@/components/Overlay.vue';
 
 // Stores
 const {
@@ -280,6 +285,7 @@ const showMultiSelectError = ref(false);
 const hasSubmitted = ref(false);
 const showNewProspectModal = ref(false);
 const selectAll = ref({})
+const showOverlay = ref(false);
 
 // Initial State
 const initialState = {
@@ -382,6 +388,12 @@ const submit = async (prospect_id) => {
 
     show({message: 'Survey saved!'});
     hasSubmitted.value = true;
+
+    overlayStore.openOverlay(
+        'Thank you for submitting your survey!',
+        'Consult with your advisor for next steps!',
+        '/UI-IMGs/Values-ss.png'
+    );
 
     setTimeout(() => {
       router.push(prospect_id ? '/?success=true' : `/clients/${user_id}#values`);

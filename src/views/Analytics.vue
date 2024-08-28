@@ -19,7 +19,23 @@
     </router-link>
   </div>
   <div v-else>
-    <div class="scatter_section">
+
+    <v-data-table
+        :items="metricTableData"
+        :headers="metricHeaders"
+        :items-per-page="-1"
+        class="elevation-1 mt-10"
+    >
+      <template v-slot:top>
+        <v-toolbar flat color="secondary">
+          <v-toolbar-title>U.S. Large Cap Stock Comparison</v-toolbar-title>
+        </v-toolbar>
+      </template>
+      <template #bottom v-if="metricHeaders.length < 10"></template>
+    </v-data-table>
+
+    <div class="scatter_section mt-10">
+      <h5 class="graph_title">Whole Portfolio Analysis</h5>
       <v-col class="scatter_graph">
         <div class="d-flex justify-center align-center h-100">
           <ScatterChart
@@ -53,20 +69,6 @@
     </div>
 
     <v-data-table
-        :items="metricTableData"
-        :headers="metricHeaders"
-        :items-per-page="-1"
-        class="elevation-1 mt-10"
-    >
-      <template v-slot:top>
-        <v-toolbar flat color="secondary">
-          <v-toolbar-title>Metrics Comparison</v-toolbar-title>
-        </v-toolbar>
-      </template>
-      <template #bottom v-if="metricHeaders.length < 10"></template>
-    </v-data-table>
-
-    <v-data-table
         :items="wholeTableData"
         :headers="wholeHeaders"
         :items-per-page="-1"
@@ -82,7 +84,7 @@
 
     <div class="mt-2 mb-10">
       <h6>
-        <sup>*</sup> This comparison is from data that is valid as of {{ formatDate(props.metrics.as_of) }}
+        <sup>*</sup>As of {{ formatDate(props.metrics.as_of) }}
       </h6>
     </div>
   </div>
@@ -296,12 +298,20 @@ function toPercentage(value) {
 <style>
 .scatter_section {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
+.graph_title {
+  background-color: #ffffff;
+  padding: 20px;
+  font-size: 20px;
+}
+
 .scatter_graph {
   max-width: 60%;
+  padding-top: 0px;
 }
 
 @media only screen and (max-width: 1275px) {

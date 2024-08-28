@@ -97,7 +97,7 @@ export const useUserStore = defineStore('user', {
             this.user = {};
         },
         initializePendo() {
-            if (this.user && Object.keys(this.user).length !== 0) {
+            if (this.user && Object.keys(this.user).length !== 0 && !this.isSuper) {
                 pendo.initialize({
                     visitor: {
                         id: this.user.id,
