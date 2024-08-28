@@ -145,13 +145,14 @@ let accountCopy = {};
 
 // Function to save the account data
 const save = async () => {
+  checkReady();
   try {
     if (account_id) {
-      removeCommas(account.value);
+      readyToSave.value ? removeCommas(account.value) : null;
       await $axios.patch(`/api/accounts/${account_id}/`, account);
       show({message: 'Account saved!'});
     } else {
-      removeCommas(account.value);
+      readyToSave.value ? removeCommas(account.value) : null;
       await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/accounts/`, account);
       show({message: 'Account created!'});
     }
@@ -222,5 +223,12 @@ const handleKeyDown = () => {
 
 const handleKeyUp = () => {
   if (account.value) account.value = addCommas(account.value);
+};
+
+const readyToSave = ref(false);
+const checkReady = () => {
+  if (account.name && account.account_type && account.custodian && account.risk_tolerance) {
+    return readyToSave.value = true;
+  };
 };
 </script>

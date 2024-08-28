@@ -869,7 +869,7 @@ const submitSurvey = async () => {
 };
 
 const refresh = () => {
-  if (confirm('Do you want to refresh the survey?')) {
+  if (confirm('By clicking "Refresh Survey", you will reload the current page and may lose your existing portfolio allocations. Are you sure you want to continue?')) {
     try {
       $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
     } catch (error) {
