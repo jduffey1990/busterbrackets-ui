@@ -47,10 +47,10 @@
 
         <!-- Live Account Select -->
         <v-select
-            label="Fractional Account"
+            label="Share Type"
             class="mb-4"
             v-model="account.fractional"
-            :items="yesNoBooleans"
+            :items="fractionalVsWhole"
             item-title="title"
             item-value="value"
         ></v-select>
@@ -107,8 +107,33 @@ import {addCommas} from '@/utils/string';
 const $axios = inject('$axios');
 const {show} = inject('toast');
 
-// Get router instance for navigation
+
+// Extract user data from the store
+const {user: {id: advisor_id}} = useUserStore();
+
+// Extract route parameters and query
 const router = useRouter();
+const {params: {user_id}, query: {account_id}} = useRoute();
+const lastUrl = window.history.state.back;
+const goBack = () => {
+  lastUrl === "/billing" ? router.push(lastUrl) : router.push(`/clients/${user_id}#accounts`);
+};
+
+// Define state variables
+const accountTypes = ref([]);
+const account = reactive({});
+let accountCopy = {};
+const readyToSave = ref(false);
+const initialState = {
+  name: undefined,
+  active: true,
+  fractional: true,
+  account_type: undefined,
+  custodian: undefined,
+  value: '',
+  risk_tolerance: undefined,
+  last_four: undefined,
+};
 
 // Define static data for selects
 const custodians = [
@@ -132,16 +157,11 @@ const yesNoBooleans = [
   {value: true, title: 'Yes'},
 ];
 
-// Extract user data from the store
-const {user: {id: advisor_id}} = useUserStore();
+const fractionalVsWhole = [
+  {value: true, title: 'Fractional Shares'},
+  {value: false, title: 'Whole Shares'},
+]
 
-// Extract route parameters and query
-const {params: {user_id}, query: {account_id}} = useRoute();
-
-// Define state variables
-const accountTypes = ref([]);
-const account = reactive({});
-let accountCopy = {};
 
 // Function to save the account data
 const save = async () => {
@@ -163,12 +183,6 @@ const save = async () => {
   }
 };
 
-const lastUrl = window.history.state.back;
-
-const goBack = () => {
-  lastUrl === "/billing" ? router.push(lastUrl) : router.push(`/clients/${user_id}#accounts`);
-};
-
 // Function to set account data and make a copy for comparison
 const setAccountData = (data) => {
   Object.assign(account, data || initialState);
@@ -179,7 +193,6 @@ const setAccountData = (data) => {
 const removeCommas = (value) => {
   return account.value = Number(value.replace(/,/g, ''));
 };
-
 
 // Fetch account types and initial account data on component mount
 onMounted(async () => {
@@ -206,16 +219,6 @@ onBeforeRouteLeave((to, from, next) => {
   next();
 });
 
-// Initial state of the account
-const initialState = {
-  name: undefined,
-  active: true,
-  account_type: undefined,
-  custodian: undefined,
-  value: '',
-  risk_tolerance: undefined,
-  last_four: undefined,
-};
 
 const handleKeyDown = (event) => {
   if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
@@ -229,10 +232,10 @@ const handleKeyUp = (event) => {
   }
 };
 
-const readyToSave = ref(false);
 const checkReady = () => {
   if (account.name && account.account_type && account.custodian && account.risk_tolerance) {
     return readyToSave.value = true;
-  };
+  }
+  ;
 };
 </script>
