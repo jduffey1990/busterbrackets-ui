@@ -168,7 +168,8 @@ const save = async () => {
   checkReady();
 
   const isWholeShareSelected = account.fractional === false; // Assuming 'false' means whole share
-  const isAccountValueUnder50000 = parseFloat(account.value.replace(/,/g, '')) < 50000;
+  let numToCheck = account.value
+  const isAccountValueUnder50000 = parseFloat(numToCheck.replace(/,/g, '')) < 50000;
   const isLowRiskTolerance = account.risk_tolerance === 0 || account.risk_tolerance === 1; // 0 for 'Very Low', 1 for 'Low'
 
   if (isWholeShareSelected && (isAccountValueUnder50000 || isLowRiskTolerance)) {
