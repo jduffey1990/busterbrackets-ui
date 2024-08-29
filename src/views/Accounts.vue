@@ -166,6 +166,20 @@ const fractionalVsWhole = [
 // Function to save the account data
 const save = async () => {
   checkReady();
+
+  const isWholeShareSelected = account.fractional === false; // Assuming 'false' means whole share
+  const isAccountValueUnder50000 = parseFloat(account.value.replace(/,/g, '')) < 50000;
+  const isLowRiskTolerance = account.risk_tolerance === 0 || account.risk_tolerance === 1; // 0 for 'Very Low', 1 for 'Low'
+
+  if (isWholeShareSelected && (isAccountValueUnder50000 || isLowRiskTolerance)) {
+    const confirmMessage = "Whole shares are not recommended on accounts that are low/very low risk tolerance or account" +
+        " values under $50,000.00.";
+
+    if (!confirm(confirmMessage)) {
+      return; // Stop execution if the user does not confirm
+    }
+  }
+
   try {
     if (account_id) {
       readyToSave.value ? removeCommas(account.value) : null;
