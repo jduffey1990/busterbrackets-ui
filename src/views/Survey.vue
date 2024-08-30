@@ -75,7 +75,7 @@
                     <!--this checkbox is the select all. Toggles the associated checkboxes and selectAll state managed
                     by the group.name and updates the survey state -->
                     <v-checkbox
-                        v-if="groupContainsCheckboxes(group) && section.name === 'Plant your Trees'"
+                        v-if="groupContainsCheckboxes(group) && section.tag === 'plantYourTrees'"
                         :model-value="selectAll[group.name] || false"
                         @change="toggleAllCheckboxes(group)"
                         label="Select All"

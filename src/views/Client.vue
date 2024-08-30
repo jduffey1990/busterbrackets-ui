@@ -54,7 +54,7 @@
         </v-alert>
 
         <div v-for="(value, i) in valuesProfile" class="mb-4">
-          <div class="text-h4 mb-2">{{ i }}</div>
+          <div class="text-h4 mb-2">{{ value[0].sections.name }}</div>
 
           <v-table>
             <tbody>
@@ -694,7 +694,7 @@ const fetchValuesProfile = async () => {
 
   valuesProfile.value = groupBy(
       vp.filter((v) => v.value !== false),
-      'sections.name'
+      'sections.tag'
   );
   valuesLoading.value = false;
 }
@@ -815,8 +815,8 @@ const edditingAllocations = ref(false);
 const getExclusionsQuestionIDs = async () => {
   let excludedTag = 'areThereAnySpecificCompaniesYouWouldAvoidInvestingIn';
   try {
-    const response = await $axios.get(`/api/surveys/idtodelete/${excludedTag}/`);  // Use 'await' and provide correct endpoint
-    excludedQuestionIDs.value = response.data; // Ensure proper handling of response data
+    const response = await $axios.get(`/api/surveys/idtodelete/${excludedTag}/`);
+    excludedQuestionIDs.value = response.data;
 
   } catch (error) {
     show({message: parseError(error), error: true});
@@ -825,8 +825,8 @@ const getExclusionsQuestionIDs = async () => {
 getExclusionsQuestionIDs()
 const switchEditAllocations = () => {
   edditingAllocations.value = !edditingAllocations.value;
-  let indexA = valuesProfile.value['Pull your Weeds'].length - 1;
-  allocationsToDel.value.push(...Object.values(valuesProfile.value['Pull your Weeds'][indexA].value));
+  let indexA = valuesProfile.value["pullYourWeeds"].length - 1;
+  allocationsToDel.value.push(...Object.values(valuesProfile.value['pullYourWeeds'][indexA].value));
   updateAvoidedCompanies[0].question.id = excludedQuestionIDs.value.base_id;
   updateAvoidedCompanies[0].id = excludedQuestionIDs.value.related_question_id;
 };
