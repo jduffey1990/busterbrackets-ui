@@ -843,6 +843,7 @@ const addOrRemoveAllocationToDelete = (allocation) => {
 
 const saveAllocationsToDelete = () => {
   if (confirm(`Do you really want to delete these companies from your allocations? ${allocationsDelDisplay.value}`)) {
+    edditingAllocations.value = !edditingAllocations.value;
     submitSurvey();
   } else {
     switchEditAllocations();
@@ -850,6 +851,7 @@ const saveAllocationsToDelete = () => {
 };
 
 const submitSurvey = async () => {
+  valuesLoading.value = true;
   try {
     await $axios.post(
         `/api/advisors/${advisor_id}/clients/${user_id}/responses/`,
@@ -861,6 +863,7 @@ const submitSurvey = async () => {
     await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
 
     show({message: 'Submitted!'});
+    valuesLoading.value = false;
     location.reload();
   } catch (error) {
     show({message: parseError(error), error: true});
