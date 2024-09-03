@@ -70,8 +70,9 @@
             label="Last 4 of Account Number"
             class="mb-4"
             v-model="account.last_four"
-            type="tel"
+            type="text"
             maxlength="4"
+            @keyup="account.last_four = account.last_four.toUpperCase()"
         ></v-text-field>
 
         <!-- Live Account Select -->
@@ -248,7 +249,7 @@ const handleKeyUp = (event) => {
 };
 
 const checkReady = () => {
-  if (account.name && account.account_type && account.custodian && account.risk_tolerance) {
+  if (account.name && account.account_type && account.custodian && account.risk_tolerance && account.last_four.length === 4) {
     return readyToSave.value = true;
   }
   ;
