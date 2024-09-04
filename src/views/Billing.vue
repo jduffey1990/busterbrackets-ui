@@ -113,6 +113,7 @@ try {
   const response = await $axios.get(`/api/billing/${firmId.value}/data/`);
   billingData.value = response.data;
   deleteArchived(billingData);
+  deleteInActive(billingData);
   // Calculate the total for each billing data
   billingData.value.forEach((data) => {
     data.total = totalCalc(data.value, data.fee_rate);
@@ -176,6 +177,7 @@ for (const firm of allFirms.value) {
     });
     billingDataSuper.value = billingDataSuper.value.concat(newData);
     deleteArchived(billingDataSuper);
+    deleteInActive(billingDataSuper);
   } catch (error) {
     console.error('Error fetching billing data:', error);
     const parsedError = parseError(error);
@@ -190,6 +192,10 @@ const totalCalc = (value, fee_rate) => {
 
 const deleteArchived = (data) => {
   data.value = data.value.filter((item) => !item.is_archived);
+};
+
+const deleteInActive = (data) => {
+  data.value = data.value.filter((item) => item.is_active);
 };
 
 // Fetch billing data based on the user role

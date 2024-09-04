@@ -207,8 +207,7 @@
               <template v-slot:item="{ item }">
                 <tr>
                   <td>
-                    <v-checkbox-btn v-if="edditingAllocations"
-                                    @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
+                    <v-checkbox-btn v-if="edditingAllocations" @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
                   </td>
                   <td style="padding: 0px;">
                     <img :src="getImagePathFromTicker(item.ticker)" alt=""
