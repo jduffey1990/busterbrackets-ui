@@ -650,6 +650,7 @@ const tabs = ref([
 ]);
 
 const getValue = (response) => {
+  console.log("Here is your response:", response)
   let color;
   let icon;
 
@@ -661,6 +662,10 @@ const getValue = (response) => {
   if (response.sections.tag === 'pullYourWeeds') {
     color = 'red';
     icon = 'mdi-close';
+  }
+
+  if (response.question.tag === "areThereAnySpecificCompaniesYouWouldWantToInvestIn") {
+    color = 'green';
   }
 
   if (response.question.response_type === 'checkbox') {

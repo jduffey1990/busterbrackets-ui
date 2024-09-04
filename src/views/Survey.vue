@@ -143,48 +143,50 @@
                 </v-col>
               </v-row>
             </v-container>
-            <v-container class="flex-container justify-center mt-6">
-              <v-row class="d-flex justify-center">
-                <v-col cols="12" md="8">
+            <v-container v-if="groupsWithMultiSelectBoolean(section.survey_groups)"
+                         fluid
+                         class="flex-container justify-center mt-6">
 
-                  <!--confusing looking v-model and :label, but remember the survey_seed structure, just getting down
-                  the tree to the level of the question names and such. The companies are the Russell 1000 index
-                  companies and Nathan is updating manually versus automatically at this time.-->
+              <v-row class="rows">
+                <h4 class="text-h4">Specific Company Preferences</h4>
+                <v-col
+                    v-for="group in groupsWithMultiSelect(section.survey_groups)"
+                    :cols="group.column_width"
+                    :key="group.name"
+                >
+                  <!-- Loop through each question in the group -->
                   <v-autocomplete
-                      v-if="section.survey_groups.some(group => group.survey_questions
-                        .some(q => q.question.response_type === 'multi_select'))"
-                      v-model="section.survey_groups.find(group => group.survey_questions
-                        .some(q => q.question.response_type === 'multi_select')).survey_questions
-                        .find(q => q.question.response_type === 'multi_select').question.default_value"
+                      v-for="q in group.survey_questions"
+                      :key="q.question.id"
+                      v-model="q.question.default_value"
                       :items="companies"
                       item-title="name"
                       item-value="ticker"
-                      :label="section.survey_groups.find(group => group.survey_questions
-                        .some(q => q.question.response_type === 'multi_select')).survey_questions
-                        .find(q => q.question.response_type === 'multi_select').question.text"
+                      :label="q.question.text"
                       chips
                       closable-chips
                       multiple
                       clear-on-select
-                      @update:model-value="updateResponse(section.survey_groups.find(group => group.survey_questions
-                      .some(q => q.question.response_type === 'multi_select')).survey_questions
-                      .find(q => q.question.response_type === 'multi_select'))"
-                      class="autocomplete"
+                      @update:model-value="updateResponse(q)"
+                      class="autocomplete mb-3"
                   >
+                    <template v-slot:label>
+                      <span v-html="formatLabel(q.question.text)"></span>
+                    </template>
+
                     <template v-slot:chip="{ props, item }">
                       <v-chip v-bind="props" :text="item.raw.name"></v-chip>
                     </template>
 
                     <template v-slot:item="{ props, item }">
-                      <v-list-item
-                          v-bind="props"
-                          :title="item.raw.name"
-                      ></v-list-item>
+                      <v-list-item v-bind="props" :title="item.raw.name"></v-list-item>
                     </template>
                   </v-autocomplete>
                 </v-col>
               </v-row>
             </v-container>
+
+
           </v-stepper-window-item>
         </v-stepper-window>
 
@@ -299,6 +301,21 @@ const newProspect = reactive({...initialState});
 const groupContainsCheckboxes = (group) => {
   return group.survey_questions.some(q => q.question.response_type === 'checkbox');
 };
+
+const groupsWithMultiSelectBoolean = (section) => {
+  let newArray = section.filter((group) => group.survey_questions.some(q => q.question.response_type === 'multi_select'))
+  return newArray.length > 0
+};
+
+const groupsWithMultiSelect = (section) => {
+  return section.filter((group) => group.survey_questions.some(q => q.question.response_type === 'multi_select'))
+};
+
+const formatLabel = (text) => {
+  // Check if 'want' or 'avoid' is present and wrap them in bold tags
+  return text.replace(/(want|avoid)/gi, '<b>$1</b>');
+};
+
 const toggleAllCheckboxes = (group) => {
   //updates selectALL state.  Needed a non-db variable so created selectALL for that function
   if (!(group.name in selectAll.value)) {
