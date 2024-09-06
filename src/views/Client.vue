@@ -650,7 +650,6 @@ const tabs = ref([
 ]);
 
 const getValue = (response) => {
-  console.log("Here is your response:", response)
   let color;
   let icon;
 

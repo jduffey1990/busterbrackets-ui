@@ -119,7 +119,7 @@
                 <!-- Second, dropdown list-->
                 <div class="accordion-list">
                   <h5 class="text-h5 mb-1">Avoid Investing in Specific Industries</h5>
-                  <template v-for="group in positionExclude(section.survey_groups, 'drop')" :key="group.id">
+                  <template v-for="group in positionExclude(section.survey_groups, 'drop')" :key="group.name">
                     <template v-if="checkNames(group)">
                       <div class="accordion-container">
                         <div class="accordion-item">
@@ -127,11 +127,14 @@
                           <div
                               class="accordion-header"
                               @click="toggleGroup(group.name)"
-                              @mouseover="hoveredGroup = group.id"
-                              @mouseleave="hoveredGroup = null">
+                          >
                             <div>
 
-                              <h4 class="accordion-title">
+                              <h4
+                                  class="accordion-title"
+                                  @mouseover="hoveredGroup = group.name"
+                                  @mouseleave="hoveredGroup = null"
+                              >
                                 <!-- Select All Checkbox -->
                                 <v-checkbox
                                     v-if="groupContainsCheckboxes(group)"
@@ -142,14 +145,14 @@
                                 ></v-checkbox>
                                 {{ group.name }}
                                 <v-tooltip
-                                    v-if="group.tooltip && hoveredGroup === group.id"
-                                    :text="funLookAtFunction(group.tooltip)"
+                                    v-if="group.tooltip && hoveredGroup === group.name"
+                                    :text="group.tooltip"
                                     location="top"
                                 >
                                   <template v-slot:activator="{ props }">
                                     <transition name="slide-fade">
                                       <v-icon
-                                          v-if="hoveredGroup === group.id"
+                                          v-if="hoveredGroup === group.name"
                                           v-bind="props"
                                           small
                                           color="grayblue"
@@ -287,7 +290,7 @@
               </v-row>
               <v-row v-else class="rows">
                 <v-col
-                    v-for="group in funLookAtFunction(section.survey_groups)"
+                    v-for="group in section.survey_groups"
                     :cols="group.column_width"
                     :key="group.name"
                 >
@@ -472,7 +475,7 @@
 </template>
 
 <script setup>
-import {reactive, ref, onMounted, inject, computed} from 'vue';
+import {reactive, ref, onMounted, inject, computed, watch} from 'vue';
 import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
 import {useUserStore} from '@/store/user';
 import {parseError} from '@/utils/error';
@@ -789,6 +792,12 @@ window.addEventListener('beforeunload', (event) => {
       event.preventDefault();
     }
   }
+});
+
+watch(hoveredGroup, (newValue, oldValue) => {
+  console.log('hoveredGroup changed:');
+  console.log('New value:', newValue);
+  console.log('Old value:', oldValue);
 });
 </script>
 
