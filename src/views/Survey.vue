@@ -139,7 +139,7 @@
                     >
                       <v-checkbox
                           v-model="q.question.default_value"
-                          @input="updateResponse(funLookAtFunction(q))"
+                          @input="updateResponse(q)"
                           :label="q.question.text"
                       ></v-checkbox>
                       <!-- Tooltip -->
@@ -278,7 +278,7 @@
                                 <!-- Select All Checkbox -->
                                 <v-checkbox
                                     v-model="group.survey_questions[0].question.default_value"
-                                    @input="updateResponse(funLookAtFunction(group.survey_questions[0]))"
+                                    @input="updateResponse(group.survey_questions[0])"
                                     label=""
                                     class="ml-3"
                                 ></v-checkbox>
@@ -591,15 +591,6 @@ const initialState = {
 };
 const newProspect = reactive({...initialState});
 
-
-const funLookAtFunction = (param1, param2 = null) => {
-  console.log("looking at your firstParam:", param1)
-  if (param2) {
-    console.log("looking at your secondParam:", param2)
-  }
-  return param1
-}
-
 // Utility Functions
 const groupContainsCheckboxes = (group) => {
   return group.survey_questions.some(q => q.question.response_type === 'checkbox');
@@ -642,7 +633,6 @@ const toggleGroup = (groupName) => {
   } else {
     isActive.value[groupName] = !isActive.value[groupName]; // Toggle state
   }
-  console.log(isActive.value)
 };
 
 const checkNames = (groupName) => {
