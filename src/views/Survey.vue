@@ -1,539 +1,553 @@
 <template>
-  <div class="text-h4 mb-4">Values Profile</div>
+  <div
+      v-if="isSubmitting"
+      class="text-center"
+  >
+    <v-progress-linear
+        color="primary"
+        indeterminate
+        class="mb-2"
+    ></v-progress-linear>
 
-  <!--this component is the survey page that advisors will either send to their clients to take alone, or they
-  may take the survey with them. Updated survey re-runs the algorithm, which is our current use case to see
-  changes as nothing else triggers re-run. -->
+    <div class="text-h4">Please wait while our algorithm creates your customized portfolio</div>
+  </div>
 
-  <v-alert
-      title="Advisor Survey"
-      type="secondary"
-      v-if="isAdvisorSurvey"
-      class="mb-4"
-  >You are taking this survey as an advisor. You will need to approve this
-    prospect after the survey is submitted.
-  </v-alert>
+  <div v-else>
+    <div class="text-h4 mb-4">Values Profile</div>
 
-  <v-alert type="warning" v-if="showMultiSelectError" class="mb-4"
-  >Please do not include and exclude the same company in your selections.
-  </v-alert>
+    <!--this component is the survey page that advisors will either send to their clients to take alone, or they
+    may take the survey with them. Updated survey re-runs the algorithm, which is our current use case to see
+    changes as nothing else triggers re-run. -->
+    <v-alert
+        title="Advisor Survey"
+        type="secondary"
+        v-if="isAdvisorSurvey"
+        class="mb-4"
+    >You are taking this survey as an advisor. You will need to approve this
+      prospect after the survey is submitted.
+    </v-alert>
 
-  <!--steps are "weeds" "trees" "boundaries". First step into the survey_seed file found
-  at app/surveys/management/survey_seed.py by accessing the section to create the header -->
-  <div v-if="survey" class="survey_div trans-background">
-    <v-stepper v-model="currentStep">
-      <template v-slot:default="{ prev, next }">
-        <v-stepper-header>
-          <template
-              v-for="(s, i) in survey.survey_sections.map(({ name }) => name)"
-          >
-            <v-stepper-item
+    <v-alert type="warning" v-if="showMultiSelectError" class="mb-4"
+    >Please do not include and exclude the same company in your selections.
+    </v-alert>
+
+    <!--steps are "weeds" "trees" "boundaries". First step into the survey_seed file found
+    at app/surveys/management/survey_seed.py by accessing the section to create the header -->
+    <div v-if="survey" class="survey_div trans-background">
+      <v-stepper v-model="currentStep">
+        <template v-slot:default="{ prev, next }">
+          <v-stepper-header>
+            <template
+                v-for="(s, i) in survey.survey_sections.map(({ name }) => name)"
+            >
+              <v-stepper-item
+                  :value="i + 1"
+                  :title="s"
+                  editable
+                  :edit-icon="null"
+              ></v-stepper-item>
+            </template>
+          </v-stepper-header>
+
+
+          <!--One step into the sections here. Accessing description and sub header-->
+          <v-stepper-window>
+            <v-stepper-window-item
+                v-for="(section, i) in survey.survey_sections"
                 :value="i + 1"
-                :title="s"
-                editable
-                :edit-icon="null"
-            ></v-stepper-item>
-          </template>
-        </v-stepper-header>
-
-
-        <!--One step into the sections here. Accessing description and sub header-->
-        <v-stepper-window>
-          <v-stepper-window-item
-              v-for="(section, i) in survey.survey_sections"
-              :value="i + 1"
-          >
-            <v-container class="flex-container description">
-              <div
-                  class="survey_header"
-                  v-if="section.description"
-                  v-html="section.description"
-              ></div>
-              <div class="justify-center">
-
+            >
+              <v-container class="flex-container description">
                 <div
-                    v-if="section.sub_header"
-                    class="sub_header"
-                    v-html="section.sub_header"
+                    class="survey_header"
+                    v-if="section.description"
+                    v-html="section.description"
                 ></div>
-              </div>
-            </v-container>
+                <div class="justify-center">
 
-            <v-container v-if="groupsWithMultiSelectBoolean(section.survey_groups)"
-                         fluid
-                         class="multi-column">
+                  <div
+                      v-if="section.sub_header"
+                      class="sub_header"
+                      v-html="section.sub_header"
+                  ></div>
+                </div>
+              </v-container>
 
-              <v-row class="multi-column">
-                <h4 class="text-h4">Specific Company Preferences</h4>
-                <div class="multi-column">
+              <v-container v-if="groupsWithMultiSelectBoolean(section.survey_groups)"
+                           fluid
+                           class="multi-column">
+
+                <v-row class="multi-column">
+                  <h4 class="text-h4">Specific Company Preferences</h4>
+                  <div class="multi-column">
+                    <v-col
+                        v-for="group in groupsWithMultiSelect(section.survey_groups)"
+                        :cols="group.column_width"
+                        :key="group.name"
+                    >
+                      <!-- Loop through each question in the group -->
+                      <v-autocomplete
+                          v-for="q in group.survey_questions"
+                          :key="q.question.id"
+                          v-model="q.question.default_value"
+                          :items="companies"
+                          item-title="name"
+                          item-value="ticker"
+                          :label="q.question.text"
+                          chips
+                          closable-chips
+                          multiple
+                          clear-on-select
+                          @update:model-value="updateResponse(q)"
+                          class="autocomplete mb-3"
+                      >
+                        <template v-slot:label>
+                          <span v-html="formatLabel(q.question.text)"></span>
+                        </template>
+
+                        <template v-slot:chip="{ props, item }">
+                          <v-chip v-bind="props" :text="item.raw.name"></v-chip>
+                        </template>
+
+                        <template v-slot:item="{ props, item }">
+                          <v-list-item v-bind="props" :title="item.raw.name"></v-list-item>
+                        </template>
+                      </v-autocomplete>
+                    </v-col>
+                  </div>
+                </v-row>
+              </v-container>
+
+
+              <!--now we are getting the questions. We can very nicely get the groups and questions, and
+              dynamically populate the form. Added are some conditionals that help differentiate different
+              windows based on the question type a la multi-select or checkbox etc -->
+              <v-container class="flex-container description">
+                <v-row v-if="section.tag === 'pullYourWeeds'" class="rows mt-4">
+
                   <v-col
-                      v-for="group in groupsWithMultiSelect(section.survey_groups)"
+                      v-for="group in positionExclude(section.survey_groups)"
+                      :cols="group.column_width"
+                      :key="group.name"
+                      class="accordion-column"
+                  >
+                    <div v-if="groupContainsCheckboxes(group)" class="group_header text-h5">
+                      {{ group.name }}
+                      <!-- Select All Checkbox -->
+                      <v-checkbox
+                          v-if="groupContainsCheckboxes(group) && section.name === 'Plant your Trees'"
+                          :model-value="selectAll[group.name] || false"
+                          @change="toggleAllCheckboxes(group)"
+                          label="Select All"
+                          class="ml-3"
+                      ></v-checkbox>
+                    </div>
+
+                    <!-- Checkbox and Tooltips for Survey Questions -->
+                    <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
+                      <div
+                          v-if="q.question.response_type === 'checkbox'"
+                          class="d-flex align-center"
+                          @mouseover="hoveredQuestion = q.question.id"
+                          @mouseleave="hoveredQuestion = null"
+                      >
+                        <v-checkbox
+                            v-model="q.question.default_value"
+                            @input="updateResponse(q)"
+                            :label="q.question.text"
+                        ></v-checkbox>
+                        <!-- Tooltip -->
+                        <v-tooltip
+                            v-if="q.question.tooltip && hoveredQuestion === q.question.id"
+                            :text="q.question.tooltip"
+                            location="top"
+                        >
+                          <template v-slot:activator="{ props }">
+                            <transition name="slide-fade">
+                              <v-icon
+                                  v-if="hoveredQuestion === q.question.id"
+                                  v-bind="props"
+                                  small
+                                  color="grayblue"
+                                  class="ml-2">mdi-information
+                              </v-icon>
+                            </transition>
+                          </template>
+                        </v-tooltip>
+                      </div>
+                    </div>
+                  </v-col>
+                  <!-- Second, dropdown list, but just the ones with multiple values-->
+                  <div class="accordion-list">
+                    <h5 class="text-h5 mb-1">Avoid Investing in Specific Industries</h5>
+                    <template v-for="group in positionExclude(section.survey_groups, 'drop')"
+                              :key="group.name">
+                      <template v-if="checkNames(group)">
+                        <div class="accordion-container">
+                          <div class="accordion-item">
+                            <!-- Accordion Header -->
+                            <div
+                                class="accordion-header"
+                            >
+                              <div>
+
+                                <h4
+                                    class="accordion-title"
+                                    @mouseover="hoveredGroup = group.name"
+                                    @mouseleave="hoveredGroup = null"
+                                >
+                                  <!-- Select All Checkbox -->
+                                  <v-checkbox
+                                      v-if="groupContainsCheckboxes(group)"
+                                      :model-value="selectAll[group.name] || false"
+                                      @change="toggleAllCheckboxes(group)"
+                                      label=""
+                                      class="ml-3"
+                                  ></v-checkbox>
+                                  <h5 class="text-h5 subtitle">{{ group.name }}</h5>
+                                  <v-tooltip
+                                      v-if="group.tooltip && hoveredGroup === group.name"
+                                      :text="group.tooltip"
+                                      location="top"
+                                  >
+                                    <template v-slot:activator="{ props }">
+                                      <transition name="slide-fade">
+                                        <v-icon
+                                            v-if="hoveredGroup === group.name"
+                                            v-bind="props"
+                                            small
+                                            color="grayblue"
+                                            class="ml-2">mdi-information
+                                        </v-icon>
+                                      </transition>
+                                    </template>
+                                  </v-tooltip>
+
+
+                                </h4>
+                              </div>
+                              <!-- Caret Icon -->
+
+                              <span
+                                  :class="{'caret': true, 'up': isActive[group.name]}"
+                                  @click="toggleGroup(group.name)"
+                                  v-if="groupLengthCheck(group)">&#9654;</span>
+
+                            </div>
+
+
+                            <div class="accordion-content" v-if="isActive[group.name]">
+                              <!-- Questions List -->
+                              <ul class="question-list">
+                                <li
+                                    v-for="q in sortValues(group.survey_questions)"
+                                    :key="q.question.id"
+                                    class="ml-8">
+                                  <v-checkbox
+                                      v-model="q.question.default_value"
+                                      @input="updateResponse(q)"
+                                      :label="q.question.text"
+                                  ></v-checkbox>
+                                  <v-tooltip
+                                      v-if="q.question.tooltip && hoveredQuestion === q.question.id"
+                                      :text="q.question.tooltip"
+                                      location="top"
+                                  >
+                                    <template v-slot:activator="{ props }">
+                                      <transition name="slide-fade">
+                                        <v-icon
+                                            v-if="hoveredQuestion === q.question.id"
+                                            v-bind="props"
+                                            small
+                                            color="grayblue"
+                                            class="ml-2">mdi-information
+                                        </v-icon>
+                                      </transition>
+                                    </template>
+                                  </v-tooltip>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </template>
+                    <!-- Second, dropdown list, but just the ones with single values-->
+                    <template v-for="group in positionExclude(section.survey_groups, 'single')"
+                              :key="group.name">
+                      <template v-if="checkNames(group)">
+                        <div class="accordion-container">
+                          <div class="accordion-item">
+                            <!-- Accordion Header -->
+                            <div
+                                class="accordion-header"
+                            >
+                              <div>
+
+                                <h4
+                                    class="accordion-title"
+                                    @mouseover="hoveredGroup = group.name"
+                                    @mouseleave="hoveredGroup = null"
+                                >
+                                  <!-- Select All Checkbox -->
+                                  <v-checkbox
+                                      v-model="group.survey_questions[0].question.default_value"
+                                      @input="updateResponse(group.survey_questions[0])"
+                                      label=""
+                                      class="ml-3"
+                                  ></v-checkbox>
+                                  <h5 class="text-h5 subtitle">{{ group.name }}</h5>
+                                  <v-tooltip
+                                      v-if="group.tooltip && hoveredGroup === group.name"
+                                      :text="group.tooltip"
+                                      location="top"
+                                  >
+                                    <template v-slot:activator="{ props }">
+                                      <transition name="slide-fade">
+                                        <v-icon
+                                            v-if="hoveredGroup === group.name"
+                                            v-bind="props"
+                                            small
+                                            color="grayblue"
+                                            class="ml-2">mdi-information
+                                        </v-icon>
+                                      </transition>
+                                    </template>
+                                  </v-tooltip>
+
+
+                                </h4>
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </template>
+                  </div>
+                </v-row>
+
+                <v-row v-else class="rows">
+                  <!-- First v-col group -->
+                  <v-col
+                      v-for="group in section.survey_groups"
+                      :cols="group.column_width"
+                      :key="group.name"
+                      class="accordion-column"
+                  >
+                    <div>
+                      <div v-if="groupContainsCheckboxes(group)" class="group_header text-h5">
+                        {{ group.name }}
+                        <!--this checkbox is the select all. Toggles the associated checkboxes and selectAll state managed
+                        by the group.name and updates the survey state -->
+                        <v-checkbox
+                            v-if="groupContainsCheckboxes(group)"
+                            :model-value="selectAll[group.name] || false"
+                            @change="toggleAllCheckboxes(group)"
+                            label="Select All"
+                            class="ml-3"
+                        ></v-checkbox>
+                      </div>
+
+
+                      <!--checkboxes and tooltips. Tooltips were added to survey_seed.py. Transition is not functional
+                      but is a TODO to make them not just immediately appear and disappear.-->
+                      <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
+                        <div
+                            v-if="q.question.response_type === 'checkbox'"
+                            class="d-flex align-center"
+                            @mouseover="hoveredQuestion = q.question.id"
+                            @mouseleave="hoveredQuestion = null"
+                        >
+                          <v-checkbox
+                              v-model="q.question.default_value"
+                              @input="updateResponse(q)"
+                              :label="q.question.text"
+
+                          ></v-checkbox>
+                          <v-tooltip
+                              v-if="q.question.tooltip && hoveredQuestion === q.question.id"
+                              :text="q.question.tooltip"
+                              location="top"
+                          >
+                            <template v-slot:activator="{ props }">
+                              <transition name="slide-fade">
+                                <v-icon
+                                    v-if="hoveredQuestion === q.question.id"
+                                    v-bind="props"
+                                    small
+                                    color="grayblue"
+                                    class="ml-2">mdi-information
+                                </v-icon>
+                              </transition>
+                            </template>
+                          </v-tooltip>
+                        </div>
+
+                        <div
+                            v-if="q.question.response_type === 'slider'"
+                            class="pb-8"
+                        >
+                          <div class="text-h5">
+                            {{ q.question.text }}
+                          </div>
+
+                          <v-slider
+                              v-model="q.question.default_value"
+                              :min="0"
+                              :max="q.question.slider_ticks.length - 1"
+                              :step="1.0"
+                              :ticks="getTicks(q.question.slider_ticks)"
+                              @end="updateResponse(q)"
+                              show-ticks="always"
+                              color="primary"
+                              max-width="1000px"
+                          ></v-slider>
+
+                        </div>
+                      </div>
+                    </div>
+                  </v-col>
+                </v-row>
+                <v-row v-else class="rows">
+                  <v-col
+                      v-for="group in section.survey_groups"
                       :cols="group.column_width"
                       :key="group.name"
                   >
-                    <!-- Loop through each question in the group -->
-                    <v-autocomplete
-                        v-for="q in group.survey_questions"
-                        :key="q.question.id"
-                        v-model="q.question.default_value"
-                        :items="companies"
-                        item-title="name"
-                        item-value="ticker"
-                        :label="q.question.text"
-                        chips
-                        closable-chips
-                        multiple
-                        clear-on-select
-                        @update:model-value="updateResponse(q)"
-                        class="autocomplete mb-3"
-                    >
-                      <template v-slot:label>
-                        <span v-html="formatLabel(q.question.text)"></span>
-                      </template>
+                    <div>
+                      <div v-if="groupContainsCheckboxes(group)" class="group_header text-h5">
+                        {{ group.name }}
+                        <!--this checkbox is the select all. Toggles the associated checkboxes and selectAll state managed
+                        by the group.name and updates the survey state -->
+                        <v-checkbox
+                            v-if="groupContainsCheckboxes(group)"
+                            :model-value="selectAll[group.name] || false"
+                            @change="toggleAllCheckboxes(group)"
+                            label="Select All"
+                            class="ml-3"
+                        ></v-checkbox>
+                      </div>
 
-                      <template v-slot:chip="{ props, item }">
-                        <v-chip v-bind="props" :text="item.raw.name"></v-chip>
-                      </template>
 
-                      <template v-slot:item="{ props, item }">
-                        <v-list-item v-bind="props" :title="item.raw.name"></v-list-item>
-                      </template>
-                    </v-autocomplete>
+                      <!--checkboxes and tooltips. Tooltips were added to survey_seed.py. Transition is not functional
+                      but is a TODO to make them not just immediately appear and disappear.-->
+                      <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
+                        <div
+                            v-if="q.question.response_type === 'checkbox'"
+                            class="d-flex align-center"
+                            @mouseover="hoveredQuestion = q.question.id"
+                            @mouseleave="hoveredQuestion = null"
+                        >
+                          <v-checkbox
+                              v-model="q.question.default_value"
+                              @input="updateResponse(q)"
+                              :label="q.question.text"
+
+                          ></v-checkbox>
+                          <v-tooltip
+                              v-if="q.question.tooltip && hoveredQuestion === q.question.id"
+                              :text="q.question.tooltip"
+                              location="top"
+                          >
+                            <template v-slot:activator="{ props }">
+                              <transition name="slide-fade">
+                                <v-icon
+                                    v-if="hoveredQuestion === q.question.id"
+                                    v-bind="props"
+                                    small
+                                    color="grayblue"
+                                    class="ml-2">mdi-information
+                                </v-icon>
+                              </transition>
+                            </template>
+                          </v-tooltip>
+                        </div>
+
+                        <div
+                            v-if="q.question.response_type === 'slider'"
+                            class="pb-8"
+                        >
+                          <div class="text-h5">
+                            {{ q.question.text }}
+                          </div>
+
+                          <v-slider
+                              v-model="q.question.default_value"
+                              :min="0"
+                              :max="q.question.slider_ticks.length - 1"
+                              :step="1.0"
+                              :ticks="getTicks(q.question.slider_ticks)"
+                              @end="updateResponse(q)"
+                              show-ticks="always"
+                              color="primary"
+                              max-width="1000px"
+                          ></v-slider>
+
+                        </div>
+                      </div>
+                    </div>
                   </v-col>
-                </div>
-              </v-row>
-            </v-container>
+                </v-row>
+              </v-container>
 
 
-            <!--now we are getting the questions. We can very nicely get the groups and questions, and
-            dynamically populate the form. Added are some conditionals that help differentiate different
-            windows based on the question type a la multi-select or checkbox etc -->
-            <v-container class="flex-container description">
-              <v-row v-if="section.tag === 'pullYourWeeds'" class="rows mt-4">
+            </v-stepper-window-item>
+          </v-stepper-window>
 
-                <v-col
-                    v-for="group in positionExclude(section.survey_groups)"
-                    :cols="group.column_width"
-                    :key="group.name"
-                    class="accordion-column"
-                >
-                  <div v-if="groupContainsCheckboxes(group)" class="group_header text-h5">
-                    {{ group.name }}
-                    <!-- Select All Checkbox -->
-                    <v-checkbox
-                        v-if="groupContainsCheckboxes(group) && section.name === 'Plant your Trees'"
-                        :model-value="selectAll[group.name] || false"
-                        @change="toggleAllCheckboxes(group)"
-                        label="Select All"
-                        class="ml-3"
-                    ></v-checkbox>
-                  </div>
+          <v-stepper-actions @click:next="next" @click:prev="prev">
+            <template #next v-if="currentStep === survey.survey_sections.length">
+              <v-btn
+                  color="primary"
+                  @click="submitSurvey()"
+                  :disabled="showMultiSelectError"
+                  variant="flat"
+              >Submit
+              </v-btn>
+            </template>
+          </v-stepper-actions>
+        </template>
+      </v-stepper>
 
-                  <!-- Checkbox and Tooltips for Survey Questions -->
-                  <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
-                    <div
-                        v-if="q.question.response_type === 'checkbox'"
-                        class="d-flex align-center"
-                        @mouseover="hoveredQuestion = q.question.id"
-                        @mouseleave="hoveredQuestion = null"
-                    >
-                      <v-checkbox
-                          v-model="q.question.default_value"
-                          @input="updateResponse(q)"
-                          :label="q.question.text"
-                      ></v-checkbox>
-                      <!-- Tooltip -->
-                      <v-tooltip
-                          v-if="q.question.tooltip && hoveredQuestion === q.question.id"
-                          :text="q.question.tooltip"
-                          location="top"
-                      >
-                        <template v-slot:activator="{ props }">
-                          <transition name="slide-fade">
-                            <v-icon
-                                v-if="hoveredQuestion === q.question.id"
-                                v-bind="props"
-                                small
-                                color="grayblue"
-                                class="ml-2">mdi-information
-                            </v-icon>
-                          </transition>
-                        </template>
-                      </v-tooltip>
-                    </div>
-                  </div>
-                </v-col>
-                <!-- Second, dropdown list, but just the ones with multiple values-->
-                <div class="accordion-list">
-                  <h5 class="text-h5 mb-1">Avoid Investing in Specific Industries</h5>
-                  <template v-for="group in positionExclude(section.survey_groups, 'drop')"
-                            :key="group.name">
-                    <template v-if="checkNames(group)">
-                      <div class="accordion-container">
-                        <div class="accordion-item">
-                          <!-- Accordion Header -->
-                          <div
-                              class="accordion-header"
-                          >
-                            <div>
+      <!--For prospects, will show up at the submit stage to include propect's basic info-->
+      <v-dialog max-width="500" v-model="showNewProspectModal">
+        <v-card title="Register">
+          <v-card-text>
+            <v-text-field
+                v-model="newProspect.first_name"
+                label="First name"
+            ></v-text-field>
+            <br/>
+            <v-text-field
+                v-model="newProspect.last_name"
+                label="Last name"
+            ></v-text-field>
+            <br/>
+            <v-text-field
+                label="Email"
+                type="email"
+                v-model="newProspect.email"
+            ></v-text-field>
+          </v-card-text>
 
-                              <h4
-                                  class="accordion-title"
-                                  @mouseover="hoveredGroup = group.name"
-                                  @mouseleave="hoveredGroup = null"
-                              >
-                                <!-- Select All Checkbox -->
-                                <v-checkbox
-                                    v-if="groupContainsCheckboxes(group)"
-                                    :model-value="selectAll[group.name] || false"
-                                    @change="toggleAllCheckboxes(group)"
-                                    label=""
-                                    class="ml-3"
-                                ></v-checkbox>
-                                <h5 class="text-h5 subtitle">{{ group.name }}</h5>
-                                <v-tooltip
-                                    v-if="group.tooltip && hoveredGroup === group.name"
-                                    :text="group.tooltip"
-                                    location="top"
-                                >
-                                  <template v-slot:activator="{ props }">
-                                    <transition name="slide-fade">
-                                      <v-icon
-                                          v-if="hoveredGroup === group.name"
-                                          v-bind="props"
-                                          small
-                                          color="grayblue"
-                                          class="ml-2">mdi-information
-                                      </v-icon>
-                                    </transition>
-                                  </template>
-                                </v-tooltip>
+          <v-card-actions>
+            <v-spacer></v-spacer>
 
-
-                              </h4>
-                            </div>
-                            <!-- Caret Icon -->
-
-                            <span
-                                :class="{'caret': true, 'up': isActive[group.name]}"
-                                @click="toggleGroup(group.name)"
-                                v-if="groupLengthCheck(group)">&#9654;</span>
-
-                          </div>
-
-
-                          <div class="accordion-content" v-if="isActive[group.name]">
-                            <!-- Questions List -->
-                            <ul class="question-list">
-                              <li
-                                  v-for="q in sortValues(group.survey_questions)"
-                                  :key="q.question.id"
-                                  class="ml-8">
-                                <v-checkbox
-                                    v-model="q.question.default_value"
-                                    @input="updateResponse(q)"
-                                    :label="q.question.text"
-                                ></v-checkbox>
-                                <v-tooltip
-                                    v-if="q.question.tooltip && hoveredQuestion === q.question.id"
-                                    :text="q.question.tooltip"
-                                    location="top"
-                                >
-                                  <template v-slot:activator="{ props }">
-                                    <transition name="slide-fade">
-                                      <v-icon
-                                          v-if="hoveredQuestion === q.question.id"
-                                          v-bind="props"
-                                          small
-                                          color="grayblue"
-                                          class="ml-2">mdi-information
-                                      </v-icon>
-                                    </transition>
-                                  </template>
-                                </v-tooltip>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </template>
-                  </template>
-                  <!-- Second, dropdown list, but just the ones with single values-->
-                  <template v-for="group in positionExclude(section.survey_groups, 'single')"
-                            :key="group.name">
-                    <template v-if="checkNames(group)">
-                      <div class="accordion-container">
-                        <div class="accordion-item">
-                          <!-- Accordion Header -->
-                          <div
-                              class="accordion-header"
-                          >
-                            <div>
-
-                              <h4
-                                  class="accordion-title"
-                                  @mouseover="hoveredGroup = group.name"
-                                  @mouseleave="hoveredGroup = null"
-                              >
-                                <!-- Select All Checkbox -->
-                                <v-checkbox
-                                    v-model="group.survey_questions[0].question.default_value"
-                                    @input="updateResponse(group.survey_questions[0])"
-                                    label=""
-                                    class="ml-3"
-                                ></v-checkbox>
-                                <h5 class="text-h5 subtitle">{{ group.name }}</h5>
-                                <v-tooltip
-                                    v-if="group.tooltip && hoveredGroup === group.name"
-                                    :text="group.tooltip"
-                                    location="top"
-                                >
-                                  <template v-slot:activator="{ props }">
-                                    <transition name="slide-fade">
-                                      <v-icon
-                                          v-if="hoveredGroup === group.name"
-                                          v-bind="props"
-                                          small
-                                          color="grayblue"
-                                          class="ml-2">mdi-information
-                                      </v-icon>
-                                    </transition>
-                                  </template>
-                                </v-tooltip>
-
-
-                              </h4>
-                            </div>
-
-                          </div>
-                        </div>
-                      </div>
-                    </template>
-                  </template>
-                </div>
-              </v-row>
-
-              <v-row v-else class="rows">
-                <!-- First v-col group -->
-                <v-col
-                    v-for="group in section.survey_groups"
-                    :cols="group.column_width"
-                    :key="group.name"
-                    class="accordion-column"
-                >
-                  <div>
-                    <div v-if="groupContainsCheckboxes(group)" class="group_header text-h5">
-                      {{ group.name }}
-                      <!--this checkbox is the select all. Toggles the associated checkboxes and selectAll state managed
-                      by the group.name and updates the survey state -->
-                      <v-checkbox
-                          v-if="groupContainsCheckboxes(group)"
-                          :model-value="selectAll[group.name] || false"
-                          @change="toggleAllCheckboxes(group)"
-                          label="Select All"
-                          class="ml-3"
-                      ></v-checkbox>
-                    </div>
-
-
-                    <!--checkboxes and tooltips. Tooltips were added to survey_seed.py. Transition is not functional
-                    but is a TODO to make them not just immediately appear and disappear.-->
-                    <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
-                      <div
-                          v-if="q.question.response_type === 'checkbox'"
-                          class="d-flex align-center"
-                          @mouseover="hoveredQuestion = q.question.id"
-                          @mouseleave="hoveredQuestion = null"
-                      >
-                        <v-checkbox
-                            v-model="q.question.default_value"
-                            @input="updateResponse(q)"
-                            :label="q.question.text"
-
-                        ></v-checkbox>
-                        <v-tooltip
-                            v-if="q.question.tooltip && hoveredQuestion === q.question.id"
-                            :text="q.question.tooltip"
-                            location="top"
-                        >
-                          <template v-slot:activator="{ props }">
-                            <transition name="slide-fade">
-                              <v-icon
-                                  v-if="hoveredQuestion === q.question.id"
-                                  v-bind="props"
-                                  small
-                                  color="grayblue"
-                                  class="ml-2">mdi-information
-                              </v-icon>
-                            </transition>
-                          </template>
-                        </v-tooltip>
-                      </div>
-
-                      <div
-                          v-if="q.question.response_type === 'slider'"
-                          class="pb-8"
-                      >
-                        <div class="text-h5">
-                          {{ q.question.text }}
-                        </div>
-
-                        <v-slider
-                            v-model="q.question.default_value"
-                            :min="0"
-                            :max="q.question.slider_ticks.length - 1"
-                            :step="1.0"
-                            :ticks="getTicks(q.question.slider_ticks)"
-                            @end="updateResponse(q)"
-                            show-ticks="always"
-                            color="primary"
-                            max-width="1000px"
-                        ></v-slider>
-
-                      </div>
-                    </div>
-                  </div>
-                </v-col>
-              </v-row>
-              <v-row v-else class="rows">
-                <v-col
-                    v-for="group in section.survey_groups"
-                    :cols="group.column_width"
-                    :key="group.name"
-                >
-                  <div>
-                    <div v-if="groupContainsCheckboxes(group)" class="group_header text-h5">
-                      {{ group.name }}
-                      <!--this checkbox is the select all. Toggles the associated checkboxes and selectAll state managed
-                      by the group.name and updates the survey state -->
-                      <v-checkbox
-                          v-if="groupContainsCheckboxes(group)"
-                          :model-value="selectAll[group.name] || false"
-                          @change="toggleAllCheckboxes(group)"
-                          label="Select All"
-                          class="ml-3"
-                      ></v-checkbox>
-                    </div>
-
-
-                    <!--checkboxes and tooltips. Tooltips were added to survey_seed.py. Transition is not functional
-                    but is a TODO to make them not just immediately appear and disappear.-->
-                    <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
-                      <div
-                          v-if="q.question.response_type === 'checkbox'"
-                          class="d-flex align-center"
-                          @mouseover="hoveredQuestion = q.question.id"
-                          @mouseleave="hoveredQuestion = null"
-                      >
-                        <v-checkbox
-                            v-model="q.question.default_value"
-                            @input="updateResponse(q)"
-                            :label="q.question.text"
-
-                        ></v-checkbox>
-                        <v-tooltip
-                            v-if="q.question.tooltip && hoveredQuestion === q.question.id"
-                            :text="q.question.tooltip"
-                            location="top"
-                        >
-                          <template v-slot:activator="{ props }">
-                            <transition name="slide-fade">
-                              <v-icon
-                                  v-if="hoveredQuestion === q.question.id"
-                                  v-bind="props"
-                                  small
-                                  color="grayblue"
-                                  class="ml-2">mdi-information
-                              </v-icon>
-                            </transition>
-                          </template>
-                        </v-tooltip>
-                      </div>
-
-                      <div
-                          v-if="q.question.response_type === 'slider'"
-                          class="pb-8"
-                      >
-                        <div class="text-h5">
-                          {{ q.question.text }}
-                        </div>
-
-                        <v-slider
-                            v-model="q.question.default_value"
-                            :min="0"
-                            :max="q.question.slider_ticks.length - 1"
-                            :step="1.0"
-                            :ticks="getTicks(q.question.slider_ticks)"
-                            @end="updateResponse(q)"
-                            show-ticks="always"
-                            color="primary"
-                            max-width="1000px"
-                        ></v-slider>
-
-                      </div>
-                    </div>
-                  </div>
-                </v-col>
-              </v-row>
-            </v-container>
-
-
-          </v-stepper-window-item>
-        </v-stepper-window>
-
-        <v-stepper-actions @click:next="next" @click:prev="prev">
-          <template #next v-if="currentStep === survey.survey_sections.length">
             <v-btn
-                color="primary"
-                @click="submitSurvey()"
-                :disabled="showMultiSelectError"
-                variant="flat"
-            >Submit
-            </v-btn>
-          </template>
-        </v-stepper-actions>
-      </template>
-    </v-stepper>
-
-    <!--For prospects, will show up at the submit stage to include propect's basic info-->
-    <v-dialog max-width="500" v-model="showNewProspectModal">
-      <v-card title="Register">
-        <v-card-text>
-          <v-text-field
-              v-model="newProspect.first_name"
-              label="First name"
-          ></v-text-field>
-          <br/>
-          <v-text-field
-              v-model="newProspect.last_name"
-              label="Last name"
-          ></v-text-field>
-          <br/>
-          <v-text-field
-              label="Email"
-              type="email"
-              v-model="newProspect.email"
-          ></v-text-field>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn
-              text="Cancel"
-              @click="
+                text="Cancel"
+                @click="
               showNewProspectModal = false;
               resetForm();
             "
-          ></v-btn>
-          <v-btn
-              text="Save"
-              color="primary"
-              @click="createNewProspect()"
-          ></v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+            ></v-btn>
+            <v-btn
+                text="Save"
+                color="primary"
+                @click="createNewProspect()"
+            ></v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </div>
   </div>
 </template>
 
@@ -577,6 +591,7 @@ const companies = ref([]);
 const touched = ref(false);
 const showMultiSelectError = ref(false);
 const hasSubmitted = ref(false);
+const isSubmitting = ref(false);
 const showNewProspectModal = ref(false);
 const selectAll = ref({})
 const isActive = ref({});
@@ -717,6 +732,7 @@ const updateResponse = (q, setInitial = false) => {
 
 //submit is called in the client pathway without an id.  it is called in createNewProspect with the prospect_id
 const submit = async (prospect_id) => {
+  isSubmitting.value = true;
   overlayStore.openOverlay(
       'Thank you for submitting your survey!',
       'Consult with your advisor for next steps',
