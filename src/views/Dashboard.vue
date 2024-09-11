@@ -121,7 +121,7 @@
             append-inner-icon="mdi-magnify"
             append-icon="mdi-close"
             density="compact"
-            label="Search for a client"
+            label="Search for a prospect"
             variant="solo"
             hide-details
             single-line
