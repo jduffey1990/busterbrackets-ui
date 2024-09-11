@@ -13,7 +13,7 @@
   </div>
 
   <div v-else>
-    <div class="text-h4 mb-4">Values Profile</div>
+    <div class="text-h4 mb-4">Survey</div>
 
     <!--this component is the survey page that advisors will either send to their clients to take alone, or they
     may take the survey with them. Updated survey re-runs the algorithm, which is our current use case to see

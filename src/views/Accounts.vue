@@ -41,8 +41,7 @@
             v-model="account.value"
             label="Account Market Value"
             type="text"
-            @keydown="handleKeyDown($event)"
-            @keyup="handleKeyUp($event)"
+            @input="validateInput"
         ></v-text-field>
 
         <!-- Live Account Select -->
@@ -236,22 +235,36 @@ onBeforeRouteLeave((to, from, next) => {
 });
 
 
-const handleKeyDown = (event) => {
-  if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
-    account.value = removeCommas(account.value);
-  }
-};
+// const handleKeyDown = (event) => {
+//   if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
+//     account.value = removeCommas(account.value);
+//   }
+// };
 
-const handleKeyUp = (event) => {
-  if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
-    account.value = addCommas(account.value);
-  }
-};
+// const handleKeyUp = (event) => {
+//   if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
+//     account.value = addCommas(account.value);
+//   }
+// };
 
 const checkReady = () => {
   if (account.name && account.account_type && account.custodian && account.risk_tolerance>=0 && account.last_four.length === 4) {
     return readyToSave.value = true;
   }
   ;
+};
+
+const regex = /^(?:[0-9,]*|)$/;
+const validateInput = () => {
+  if (!regex.test(account.value)) {
+    account.value = account.value.slice(0, -1);
+  }
+  account.value = removeCommas(account.value);
+  
+  if (account.value === 0) {
+    account.value = "";
+  } else {
+    account.value = addCommas(account.value);
+  }
 };
 </script>

@@ -89,7 +89,7 @@
         <div v-else>
 
           <div class="my-8" v-if="portfolioValues">
-            <div class="text-h4">Portfolio/Market</div>
+            <div class="text-h4">Portfolio vs. Market</div>
 
 
             <div class="bar_div">
@@ -169,7 +169,7 @@
             <div class="text-h4">Pomarium Allocations</div>
             <div class="d-flex justify-end" v-if="!edditingAllocations">
               <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
-              <v-btn color="primary" @click="refresh">Refresh Survey</v-btn>
+              <v-btn color="primary" @click="refresh">Refresh Recommendations</v-btn>
             </div>
             <div class="d-flex justify-end" v-else>
               <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
@@ -643,7 +643,7 @@ const downloadAccountCSV = async (account) => {
 const currentTab = ref();
 const tab = ref();
 const tabs = ref([
-  {label: 'Values'},
+  {label: 'Values Profile'},
   {label: 'Recommendations'},
   {label: 'Accounts'},
   ...(isSuper ? [{label: 'Analytics'}] : []),
