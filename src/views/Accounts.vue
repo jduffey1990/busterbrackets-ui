@@ -248,7 +248,7 @@ const handleKeyUp = (event) => {
 };
 
 const checkReady = () => {
-  if (account.name && account.account_type && account.custodian && account.risk_tolerance) {
+  if (account.name && account.account_type && account.custodian && account.risk_tolerance>=0 && account.last_four.length === 4) {
     return readyToSave.value = true;
   }
   ;
