@@ -169,7 +169,7 @@
             <div class="text-h4">Pomarium Allocations</div>
             <div class="d-flex justify-end" v-if="!edditingAllocations">
               <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
-              <v-btn color="primary" @click="refresh">Refresh Recommendations</v-btn>
+              <v-btn color="primary" @click="refresh">Refresh</v-btn>
             </div>
             <div class="d-flex justify-end" v-else>
               <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
@@ -210,8 +210,10 @@
                     <v-checkbox-btn v-if="edditingAllocations" @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
                   </td>
                   <td style="padding: 0px;">
-                    <img :src="getImagePathFromTicker(item.ticker)" alt=""
-                         style="display: flex; margin: auto; max-height: 20px; max-width: 40px;">
+                    <LazyImage 
+                      :src="item.image"
+                      :alt="item.ticker"
+                      style="display: flex; margin: auto; max-height: 20px; max-width: 40px;" />
                   </td>
                   <td style="white-space: nowrap;">{{ item.company }}</td>
                   <td>{{ item.ticker }}</td>
@@ -341,6 +343,7 @@ import {watch} from 'vue';
 import {currencyFormat} from '@/utils/number';
 import {parseError} from '@/utils/error';
 import Analytics from "@/views/Analytics.vue";
+import LazyImage from '@/components/LazyImage.vue';
 
 const {
   user: {id: advisor_id},
@@ -516,7 +519,8 @@ const getPortfolios = async () => {
           allocation: `${pomarium[p]}%`,
           value: pomarium[p],
           values_fit: values_fit && values_fit[p] ? `${(Math.round(values_fit[p] * 100) / 100).toFixed(0)}%` : "",
-          investment_fit: investment_fit && investment_fit[p] ? `${(Math.round(investment_fit[p] * 100) / 100).toFixed(0)}%` : ""
+          investment_fit: investment_fit && investment_fit[p] ? `${(Math.round(investment_fit[p] * 100) / 100).toFixed(0)}%` : "",
+          image: getImagePathFromTicker(p)
         }))
         .sort((a, b) => b.value - a.value);
 

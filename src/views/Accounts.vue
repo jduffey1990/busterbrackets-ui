@@ -234,19 +234,6 @@ onBeforeRouteLeave((to, from, next) => {
   next();
 });
 
-
-// const handleKeyDown = (event) => {
-//   if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
-//     account.value = removeCommas(account.value);
-//   }
-// };
-
-// const handleKeyUp = (event) => {
-//   if ((event.key >= '0' && event.key <= '9') || event.key === 'Delete' || event.key === 'Backspace') {
-//     account.value = addCommas(account.value);
-//   }
-// };
-
 const checkReady = () => {
   if (account.name && account.account_type && account.custodian && account.risk_tolerance>=0 && account.last_four.length === 4) {
     return readyToSave.value = true;
@@ -262,7 +249,7 @@ const validateInput = () => {
   account.value = removeCommas(account.value);
   
   if (account.value === 0) {
-    account.value = "";
+    account.value = '';
   } else {
     account.value = addCommas(account.value);
   }
