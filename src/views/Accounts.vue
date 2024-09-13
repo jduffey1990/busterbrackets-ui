@@ -205,7 +205,7 @@ const setAccountData = (data) => {
 
 //function to remove commas from 1,000,000 to 1000000
 const removeCommas = (value) => {
-  return valueShown.value = Number((value.replace(/,/g, '')));
+  return valueShown.value = value.replace(/,/g, '');
 };
 
 // Fetch account types and initial account data on component mount
@@ -242,7 +242,7 @@ const checkReady = () => {
 
 const regex = /^(?:[0-9.,]*|)$/;
 const validateInput = () => {
-  if (!regex.test(valueShown.value)) {
+  if (!regex.test(valueShown.value) || /\.\d{3}/.test(valueShown.value)) {
     valueShown.value = valueShown.value.slice(0, -1);
   }
   valueShown.value = removeCommas(valueShown.value);
