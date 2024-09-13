@@ -38,7 +38,7 @@
         <!-- Account Market Value Input -->
         <v-text-field
             class="mb-4"
-            v-model="account.value"
+            v-model="valueShown"
             label="Account Market Value"
             type="text"
             @input="validateInput"
@@ -120,6 +120,7 @@ const goBack = () => {
 };
 
 // Define state variables
+const valueShown = ref('');
 const accountTypes = ref([]);
 const account = reactive({});
 let accountCopy = {};
@@ -130,7 +131,7 @@ const initialState = {
   fractional: true,
   account_type: undefined,
   custodian: undefined,
-  value: '',
+  value: undefined,
   risk_tolerance: undefined,
   last_four: undefined,
 };
@@ -169,7 +170,7 @@ const save = async () => {
 
   const isWholeShareSelected = account.fractional === false; // Assuming 'false' means whole share
   let numToCheck = account.value
-  const isAccountValueUnder50000 = parseFloat(numToCheck.replace(/,/g, '')) < 50000;
+  const isAccountValueUnder50000 = parseFloat(numToCheck) < 50000;
   const isLowRiskTolerance = account.risk_tolerance === 0 || account.risk_tolerance === 1; // 0 for 'Very Low', 1 for 'Low'
 
   if (isWholeShareSelected && (isAccountValueUnder50000 || isLowRiskTolerance)) {
@@ -183,11 +184,9 @@ const save = async () => {
 
   try {
     if (account_id) {
-      readyToSave.value ? removeCommas(account.value) : null;
       await $axios.patch(`/api/accounts/${account_id}/`, account);
       show({message: 'Account saved!'});
     } else {
-      readyToSave.value ? removeCommas(account.value) : null;
       await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/accounts/`, account);
       show({message: 'Account created!'});
     }
@@ -206,7 +205,7 @@ const setAccountData = (data) => {
 
 //function to remove commas from 1,000,000 to 1000000
 const removeCommas = (value) => {
-  return account.value = Number(value.replace(/,/g, ''));
+  return valueShown.value = Number((value.replace(/,/g, '')));
 };
 
 // Fetch account types and initial account data on component mount
@@ -217,7 +216,7 @@ onMounted(async () => {
   let initialAccountData;
   if (account_id) {
     const {data: accountData} = await $axios.get(`/api/accounts/${account_id}/`);
-    accountData.value = addCommas(accountData.value);
+    valueShown.value = addCommas(accountData.value);
     initialAccountData = accountData;
   }
   setAccountData(initialAccountData);
@@ -241,17 +240,18 @@ const checkReady = () => {
   ;
 };
 
-const regex = /^(?:[0-9,]*|)$/;
+const regex = /^(?:[0-9.,]*|)$/;
 const validateInput = () => {
-  if (!regex.test(account.value)) {
-    account.value = account.value.slice(0, -1);
+  if (!regex.test(valueShown.value)) {
+    valueShown.value = valueShown.value.slice(0, -1);
   }
-  account.value = removeCommas(account.value);
+  valueShown.value = removeCommas(valueShown.value);
+  account.value = valueShown.value;
   
-  if (account.value === 0) {
-    account.value = '';
+  if (valueShown.value === 0) {
+    valueShown.value = '';
   } else {
-    account.value = addCommas(account.value);
+    valueShown.value = addCommas(valueShown.value);
   }
 };
 </script>
