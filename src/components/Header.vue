@@ -37,7 +37,7 @@
             </template>
             <v-list :elevation="0">
               <v-list-item v-if="isSuper" link :to="{ name: 'Advisors' }">
-                <v-list-item-title>Advisors</v-list-item-title>
+                <v-list-item-title>Internal Tools</v-list-item-title>
               </v-list-item>
 
               <v-list-item
@@ -45,15 +45,7 @@
                   link
                   :to="{ name: 'Admin' }"
               >
-                <v-list-item-title>Firm Admin</v-list-item-title>
-              </v-list-item>
-
-              <v-list-item
-                  v-if="isFirmAdminOrGreater"
-                  link
-                  :to="{ name: 'Billing' }"
-              >
-                <v-list-item-title>Billing</v-list-item-title>
+                <v-list-item-title>Admin Settings</v-list-item-title>
               </v-list-item>
 
               <v-list-item link :to="{ name: 'Settings' }">
@@ -64,6 +56,13 @@
                 <v-list-item-title>Investment Preferences</v-list-item-title>
               </v-list-item>
 
+              <v-list-item
+                  link
+                  href="https://pomarium.atlassian.net/wiki/external/OGNkYzI5MTVkMTJkNDIwYWI5ZDY5NDcyY2M3ODU3OWQ"
+              >
+                <v-list-item-title>Resources</v-list-item-title>
+              </v-list-item>
+              <hr/>
               <v-list-item @click="logout()">
                 <v-list-item-title>Logout</v-list-item-title>
               </v-list-item>

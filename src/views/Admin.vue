@@ -16,6 +16,7 @@
     <!-- Tabs for navigation, showing the number of advisors -->
     <v-tabs v-model="currentTab">
       <v-tab>Advisors ({{ advisors.length }})</v-tab>
+      <v-tab>Billing</v-tab>
     </v-tabs>
 
     <!-- Content of the selected tab -->
@@ -99,6 +100,9 @@
           </v-data-table>
         </template>
       </v-tabs-window-item>
+      <v-tabs-window-item>
+        <Billing/>
+      </v-tabs-window-item>
     </v-tabs-window>
 
     <!-- Dialog for creating a new advisor -->
@@ -157,6 +161,7 @@ import {reactive, ref, inject} from 'vue';
 import {parseError} from '@/utils/error';
 import {useRouter} from 'vue-router';
 import moment from 'moment';
+import Billing from './Billing.vue';
 
 // Injecting services and router
 const $axios = inject('$axios');
