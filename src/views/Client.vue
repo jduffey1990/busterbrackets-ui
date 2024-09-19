@@ -30,7 +30,7 @@
     </v-tabs>
 
     <v-tabs-window v-model="currentTab">
-      <v-tabs-window-item class="py-2">
+      <v-tabs-window-item class="py-2" id="values-profile">
         <div class="d-flex justify-end mb-4">
           <router-link
               :to="{ name: 'Survey', query: { user_id: client.id } }"
@@ -43,6 +43,7 @@
                 @click="navigate"
             >
             </v-btn>
+            <PDFBuilder pdfElementId="values-profile" class="mx-4"></PDFBuilder>
           </router-link>
         </div>
 
@@ -53,7 +54,7 @@
         >Please click "Start Values Profile" to fill out the survey!
         </v-alert>
 
-        <div v-for="(value, i) in valuesProfile" class="mb-4">
+        <div v-for="(value, i) in valuesProfile" class="mb-4 canvas-content">
           <div class="text-h4 mb-2">{{ value[0].sections.name }}</div>
 
           <v-table>
@@ -76,7 +77,7 @@
         </div>
       </v-tabs-window-item>
 
-      <v-tabs-window-item class="py-2">
+      <v-tabs-window-item class="py-2" id="recommendations">
         <v-alert
             title="No recommendations yet..."
             type="secondary"
@@ -88,7 +89,11 @@
 
         <div v-else>
 
-          <div class="my-8" v-if="portfolioValues">
+          <div class="my-8 canvas-item" v-if="portfolioValues">
+            <div class="d-flex justify-end mx-7">
+              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns=excludedHeaders />
+            </div>
+            
             <div class="text-h4">Portfolio vs. Market</div>
 
 
@@ -127,7 +132,7 @@
           </div>
           <hr/>
 
-          <div class="my-8" v-if="portfolioSectors">
+          <div class="my-8 canvas-item" v-if="portfolioSectors">
             <div class="text-h4">Sectors</div>
 
             <div class="pie_section">
@@ -165,7 +170,7 @@
 
           <hr/>
 
-          <div class="my-8">
+          <div class="my-8 table-content">
             <div class="text-h4">Pomarium Allocations</div>
             <div class="d-flex justify-end" v-if="!edditingAllocations">
               <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
@@ -344,6 +349,9 @@ import {currencyFormat} from '@/utils/number';
 import {parseError} from '@/utils/error';
 import Analytics from "@/views/Analytics.vue";
 import LazyImage from '@/components/LazyImage.vue';
+import PDFBuilder from '@/components/PDFBuilder.vue';
+
+const excludedHeaders = ['Delete', ''];
 
 const {
   user: {id: advisor_id},
