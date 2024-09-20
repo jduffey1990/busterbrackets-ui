@@ -96,11 +96,36 @@
       allocations.
     </v-alert>
 
+    <v-btn @click="changeEditButton" color="primary">{{ buttonText }}</v-btn>
+    <v-btn v-if="editing" @click="submitChanges" color="secondary>">Submit Changes</v-btn>
+
     <!-- Data table for displaying asset allocations -->
-    <v-data-table :items="allocations" :items-per-page="-1" :headers="headers">
+    <v-data-table v-if="!editing" :items="allocations" :items-per-page="-1" :headers="headers">
       <template #bottom></template>
     </v-data-table>
-    
+
+
+    <v-data-table v-else :items="backupAllocations" :items-per-page="-1" :headers="editableHeaders">
+      <template v-slot:item.name="{ item }">
+        {{ item.name }}
+      </template>
+      <template v-slot:item.ticker="{ item }">
+        <v-text-field v-model="item.ticker" hide-details min-width="150px"></v-text-field>
+      </template>
+      <template v-slot:item.min_risk="{ item }">
+        <v-text-field v-model="item.min_risk" type="number" hide-details append-icon="%" min-width="150px"/>
+      </template>
+      <template v-slot:item.max_risk="{ item }">
+        <v-text-field v-model="item.max_risk" type="number" hide-details append-icon="%" min-width="150px"/>
+      </template>
+      <template v-slot:item.actions="{ item, index }">
+        <v-icon @click="removeRow(index)" color="red" class="mr-2">mdi-delete</v-icon>
+      </template>
+    </v-data-table>
+
+    <v-btn v-if="editing" @click="addNewRow" color="success" class="mt-4">Add New Row</v-btn>
+
+
   </div>
       <div class="d-flex my-4 align-center">
         <div class="text-h6 my-4">Advisor Fee %</div>
@@ -147,8 +172,12 @@ const {
 //state management
 const factorLevers = ref({});
 const allocations = ref([]);
+const backupAllocations = ref([])
 const canEdit = computed(() => isSuper && user_id);
 const currentAdvisor = ref();
+const editing = ref(false)
+const buttonText = ref('Edit Allocations')
+let isDefaultAllocation = false;
 const advisorFee = ref();
 
 //Router parameter
@@ -185,6 +214,11 @@ const headers = [
   {},
 ];
 
+const editableHeaders = [
+  ...headers,
+  {text: 'Actions', value: 'actions', align: 'center', sortable: false},
+];
+
 //Utility Functions and calls
 const getFactorLevers = async () => {
   try {
@@ -197,9 +231,24 @@ const getFactorLevers = async () => {
   }
 };
 
-getFactorLevers();
+const changeEditButton = () => {
+  editing.value = !editing.value; // Toggle the editing state
+  buttonText.value = editing.value ? 'Cancel Edit' : 'Edit Allocations'; // Update button text
+};
 
-let isDefaultAllocation = false;
+const addNewRow = () => {
+  backupAllocations.value.push({
+    name: '',
+    ticker: '',
+    min_risk: 0,
+    max_risk: 0,
+  });
+};
+
+const removeRow = (index) => {
+  backupAllocations.value.splice(index, 1); // Remove the item at the given index
+};
+
 
 const getAllocations = async () => {
   try {
@@ -212,6 +261,7 @@ const getAllocations = async () => {
     );
 
     allocations.value = data;
+    backupAllocations.value = JSON.parse(JSON.stringify(data));
   } catch (error) {
   }
 };
@@ -283,8 +333,39 @@ const onFileUpload = ({target: {files}}) => {
   };
 };
 
+const submitChanges = async () => {
+  // Calculate the total min_risk and max_risk
+  const totalMinRisk = backupAllocations.value.reduce((acc, allocation) => acc + allocation.min_risk, 0);
+  const totalMaxRisk = backupAllocations.value.reduce((acc, allocation) => acc + allocation.max_risk, 0);
+
+  // Check if both totals add up to 100
+  if (totalMinRisk !== 100 || totalMaxRisk !== 100) {
+    show({message: 'Total Min Risk and Max Risk must each add up to 100%', error: true})
+    return;
+  }
+
+  errorMessage.value = ''; // Clear any previous error messages
+
+  // Save the changes and refresh allocations from the server
+  try {
+    await $axios.patch(`/api/advisors/${user_id || advisor_id}/allocations/`, {
+      allocations: backupAllocations.value,
+    });
+
+    // Update the view-only allocations after successful save
+    allocations.value = JSON.parse(JSON.stringify(backupAllocations.value));
+    editing.value = false;
+    buttonText.value = 'Edit Allocations';
+    show({message: 'Allocations saved successfully!'});
+  } catch (error) {
+    show({message: 'Failed to save allocations', error: true});
+  }
+};
+
 
 onMounted(async () => {
+  await getAllocations();
+  await getFactorLevers()
   if (canEdit.value) {
     const {data} = await $axios.get(`/api/users/${user_id || advisor_id}/`);
 
