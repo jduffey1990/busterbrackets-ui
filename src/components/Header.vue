@@ -37,7 +37,7 @@
             </template>
             <v-list :elevation="0">
               <v-list-item v-if="isSuper" link :to="{ name: 'Advisors' }">
-                <v-list-item-title>Internal Tools</v-list-item-title>
+                <v-list-item-title>Super Tools</v-list-item-title>
               </v-list-item>
 
               <v-list-item
@@ -45,7 +45,7 @@
                   link
                   :to="{ name: 'Admin' }"
               >
-                <v-list-item-title>Admin Settings</v-list-item-title>
+                <v-list-item-title>Admin</v-list-item-title>
               </v-list-item>
 
               <v-list-item link :to="{ name: 'Settings' }">
@@ -58,7 +58,7 @@
 
               <v-list-item
                   link
-                  href="https://pomarium.atlassian.net/wiki/external/OGNkYzI5MTVkMTJkNDIwYWI5ZDY5NDcyY2M3ODU3OWQ"
+                  href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
               >
                 <v-list-item-title>Resources</v-list-item-title>
               </v-list-item>

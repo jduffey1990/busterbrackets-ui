@@ -1,13 +1,4 @@
 <template>
-
-  <v-alert v-if="isSuper">
-    looking at super page
-  </v-alert>
-
-  <v-alert v-else>
-    looking at firm admin page
-  </v-alert>
-
   <!-- Firm-specific content goes here -->
 <div v-if="!isSuper">
 
