@@ -107,10 +107,28 @@
 
     <v-data-table v-else :items="backupAllocations" :items-per-page="-1" :headers="editableHeaders">
       <template v-slot:item.name="{ item }">
-        {{ item.name }}
+        <v-text-field v-model="item.name" min-width="400px" hide-details></v-text-field>
       </template>
-      <template v-slot:item.ticker="{ item }">
-        <v-text-field v-model="item.ticker" hide-details min-width="150px"></v-text-field>
+      <template v-slot:item.ticker="{ item, index }">
+        <v-text-field
+            v-model="item.ticker"
+            hide-details
+            min-width="150px"
+            @input="onTickerInput(item)"
+            @click="singleFieldEdit = index"
+        />
+
+        <!-- Conditional v-select rendering based on the clicked field -->
+        <v-select
+            v-if="singleFieldEdit === index"
+            :items="tickerSearchResults"
+            item-text="name"
+            item-value="ticker"
+            label="Select Symbol"
+            v-model="item.ticker"
+            @update:modelValue="onTickerSelect(item)"
+            hide-no-data
+        />
       </template>
       <template v-slot:item.min_risk="{ item }">
         <v-text-field v-model="item.min_risk" type="number" hide-details append-icon="%" min-width="150px"/>
@@ -150,15 +168,15 @@
 
 
 <script setup>
+//injected dependencies
 import {useUserStore} from '@/store/user';
 import {computed} from 'vue';
 import {onMounted} from 'vue';
 import {ref} from 'vue';
 import {inject} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
+import {debounce} from 'lodash';
 
-
-//injected dependencies
 const router = useRouter();
 const {show} = inject('toast');
 const $axios = inject('$axios');
@@ -179,6 +197,9 @@ const editing = ref(false)
 const buttonText = ref('Edit Allocations')
 let isDefaultAllocation = false;
 const advisorFee = ref();
+const tickerSearchResults = ref([]);
+const nameSearchResults = ref([]);
+const singleFieldEdit = ref(null)
 
 //Router parameter
 const {
@@ -249,7 +270,44 @@ const removeRow = (index) => {
   backupAllocations.value.splice(index, 1); // Remove the item at the given index
 };
 
+const onTickerInput = debounce(async (item) => {
+  if (item.ticker.length >= 3) {
+    try {
+      // Call your Django backend, which interacts with Alpha Vantage
+      const {data} = await $axios.get(`/api/general/ticker-search/?query=${item.ticker}`);
 
+      // Map the search results to extract both ticker and name
+      nameSearchResults.value = data.map(match => ({
+        name: match['2. name'],   // Name of the ETF
+        ticker: match['1. symbol'], // Ticker symbol of the ETF
+      }));
+      const addEntry = [item.ticker.toUpperCase()]
+      // For the v-select, we only need an array of ticker symbols
+      tickerSearchResults.value = nameSearchResults.value.map(etf => etf.ticker).concat(addEntry)
+    } catch (error) {
+      console.error('Error fetching ETFs:', error);
+    }
+  } else {
+    tickerSearchResults.value = [];  // Clear results if the input is less than 3 characters
+  }
+}, 300);
+
+const onTickerSelect = async (item) => {
+  singleFieldEdit.value = null;
+  try {
+    // Fetch the selected ETF based on the ticker
+    const selectedETF = nameSearchResults.value.find(etf => etf.ticker === item.ticker);
+    if (selectedETF) {
+      item.name = selectedETF.name || ''; // Assign the name if found
+    }
+  } catch (error) {
+    console.error('Error fetching ETF name:', error);
+    singleFieldEdit.value = null;
+  }
+};
+
+
+//DB management and access
 const getAllocations = async () => {
   try {
     const {data} = await $axios.get(
@@ -261,7 +319,12 @@ const getAllocations = async () => {
     );
 
     allocations.value = data;
-    backupAllocations.value = JSON.parse(JSON.stringify(data));
+    backupAllocations.value = data.map(allocation => ({
+      name: allocation.name,
+      ticker: allocation.ticker,
+      min_risk: allocation.min_risk,
+      max_risk: allocation.max_risk,
+    }));
   } catch (error) {
   }
 };
@@ -340,16 +403,14 @@ const submitChanges = async () => {
 
   // Check if both totals add up to 100
   if (totalMinRisk !== 100 || totalMaxRisk !== 100) {
-    show({message: 'Total Min Risk and Max Risk must each add up to 100%', error: true})
+    show({message: 'Total Min Risk and Max Risk must each add up to 100%', error: true});
     return;
   }
 
-  errorMessage.value = ''; // Clear any previous error messages
-
   // Save the changes and refresh allocations from the server
   try {
-    await $axios.patch(`/api/advisors/${user_id || advisor_id}/allocations/`, {
-      allocations: backupAllocations.value,
+    await $axios.post(`/api/advisors/${user_id || advisor_id}/allocations/`, {
+      allocations: backupAllocations.value  // Wrap the data in the 'allocations' key
     });
 
     // Update the view-only allocations after successful save
