@@ -104,7 +104,6 @@
       <template #bottom></template>
     </v-data-table>
 
-
     <v-data-table v-else :items="backupAllocations" :items-per-page="-1" :headers="editableHeaders">
       <template v-slot:item.name="{ item }">
         <v-text-field v-model="item.name" min-width="400px" hide-details></v-text-field>
@@ -112,10 +111,12 @@
       <template v-slot:item.ticker="{ item, index }">
         <v-text-field
             v-model="item.ticker"
+            :label="isEmpty(item.ticker)"
             hide-details
-            min-width="150px"
+            min-width="250px"
             @input="onTickerInput(item)"
             @click="singleFieldEdit = index"
+            clearable
         />
 
         <!-- Conditional v-select rendering based on the clicked field -->
@@ -124,10 +125,11 @@
             :items="tickerSearchResults"
             item-text="name"
             item-value="ticker"
-            label="Select Symbol"
+            :label=countValues(tickerSearchResults)
             v-model="item.ticker"
-            @update:modelValue="onTickerSelect(item)"
+            @update:modelValue="onTickerSelect($event, item)"
             hide-no-data
+            min-width="600px"
         />
       </template>
       <template v-slot:item.min_risk="{ item }">
@@ -266,24 +268,42 @@ const addNewRow = () => {
   });
 };
 
+const isEmpty = (ticker) => {
+  return ticker ? "" : "Search Here"
+}
+
+const countValues = (ticker) => {
+  return `Select Items (${tickerSearchResults.value.length})`
+}
+
 const removeRow = (index) => {
   backupAllocations.value.splice(index, 1); // Remove the item at the given index
 };
 
+const formatResults = (ticker) => {
+  return `(${ticker.ticker}) ${ticker.name}`;
+}
+
+
 const onTickerInput = debounce(async (item) => {
+  if (item.ticker === 'Search Here') {
+    return
+  }
   if (item.ticker.length >= 3) {
     try {
       // Call your Django backend, which interacts with Alpha Vantage
-      const {data} = await $axios.get(`/api/general/ticker-search/?query=${item.ticker}`);
-
-      // Map the search results to extract both ticker and name
-      nameSearchResults.value = data.map(match => ({
-        name: match['2. name'],   // Name of the ETF
-        ticker: match['1. symbol'], // Ticker symbol of the ETF
-      }));
+      // const {data} = await $axios.get(`/api/general/ticker-search/?query=${item.ticker}`);
+      //
+      // // Map the search results to extract both ticker and name
+      // nameSearchResults.value = data.map(match => ({
+      //   name: match['2. name'],   // Name of the ETF
+      //   ticker: match['1. symbol'], // Ticker symbol of the ETF
+      // }));
       const addEntry = [item.ticker.toUpperCase()]
       // For the v-select, we only need an array of ticker symbols
-      tickerSearchResults.value = nameSearchResults.value.map(etf => etf.ticker).concat(addEntry)
+      tickerSearchResults.value = testDataName.value.map(etf => formatResults(etf)).concat(addEntry)
+      console.log('Mapped API data:', testDataName.value);
+      console.log('formatted API data:', tickerSearchResults.value);
     } catch (error) {
       console.error('Error fetching ETFs:', error);
     }
@@ -292,18 +312,21 @@ const onTickerInput = debounce(async (item) => {
   }
 }, 300);
 
-const onTickerSelect = async (item) => {
+const onTickerSelect = (selectedTicker, item) => {
   singleFieldEdit.value = null;
-  try {
-    // Fetch the selected ETF based on the ticker
-    const selectedETF = nameSearchResults.value.find(etf => etf.ticker === item.ticker);
-    if (selectedETF) {
-      item.name = selectedETF.name || ''; // Assign the name if found
-    }
-  } catch (error) {
-    console.error('Error fetching ETF name:', error);
-    singleFieldEdit.value = null;
-  }
+
+  // Extract ticker using a regular expression from the selected item
+  const matchedTicker = selectedTicker.match(/\((.*?)\)/)?.[1];  // Extracts the text inside parentheses (e.g., SPY)
+
+  // Extract the name by removing the ticker and parentheses from the selected item
+  const indexOfName = selectedTicker.indexOf(" ") + 1;
+  const selectedName = selectedTicker.slice(indexOfName);  // Extracts the name after the ticker (e.g., SPDR S&P 500 ETF Trust)
+
+  // Assign both the name and ticker
+  item.name = selectedName || '';  // Set the name
+  item.ticker = matchedTicker || '';  // Set the ticker
+
+  console.log("Ticker:", matchedTicker, "Name:", selectedName);
 };
 
 
@@ -398,8 +421,8 @@ const onFileUpload = ({target: {files}}) => {
 
 const submitChanges = async () => {
   // Calculate the total min_risk and max_risk
-  const totalMinRisk = backupAllocations.value.reduce((acc, allocation) => acc + allocation.min_risk, 0);
-  const totalMaxRisk = backupAllocations.value.reduce((acc, allocation) => acc + allocation.max_risk, 0);
+  const totalMinRisk = backupAllocations.value.reduce((acc, allocation) => acc + parseInt(allocation.min_risk), 0);
+  const totalMaxRisk = backupAllocations.value.reduce((acc, allocation) => acc + parseInt(allocation.max_risk), 0);
 
   // Check if both totals add up to 100
   if (totalMinRisk !== 100 || totalMaxRisk !== 100) {
