@@ -100,7 +100,27 @@
     <v-data-table :items="allocations" :items-per-page="-1" :headers="headers">
       <template #bottom></template>
     </v-data-table>
+    
   </div>
+      <div class="d-flex my-4 align-center">
+        <div class="text-h6 my-4">Advisor Fee %</div>
+      </div>
+      <v-row>
+        <v-col cols="6">
+          <v-select
+              label="Advisor Fee"
+              class="mb-4"
+              v-model="advisorFee"
+              :items="rates"
+              item-title="title"
+              item-value="value"
+          ></v-select>
+          <div class="d-flex justify-end mb-4">
+            <v-btn class="ml-2" color="primary" @click="saveAdvisorFee">Save</v-btn>
+          </div>
+        </v-col>
+      </v-row>
+
 </template>
 
 
@@ -129,6 +149,7 @@ const factorLevers = ref({});
 const allocations = ref([]);
 const canEdit = computed(() => isSuper && user_id);
 const currentAdvisor = ref();
+const advisorFee = ref();
 
 //Router parameter
 const {
@@ -197,6 +218,16 @@ const getAllocations = async () => {
 
 getAllocations();
 
+const getFirmAdvisorFee = async () => {
+  try {
+    const {data} = await $axios.get(`/api/users/advisor-fee/`);
+    advisorFee.value = (data.advisor_fee * 100).toFixed(2);
+  } catch (error) {
+
+  }
+};
+
+getFirmAdvisorFee();
 
 //DB management and access
 const onFileUpload = ({target: {files}}) => {
@@ -278,6 +309,24 @@ const saveFactorLevers = async () => {
     });
   }
 };
+
+const rates = Array.from({length: 301}, (_, i) => ({
+  value: (i / 100),
+  title: ((i / 100)).toFixed(2)+"%",
+}));
+
+//save advisor fee
+const saveAdvisorFee = async () => {
+  try {
+    await $axios.put(`/api/users/advisor-fee/`, {
+      advisor_fee: (advisorFee.value / 100).toFixed(4),
+    });
+    show({message: 'Advisor Fee saved!'});
+  } catch (error) {
+    show({message: 'Error saving Advisor Fee', error: true});
+  }
+};
+
 </script>
 
 
