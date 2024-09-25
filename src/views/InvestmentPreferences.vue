@@ -301,16 +301,16 @@ const onTickerInput = debounce(async (item) => {
     try {
       gettingTickers.value = true //change label for dropdown while getting values
       // Call your Django backend, which interacts with Alpha Vantage
-      // const {data} = await $axios.get(`/api/general/ticker-search/?query=${item.ticker}`);
-      //
-      // // Map the search results to extract both ticker and name
-      // nameSearchResults.value = data.map(match => ({
-      //   name: match['2. name'],   // Name of the ETF
-      //   ticker: match['1. symbol'], // Ticker symbol of the ETF
-      // }));
+      const {data} = await $axios.get(`/api/general/ticker-search/?query=${item.ticker}`);
+
+      // Map the search results to extract both ticker and name
+      nameSearchResults.value = data.map(match => ({
+        name: match['2. name'],   // Name of the ETF
+        ticker: match['1. symbol'], // Ticker symbol of the ETF
+      }));
       const addEntry = [item.ticker.toUpperCase()]
       // For the v-select, we only need an array of ticker symbols
-      tickerSearchResults.value = testDataName.value.map(etf => formatResults(etf)).concat(addEntry)
+      tickerSearchResults.value = nameSearchResults.value.map(etf => formatResults(etf)).concat(addEntry)
       gettingTickers.value = false
     } catch (error) {
       console.error('Error fetching ETFs:', error);
