@@ -96,7 +96,7 @@
       allocations.
     </v-alert>
 
-    <v-btn @click="changeEditButton" color="primary">{{ buttonText }}</v-btn>
+    <v-btn v-if="canEdit" @click="changeEditButton" color="primary">{{ buttonText }}</v-btn>
     <v-btn v-if="editing" @click="submitChanges" color="secondary>">Submit Changes</v-btn>
 
     <!-- Data table for displaying asset allocations -->
@@ -202,6 +202,11 @@ const advisorFee = ref();
 const tickerSearchResults = ref([]);
 const nameSearchResults = ref([]);
 const singleFieldEdit = ref(null)
+const gettingTickers = ref(false)
+const testDataName = ref([
+  {name: "beepbop stock", ticker: "BSP"},
+  {name: "meepmop stock", ticker: "MMS"},
+])
 
 //Router parameter
 const {
@@ -273,6 +278,9 @@ const isEmpty = (ticker) => {
 }
 
 const countValues = (ticker) => {
+  if (gettingTickers.value === true) {
+    return "Loading..."
+  }
   return `Select Items (${tickerSearchResults.value.length})`
 }
 
@@ -291,6 +299,7 @@ const onTickerInput = debounce(async (item) => {
   }
   if (item.ticker.length >= 3) {
     try {
+      gettingTickers.value = true //change label for dropdown while getting values
       // Call your Django backend, which interacts with Alpha Vantage
       // const {data} = await $axios.get(`/api/general/ticker-search/?query=${item.ticker}`);
       //
@@ -302,8 +311,7 @@ const onTickerInput = debounce(async (item) => {
       const addEntry = [item.ticker.toUpperCase()]
       // For the v-select, we only need an array of ticker symbols
       tickerSearchResults.value = testDataName.value.map(etf => formatResults(etf)).concat(addEntry)
-      console.log('Mapped API data:', testDataName.value);
-      console.log('formatted API data:', tickerSearchResults.value);
+      gettingTickers.value = false
     } catch (error) {
       console.error('Error fetching ETFs:', error);
     }
@@ -326,7 +334,8 @@ const onTickerSelect = (selectedTicker, item) => {
   item.name = selectedName || '';  // Set the name
   item.ticker = matchedTicker || '';  // Set the ticker
 
-  console.log("Ticker:", matchedTicker, "Name:", selectedName);
+  tickerSearchResults.value = []
+  nameSearchResults.value = []
 };
 
 
