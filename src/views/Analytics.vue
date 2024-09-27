@@ -370,7 +370,7 @@ function toPercentage(value) {
 }
 
 .graph_title {
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.2);
   padding: 20px;
   font-size: 20px;
 }
