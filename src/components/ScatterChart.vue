@@ -23,6 +23,9 @@ export default {
           legend: {
             display: true,
             position: 'top',
+            labels: {
+              usePointStyle: true,
+            }
           },
           title: {
             display: true,

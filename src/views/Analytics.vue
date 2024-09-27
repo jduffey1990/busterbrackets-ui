@@ -45,6 +45,9 @@
             plugins: {
               legend: {
                 display: true,
+                labels: {
+                  usePointStyle: true
+                }
               },
             },
             scales: {
@@ -134,31 +137,52 @@ const wholeHeaders = [
     sortable: false,
   },
   {
-    title: "Very Low",
+    title: "Very Low Risk",
     key: 'veryLow',
     sortable: false,
   },
   {
-    title: 'Low',
+    title: 'Low Risk',
     key: 'low',
     sortable: false,
   },
   {
-    title: 'Medium',
+    title: 'Medium Risk',
     key: 'medium',
     sortable: false,
   },
   {
-    title: 'High',
+    title: 'High Risk',
     key: 'high',
     sortable: false,
   },
   {
-    title: 'Very High',
+    title: 'Very High Risk',
     key: 'veryHigh',
     sortable: false,
   },
+  {
+    title: 'US Stocks (VTI)',
+    key: 'US Stocks (VTI)',
+    sortable: false,
+  },
+  {
+    title: 'Int Stocks (VXUS)',
+    key: 'Int Stocks (VXUS)',
+    sortable: false,
+  },
+  {
+    title: 'Bonds (BND)',
+    key: 'Bonds (BND)',
+    sortable: false,
+  },
+  {
+    title: 'Cash (SHV)',
+    key: 'Cash (SHV)',
+    sortable: false,
+  },
 ];
+
 
 const metricTableData = computed(() => {
   if (!props.metrics || !props.metrics.pomarium || !props.metrics.market) {
@@ -228,6 +252,10 @@ const wholeTableData = computed(() => {
       medium: toPercentage(props.metrics.full_portfolio[2]["volatility"]),
       high: toPercentage(props.metrics.full_portfolio[3]["volatility"]),
       veryHigh: toPercentage(props.metrics.full_portfolio[4]["volatility"]),
+      "US Stocks (VTI)": toPercentage(props.metrics.full_portfolio['VTI']["volatility"]),
+      "Int Stocks (VXUS)": toPercentage(props.metrics.full_portfolio['VXUS']["volatility"]),
+      "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']["volatility"]),
+      "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']["volatility"]),
     },
     {
       metric: 'Max Drawdown',
@@ -244,15 +272,19 @@ const wholeTableData = computed(() => {
       medium: toPercentage(props.metrics.full_portfolio[2]['3yr return']),
       high: toPercentage(props.metrics.full_portfolio[3]['3yr return']),
       veryHigh: toPercentage(props.metrics.full_portfolio[4]['3yr return']),
+      "US Stocks (VTI)": toPercentage(props.metrics.full_portfolio['VTI']["3yr return"]),
+      "Int Stocks (VXUS)": toPercentage(props.metrics.full_portfolio['VXUS']["3yr return"]),
+      "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']["3yr return"]),
+      "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']["3yr return"]),
     },
-    {
-      metric: 'Expense Ratio',
-      veryLow: props.metrics.full_portfolio[0]['expense_ratio'].toFixed(2),
-      low: props.metrics.full_portfolio[1]['expense_ratio'].toFixed(2),
-      medium: props.metrics.full_portfolio[2]['expense_ratio'].toFixed(2),
-      high: props.metrics.full_portfolio[3]['expense_ratio'].toFixed(2),
-      veryHigh: props.metrics.full_portfolio[4]['expense_ratio'].toFixed(2),
-    },
+    // {
+    //   metric: 'Expense Ratio',
+    //   veryLow: props.metrics.full_portfolio[0]['expense_ratio'].toFixed(2),
+    //   low: props.metrics.full_portfolio[1]['expense_ratio'].toFixed(2),
+    //   medium: props.metrics.full_portfolio[2]['expense_ratio'].toFixed(2),
+    //   high: props.metrics.full_portfolio[3]['expense_ratio'].toFixed(2),
+    //   veryHigh: props.metrics.full_portfolio[4]['expense_ratio'].toFixed(2),
+    // },
   ];
 });
 
@@ -264,16 +296,45 @@ const getScatterChartData = (data) => {
     return {datasets: []};
   }
 
-  const usedColors = new Set()
-  const datasets = ['veryLow', 'low', 'medium', 'high', 'veryHigh'].map((riskCategory, colorIndex) => ({
-    label: riskCategory,
+  const usedColors = new Set();
+
+  // Separate risk categories (portfolios) and indices
+  const portfolios = [
+    {key: 'veryLow', label: 'Very Low'},
+    {key: 'low', label: 'Low'},
+    {key: 'medium', label: 'Medium'},
+    {key: 'high', label: 'High'},
+    {key: 'veryHigh', label: 'Very High'}
+  ];
+
+  const indices = ['US Stocks (VTI)', 'Int Stocks (VXUS)', 'Bonds (BND)', 'Cash (SHV)'];
+
+  // Create datasets for portfolios (circles)
+  const portfolioDatasets = portfolios.map((portfolio) => ({
+    label: portfolio.label, // Display friendly label in the legend
     data: [{
-      x: parseFloat(volatilityEntry[riskCategory]), // x-axis is Volatility
-      y: parseFloat(returnEntry[riskCategory]), // y-axis is 3 Year Return
+      x: parseFloat(volatilityEntry[portfolio.key] || 0), // x-axis is Volatility
+      y: parseFloat(returnEntry[portfolio.key] || 0), // y-axis is 3 Year Return
     }],
     backgroundColor: props.getUniqueRandomColor(props.brandColors, usedColors),
-    radius: 6
+    radius: 5,
+    pointStyle: 'circle', // Portfolios will have circle points
   }));
+
+  // Create datasets for indices (triangles)
+  const indexDatasets = indices.map((index) => ({
+    label: index,
+    data: [{
+      x: parseFloat(volatilityEntry[index] || 0), // x-axis is Volatility
+      y: parseFloat(returnEntry[index] || 0), // y-axis is 3 Year Return
+    }],
+    backgroundColor: props.getUniqueRandomColor(props.brandColors, usedColors),
+    radius: 4,
+    pointStyle: 'triangle', // Indices will have triangle points
+  }));
+
+  // Combine portfolios and indices into the datasets array
+  const datasets = [...portfolioDatasets, ...indexDatasets];
 
   return {datasets};
 };

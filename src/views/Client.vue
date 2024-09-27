@@ -91,9 +91,9 @@
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
             <div class="d-flex justify-end mx-7">
-              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns=excludedHeaders />
+              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders"/>
             </div>
-            
+
             <div class="text-h4">Portfolio vs. Market</div>
 
 
@@ -212,13 +212,14 @@
               <template v-slot:item="{ item }">
                 <tr>
                   <td>
-                    <v-checkbox-btn v-if="edditingAllocations" @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
+                    <v-checkbox-btn v-if="edditingAllocations"
+                                    @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
                   </td>
                   <td style="padding: 0px;">
-                    <LazyImage 
-                      :src="item.image"
-                      :alt="item.ticker"
-                      style="display: flex; margin: auto; max-height: 20px; max-width: 40px;" />
+                    <LazyImage
+                        :src="item.image"
+                        :alt="item.ticker"
+                        style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
                   </td>
                   <td style="white-space: nowrap;">{{ item.company }}</td>
                   <td>{{ item.ticker }}</td>
@@ -658,7 +659,8 @@ const tabs = ref([
   {label: 'Values Profile'},
   {label: 'Recommendations'},
   {label: 'Accounts'},
-  ...(isSuper ? [{label: 'Analytics'}] : []),
+  // ...(isSuper ? [{label: 'Analytics'}] : []),
+  {label: 'Analytics'}
 ]);
 
 const getValue = (response) => {
