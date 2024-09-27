@@ -20,20 +20,6 @@
   </div>
   <div v-else>
 
-    <v-data-table
-        :items="metricTableData"
-        :headers="metricHeaders"
-        :items-per-page="-1"
-        class="elevation-1 mt-10"
-    >
-      <template v-slot:top>
-        <v-toolbar flat color="secondary">
-          <v-toolbar-title>U.S. Large Cap Stock Comparison</v-toolbar-title>
-        </v-toolbar>
-      </template>
-      <template #bottom v-if="metricHeaders.length < 10"></template>
-    </v-data-table>
-
     <div class="scatter_section mt-10">
       <h5 class="graph_title">Whole Portfolio Analysis</h5>
       <v-col class="scatter_graph">
@@ -83,6 +69,20 @@
         </v-toolbar>
       </template>
       <template #bottom v-if="wholeHeaders.length < 10"></template>
+    </v-data-table>
+
+    <v-data-table
+        :items="metricTableData"
+        :headers="metricHeaders"
+        :items-per-page="-1"
+        class="elevation-1 mt-10"
+    >
+      <template v-slot:top>
+        <v-toolbar flat color="secondary">
+          <v-toolbar-title>U.S. Large & Mid Cap Stock Comparison</v-toolbar-title>
+        </v-toolbar>
+      </template>
+      <template #bottom v-if="metricHeaders.length < 10"></template>
     </v-data-table>
 
     <div class="mt-2 mb-10">
@@ -191,6 +191,16 @@ const metricTableData = computed(() => {
 
   return [
     {
+      metric: 'Investment Fit Score',
+      pomariumValue: `${Math.round(props.metrics.pomarium["investment_fit"])}%`,
+      marketValue: `${Math.round(props.metrics.market["investment_fit"])}%`,
+    },
+    {
+      metric: 'Values Fit Score',
+      pomariumValue: `${Math.round(props.metrics.pomarium["values_fit"])}%`,
+      marketValue: `${Math.round(props.metrics.market["values_fit"])}%`,
+    },
+    {
       metric: '1yr Return',
       pomariumValue: toPercentage(props.metrics.pomarium["1yr return"]),
       marketValue: toPercentage(props.metrics.market["1yr return"]),
@@ -224,17 +234,7 @@ const metricTableData = computed(() => {
       metric: 'Beta (Market Exposure Metric)',
       pomariumValue: props.metrics.pomarium["beta"].toFixed(2), // Beta usually isn't a percentage
       marketValue: props.metrics.market["beta"].toFixed(2),
-    },
-    {
-      metric: 'Investment Fit Score',
-      pomariumValue: `${Math.round(props.metrics.pomarium["investment_fit"])}%`,
-      marketValue: `${Math.round(props.metrics.market["investment_fit"])}%`,
-    },
-    {
-      metric: 'Values Fit Score',
-      pomariumValue: `${Math.round(props.metrics.pomarium["values_fit"])}%`,
-      marketValue: `${Math.round(props.metrics.market["values_fit"])}%`,
-    },
+    }
   ];
 });
 
@@ -344,9 +344,14 @@ function formatDate(dateString) {
   if (!dateString) {
     return '';
   }
-  const [year, month, day] = dateString.split('-');
-  const date = new Date(Date.UTC(year, month - 1, day)); // Treat the date as UTC
 
+  // Split the date string into year, month, and day
+  const [year, month, day] = dateString.split('-');
+
+  // Create a Date object without UTC conversion
+  const date = new Date(year, month - 1, day); // No UTC conversion
+
+  // Format the date as "Month Day, Year"
   const options = {year: 'numeric', month: 'long', day: 'numeric'};
   return date.toLocaleDateString('en-US', options);
 }
