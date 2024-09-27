@@ -104,10 +104,22 @@
       <template #bottom></template>
     </v-data-table>
 
-    <v-data-table v-else :items="backupAllocations" :items-per-page="-1" :headers="editableHeaders">
+
+    <v-data-table
+        v-else
+        v-model:page="page"
+        :items="backupAllocations"
+        :items-per-page="itemsPerPage"
+        :headers="editableHeaders"
+        :footer-props="{
+          itemsPerPageText: '',
+          pageText: ''
+        }"
+    >
       <template v-slot:item.name="{ item }">
         <v-text-field v-model="item.name" min-width="400px" hide-details></v-text-field>
       </template>
+
       <template v-slot:item.ticker="{ item, index }">
         <v-text-field
             v-model="item.ticker"
@@ -141,9 +153,37 @@
       <template v-slot:item.actions="{ item, index }">
         <v-icon @click="removeRow(index)" color="red" class="mr-2">mdi-delete</v-icon>
       </template>
-    </v-data-table>
 
-    <v-btn v-if="editing" @click="addNewRow" color="success" class="mt-4">Add New Row</v-btn>
+
+      <template v-slot:bottom>
+        <div class="footer-prefs">
+          <!-- Left side: Add New Row Button -->
+          <v-btn color="success" @click="addNewRow" class="mt-4">Add New Row</v-btn>
+
+          <!-- Right side: Pagination controls and Items Per Page -->
+          <div class="d-flex align-center">
+            <v-pagination
+                v-model="page"
+                :length="pageCount"
+                class="mr-4 mt-4"
+            ></v-pagination>
+
+            <!-- Items per page input -->
+            <v-text-field
+                v-model="itemsPerPage"
+                class="pa-2"
+                label="Items per page"
+                min-width="150px"
+                max="15"
+                min="-1"
+                type="number"
+                hide-details
+                @update:model-value="itemsPerPage = parseInt($event, 10)"
+            ></v-text-field>
+          </div>
+        </div>
+      </template>
+    </v-data-table>
 
 
   </div>
@@ -203,10 +243,8 @@ const tickerSearchResults = ref([]);
 const nameSearchResults = ref([]);
 const singleFieldEdit = ref(null)
 const gettingTickers = ref(false)
-const testDataName = ref([
-  {name: "beepbop stock", ticker: "BSP"},
-  {name: "meepmop stock", ticker: "MMS"},
-])
+const page = ref(1)
+const itemsPerPage = ref(15)
 
 //Router parameter
 const {
@@ -228,13 +266,31 @@ const headers = [
     nowrap: true,
   },
   {
-    title: 'Min Risk',
+    title: 'Very Low Risk',
     key: 'min_risk',
     width: 0,
     nowrap: true,
   },
   {
-    title: 'Max Risk',
+    title: 'Low Risk',
+    key: 'low',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Moderate Risk',
+    key: 'medium',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'High Risk',
+    key: 'high',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Very High Risk',
     key: 'max_risk',
     width: 0,
     nowrap: true,
@@ -243,7 +299,30 @@ const headers = [
 ];
 
 const editableHeaders = [
-  ...headers,
+  {
+    title: 'Name',
+    key: 'name',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Ticker',
+    key: 'ticker',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Very Low Risk',
+    key: 'min_risk',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Very High Risk',
+    key: 'max_risk',
+    width: 0,
+    nowrap: true,
+  },
   {text: 'Actions', value: 'actions', align: 'center', sortable: false},
 ];
 
@@ -308,7 +387,7 @@ const onTickerInput = debounce(async (item) => {
         name: match['2. name'],   // Name of the ETF
         ticker: match['1. symbol'], // Ticker symbol of the ETF
       }));
-      const addEntry = [item.ticker.toUpperCase()]
+      const addEntry = [`(${item.ticker.toUpperCase()})`]
       // For the v-select, we only need an array of ticker symbols
       tickerSearchResults.value = nameSearchResults.value.map(etf => formatResults(etf)).concat(addEntry)
       gettingTickers.value = false
@@ -345,12 +424,29 @@ const getAllocations = async () => {
     const {data} = await $axios.get(
         `/api/advisors/${user_id || advisor_id}/allocations/`
     );
-    //check if default allocation is present and remove it and set isDefaultAllocation to true
+
+    // Check if default allocation is present and remove it, set isDefaultAllocation to true
     isDefaultAllocation = data.some(
         (allocation) => allocation.is_default
     );
 
-    allocations.value = data;
+    // Add calculated low, medium, and high values for each allocation
+    allocations.value = data.map(allocation => {
+      const {min_risk, max_risk} = allocation;
+      const range = max_risk - min_risk;
+      const step = range / 4;  // Divide the range into equal parts for low, medium, high
+
+      return {
+        ...allocation,
+        low: min_risk + step,    // Add step to min_risk to get low value
+        medium: min_risk + step * 2,  // Add 2 steps to get medium value
+        high: min_risk + step * 3,    // Add 3 steps to get high value
+      };
+    });
+
+    console.log("Here are allocations with risk levels", allocations.value);
+
+    // Backup allocations
     backupAllocations.value = data.map(allocation => ({
       name: allocation.name,
       ticker: allocation.ticker,
@@ -358,6 +454,7 @@ const getAllocations = async () => {
       max_risk: allocation.max_risk,
     }));
   } catch (error) {
+    console.error("Error fetching allocations", error);
   }
 };
 
@@ -429,12 +526,12 @@ const onFileUpload = ({target: {files}}) => {
 };
 
 const submitChanges = async () => {
-  // Calculate the total min_risk and max_risk
-  const totalMinRisk = backupAllocations.value.reduce((acc, allocation) => acc + parseInt(allocation.min_risk), 0);
-  const totalMaxRisk = backupAllocations.value.reduce((acc, allocation) => acc + parseInt(allocation.max_risk), 0);
+  // Calculate the total min_risk and max_risk using parseFloat to handle decimals
+  const totalMinRisk = backupAllocations.value.reduce((acc, allocation) => acc + parseFloat(allocation.min_risk), 0);
+  const totalMaxRisk = backupAllocations.value.reduce((acc, allocation) => acc + parseFloat(allocation.max_risk), 0);
 
   // Check if both totals add up to 100
-  if (totalMinRisk !== 100 || totalMaxRisk !== 100) {
+  if (totalMinRisk.toFixed(1) !== '100.0' || totalMaxRisk.toFixed(1) !== '100.0') {
     show({message: 'Total Min Risk and Max Risk must each add up to 100%', error: true});
     return;
   }
@@ -450,6 +547,9 @@ const submitChanges = async () => {
     editing.value = false;
     buttonText.value = 'Edit Allocations';
     show({message: 'Allocations saved successfully!'});
+
+    // Refresh the page after successful submission
+    window.location.reload();
   } catch (error) {
     show({message: 'Failed to save allocations', error: true});
   }
@@ -507,5 +607,12 @@ const saveAdvisorFee = async () => {
 <style>
 .no-hover-shadow .v-input--selection-controls__ripple {
   display: none;
+}
+
+.footer-prefs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 10px 0 10px;
 }
 </style>
