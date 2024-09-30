@@ -488,16 +488,12 @@
                       :key="group.name"
                       class="accordion-column"
                   >
-
                     <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
-                      <div
-                          v-if="q.question.response_type === 'slider'"
-                          class="pb-8"
-                      >
+                      <!-- SLIDER type question -->
+                      <div v-if="q.question.response_type === 'slider'" class="pb-8">
                         <div class="text-h5">
                           {{ q.question.text }}
                         </div>
-
                         <v-slider
                             v-model="q.question.default_value"
                             :min="0"
@@ -509,11 +505,47 @@
                             color="primary"
                             max-width="1000px"
                         ></v-slider>
-
                       </div>
 
+                      <!-- RADIO type question -->
+                      <div v-else-if="q.question.response_type === 'RADIO'" class="pb-8">
+                        <div class="text-h5">
+                          {{ q.question.text }}
+                        </div>
+                        <v-radio-group
+                            v-model="q.question.selected_option"
+                            @change="updateResponse(q)"
+                            row
+                        >
+                          <v-radio
+                              v-for="(option, index) in q.question.survey_ticks"
+                              :key="index"
+                              :label="option"
+                              :value="option"
+                          ></v-radio>
+                        </v-radio-group>
+                      </div>
+
+                      <!-- MULTI_SELECT type question -->
+                      <div v-else-if="q.question.response_type === 'MULTI_SELECT'" class="pb-8">
+                        <div class="text-h5">
+                          {{ q.question.text }}
+                        </div>
+                        <v-checkbox-group
+                            v-model="q.question.selected_options"
+                            @change="updateResponse(q)"
+                        >
+                          <v-checkbox
+                              v-for="(option, index) in q.question.survey_ticks"
+                              :key="index"
+                              :label="option"
+                              :value="option"
+                          ></v-checkbox>
+                        </v-checkbox-group>
+                      </div>
                     </div>
                   </v-col>
+
                 </v-row>
               </v-container>
 
