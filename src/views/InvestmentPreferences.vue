@@ -187,24 +187,24 @@
 
 
   </div>
-      <div class="d-flex my-4 align-center">
-        <div class="text-h6 my-4">Advisor Fee %</div>
+  <div class="d-flex my-4 align-center">
+    <div class="text-h6 my-4">Advisor Fee %</div>
+  </div>
+  <v-row>
+    <v-col cols="6">
+      <v-select
+          label="Advisor Fee"
+          class="mb-4"
+          v-model="advisorFee"
+          :items="rates"
+          item-title="title"
+          item-value="value"
+      ></v-select>
+      <div class="d-flex justify-end mb-4">
+        <v-btn class="ml-2" color="primary" @click="saveAdvisorFee">Save</v-btn>
       </div>
-      <v-row>
-        <v-col cols="6">
-          <v-select
-              label="Advisor Fee"
-              class="mb-4"
-              v-model="advisorFee"
-              :items="rates"
-              item-title="title"
-              item-value="value"
-          ></v-select>
-          <div class="d-flex justify-end mb-4">
-            <v-btn class="ml-2" color="primary" @click="saveAdvisorFee">Save</v-btn>
-          </div>
-        </v-col>
-      </v-row>
+    </v-col>
+  </v-row>
 
 </template>
 
@@ -430,17 +430,19 @@ const getAllocations = async () => {
         (allocation) => allocation.is_default
     );
 
-    // Add calculated low, medium, and high values for each allocation
+    // Add calculated low, medium, and high values for each allocation, rounded to 2 decimal places
     allocations.value = data.map(allocation => {
       const {min_risk, max_risk} = allocation;
       const range = max_risk - min_risk;
       const step = range / 4;  // Divide the range into equal parts for low, medium, high
 
+      const roundToTwoDecimals = (value) => Number(value.toFixed(2)); // Helper function to round to 2 decimal places
+
       return {
         ...allocation,
-        low: min_risk + step,    // Add step to min_risk to get low value
-        medium: min_risk + step * 2,  // Add 2 steps to get medium value
-        high: min_risk + step * 3,    // Add 3 steps to get high value
+        low: roundToTwoDecimals(min_risk + step),    // Add step to min_risk to get low value
+        medium: roundToTwoDecimals(min_risk + step * 2),  // Add 2 steps to get medium value
+        high: roundToTwoDecimals(min_risk + step * 3),    // Add 3 steps to get high value
       };
     });
 
@@ -586,7 +588,7 @@ const saveFactorLevers = async () => {
 
 const rates = Array.from({length: 301}, (_, i) => ({
   value: (i / 100),
-  title: ((i / 100)).toFixed(2)+"%",
+  title: ((i / 100)).toFixed(2) + "%",
 }));
 
 //save advisor fee
