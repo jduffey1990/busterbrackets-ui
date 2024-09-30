@@ -3,9 +3,9 @@
 </template>
 
 <script>
-// import { jsPDF } from 'jspdf'
-// import html2canvas from 'html2canvas'
-// import 'jspdf-autotable'
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
+import 'jspdf-autotable'
 
 export default {
   props: {
