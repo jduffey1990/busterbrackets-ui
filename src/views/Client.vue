@@ -663,6 +663,8 @@ const tabs = ref([
   {label: 'Analytics'}
 ]);
 
+import {funLookAtFunction} from "@/utils/string";
+
 const getValue = (response) => {
   let color;
   let icon;
@@ -691,6 +693,9 @@ const getValue = (response) => {
 
   if (response.question.response_type === 'slider') {
     return [{text: response.question.slider_ticks[response.value]}];
+  }
+  if (response.question.response_type === 'radio') {
+    return [{text: response.value}];
   }
 };
 

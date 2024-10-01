@@ -72,7 +72,7 @@
                 </div>
               </v-container>
 
-              <v-container v-if="groupsWithMultiSelectBoolean(section.survey_groups)"
+              <v-container v-if="groupsWithMultiSelectBoolean(section.survey_groups) && section.tag==='pullYourWeeds'"
                            fluid
               >
 
@@ -361,8 +361,8 @@
                   </div>
                 </v-row>
 
-                <v-row v-else class="rows-center">
-                  <div v-if="section.tag === 'plantYourTrees'" class="accordion-list-center">
+                <v-row v-else-if="section.tag === 'plantYourTrees'" class="rows-center">
+                  <div class="accordion-list-center">
                     <template v-for="group in positionExclude(section.survey_groups, 'values')"
                               :key="group.name">
                       <div class="accordion-container">
@@ -480,73 +480,83 @@
                       </div>
                     </div>
                   </template>
-
-                  <v-col
-                      v-else-if="section.tag === 'buildYourBoundaries'"
-                      v-for="group in section.survey_groups"
-                      :cols="group.column_width"
-                      :key="group.name"
-                      class="accordion-column"
-                  >
-                    <div v-for="q in sortValues(group.survey_questions)" :key="q.question.id">
-                      <!-- SLIDER type question -->
-                      <div v-if="q.question.response_type === 'slider'" class="pb-8">
-                        <div class="text-h5">
-                          {{ q.question.text }}
-                        </div>
-                        <v-slider
-                            v-model="q.question.default_value"
-                            :min="0"
-                            :max="q.question.slider_ticks.length - 1"
-                            :step="1.0"
-                            :ticks="getTicks(q.question.slider_ticks)"
-                            @end="updateResponse(q)"
-                            show-ticks="always"
-                            color="primary"
-                            max-width="1000px"
-                        ></v-slider>
-                      </div>
-
-                      <!-- RADIO type question -->
-                      <div v-else-if="q.question.response_type === 'RADIO'" class="pb-8">
-                        <div class="text-h5">
-                          {{ q.question.text }}
-                        </div>
-                        <v-radio-group
-                            v-model="q.question.selected_option"
-                            @change="updateResponse(q)"
-                            row
-                        >
-                          <v-radio
-                              v-for="(option, index) in q.question.survey_ticks"
-                              :key="index"
-                              :label="option"
-                              :value="option"
-                          ></v-radio>
-                        </v-radio-group>
-                      </div>
-
-                      <!-- MULTI_SELECT type question -->
-                      <div v-else-if="q.question.response_type === 'MULTI_SELECT'" class="pb-8">
-                        <div class="text-h5">
-                          {{ q.question.text }}
-                        </div>
-                        <v-checkbox-group
-                            v-model="q.question.selected_options"
-                            @change="updateResponse(q)"
-                        >
-                          <v-checkbox
-                              v-for="(option, index) in q.question.survey_ticks"
-                              :key="index"
-                              :label="option"
-                              :value="option"
-                          ></v-checkbox>
-                        </v-checkbox-group>
-                      </div>
-                    </div>
-                  </v-col>
-
                 </v-row>
+                <v-row v-else class="rows-center">
+                  <!-- First Column: Multi-select and Slider Questions -->
+                  <template v-for="group in section.survey_groups" :key="group.name" class="accordion-list-center">
+                    <v-container class="investments-container">
+                      <v-col v-if="group.tag !== 'riskAssessment'">
+                        <!-- Loop through questions in this group -->
+                        <div v-for="q in group.survey_questions" :key="q.question.id" class="investments-container">
+                          <!-- SLIDER type question -->
+                          <div v-if="q.question.response_type === 'slider'">
+                            <div class="text-h5">
+                              {{ q.question.text }}
+                            </div>
+                            <v-slider
+                                v-model="q.question.default_value"
+                                :min="0"
+                                :max="q.question.slider_ticks.length - 1"
+                                :step="1.0"
+                                :ticks="getTicks(q.question.slider_ticks)"
+                                @end="updateResponse(q)"
+                                show-ticks="always"
+                                color="primary"
+                                max-width="1000px"
+                            ></v-slider>
+                          </div>
+
+                          <!-- MULTI_SELECT type question -->
+                          <div v-else class="autocomplete-invest">
+                            <div class="text-h5">
+                              {{ q.question.text }}
+                            </div>
+                            <v-autocomplete
+                                v-model="q.question.default_value"
+                                :items="q.question.slider_ticks"
+                                label="Multi-responses Possible"
+                                chips
+                                closable-chips
+                                multiple
+                                @update:model-value="updateResponse(q)"
+                            >
+                            </v-autocomplete>
+                          </div>
+                        </div>
+                      </v-col>
+
+                      <!-- Second Column: Risk Assessment (Radio Buttons) -->
+                      <v-container v-else-if="group.tag === 'riskAssessment'">
+                        <v-row>
+                          <!-- Loop through questions in this group -->
+                          <template v-for="q in group.survey_questions" :key="q.question.id" class="accordion-list">
+                            <!-- Each question gets a 6-column width -->
+
+                            <v-col class="radio-box">
+                              <!-- RADIO type question -->
+                              <div>
+                                <div class="text-h5">
+                                  {{ q.question.text }}
+                                </div>
+                                <v-radio-group v-model="q.question.default_value" @change="updateResponse(q)" row>
+                                  <v-radio
+                                      v-for="(option, index) in q.question.slider_ticks"
+                                      :key="index"
+                                      :label="option"
+                                      :value="option"
+                                  ></v-radio>
+                                </v-radio-group>
+                              </div>
+                            </v-col>
+                          </template>
+                        </v-row>
+                      </v-container>
+                    </v-container>
+
+                  </template>
+                </v-row>
+
+
               </v-container>
 
 
@@ -783,25 +793,40 @@ const sortValues = (values) => {
 };
 
 const updateResponse = (q, setInitial = false) => {
+  // Find if this question's response is already in surveyResponses
   const position = surveyResponses.findIndex(s => s.question.id === q.question.id);
+
+  // If found, remove it to replace with the updated response
   if (position > -1) {
     surveyResponses.splice(position, 1);
   }
+
+  // Push the updated question response into surveyResponses
   surveyResponses.push(q);
+
+  // Mark the form as touched, unless it's an initial set
   if (!setInitial) {
     touched.value = true;
   }
 
+  // Handle multi-select validation
   const multiSelect = surveyResponses
-      .filter(r => r.question.response_type === 'multi_select')
+      .filter(r => r.question.response_type === 'multi-select') // Adjust the response_type name if needed
       .map(r => r.question.default_value);
 
-  //cannot have the same value in both included and excluded, thus it would be in there more than once
+  // Ensure there are no duplicate values in the multi-select responses
   if (multiSelect.length > 1) {
     showMultiSelectError.value = !!multiSelect.reduce(
         (p, c) => p.filter(e => c.includes(e)).length
     );
   }
+
+  // Handle radio button responses (if needed, do extra validation here)
+  const radioResponses = surveyResponses
+      .filter(r => r.question.response_type === 'radio') // Adjust response_type if necessary
+      .map(r => r.question.default_value);
+
+  // You can add extra validation logic here for radio responses if necessary
 };
 
 const sendFreeResponse = async (prospect_id = null) => {
@@ -879,10 +904,14 @@ const submit = async (prospect_id) => {
     );
 
     if (!prospect_id) {
-      await sendFreeResponse(null)
+      if (userResponse.value.length) {
+        await sendFreeResponse(null)
+      }
       await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
     } else {
-      await sendFreeResponse(prospect_id)
+      if (userResponse.value.length) {
+        await sendFreeResponse(prospect_id)
+      }
     }
 
     show({message: 'Survey saved!'});
@@ -979,6 +1008,7 @@ onMounted(async () => {
   }
 
   survey.value = surveyData;
+  console.log("here is you survey:", survey.value)
   await getCompanies();
 });
 
@@ -1233,10 +1263,23 @@ window.addEventListener('beforeunload', (event) => {
   margin-bottom: 20px; /* Space between input and button */
 }
 
-.free-btn {
-  width: fit-content; /* Button size based on content */
-  margin-left: 10px;
-  transform: translateY(-10px);
+.radio-box {
+  margin-bottom: 20px; /* Remove any default margin */
+  padding: 10px; /* Remove padding to avoid extra spacing */
+  background-color: transparent;
+  min-width: 50%;
+}
+
+.autocomplete-invest {
+  text-align: center;
+  align-items: center;
+  width: 80%;
+}
+
+.investments-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 
@@ -1264,12 +1307,13 @@ window.addEventListener('beforeunload', (event) => {
     flex-direction: column;
   }
 
-  .free-btn {
-    margin-left: 0px;
-    transform: translateY(0px);
-    margin-top: 5px;
+  .radio-box {
+    min-width: 80%;
   }
 
+  .autocomplete-invest {
+    width: 100%;
+  }
 }
 
 
