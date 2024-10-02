@@ -531,7 +531,7 @@
                             <v-autocomplete
                                 v-model="q.question.default_value"
                                 :items="q.question.slider_ticks"
-                                label="Multi-responses Possible"
+                                label="Multiple Responses Possible"
                                 chips
                                 closable-chips
                                 multiple
