@@ -462,8 +462,7 @@
                   <template v-if="currentStep === survey.survey_sections.length - 1">
                     <div class="free-form">
                       <div class="survey_header">
-                        What additional values or industries would you like to prioritize or avoid in your
-                        investments?
+                        What did we miss?
                       </div>
                       <div class="free-box">
                         <v-responsive min-width="300px">
