@@ -485,7 +485,7 @@
                   <!-- First Column: Multi-select and Slider Questions -->
                   <template v-for="group in section.survey_groups" :key="group.name" class="accordion-list-center">
                     <v-container class="investments-container">
-                      <v-col v-if="group.tag !== 'riskAssessment'">
+                      <v-col>
                         <!-- Loop through questions in this group -->
                         <div v-for="q in group.survey_questions" :key="q.question.id" class="investments-container">
                           <!-- SLIDER type question -->
@@ -506,6 +506,23 @@
                             ></v-slider>
                           </div>
 
+                          <v-col v-else-if="q.question.response_type === 'radio'" lass="radio-box">
+                            <!-- RADIO type question -->
+                            <div>
+                              <div class="text-h5">
+                                {{ q.question.text }}
+                              </div>
+                              <v-radio-group v-model="q.question.default_value" @change="updateResponse(q)" row>
+                                <v-radio
+                                    v-for="(option, index) in q.question.slider_ticks"
+                                    :key="index"
+                                    :label="option"
+                                    :value="option"
+                                ></v-radio>
+                              </v-radio-group>
+                            </div>
+                          </v-col>
+
                           <!-- MULTI_SELECT type question -->
                           <div v-else class="autocomplete-invest">
                             <div class="text-h5">
@@ -524,35 +541,7 @@
                           </div>
                         </div>
                       </v-col>
-
-                      <!-- Second Column: Risk Assessment (Radio Buttons) -->
-                      <v-container v-else-if="group.tag === 'riskAssessment'">
-                        <v-row>
-                          <!-- Loop through questions in this group -->
-                          <template v-for="q in group.survey_questions" :key="q.question.id" class="accordion-list">
-                            <!-- Each question gets a 6-column width -->
-
-                            <v-col class="radio-box">
-                              <!-- RADIO type question -->
-                              <div>
-                                <div class="text-h5">
-                                  {{ q.question.text }}
-                                </div>
-                                <v-radio-group v-model="q.question.default_value" @change="updateResponse(q)" row>
-                                  <v-radio
-                                      v-for="(option, index) in q.question.slider_ticks"
-                                      :key="index"
-                                      :label="option"
-                                      :value="option"
-                                  ></v-radio>
-                                </v-radio-group>
-                              </div>
-                            </v-col>
-                          </template>
-                        </v-row>
-                      </v-container>
                     </v-container>
-
                   </template>
                 </v-row>
 
