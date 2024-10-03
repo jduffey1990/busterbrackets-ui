@@ -866,8 +866,11 @@ const sendEmail = async (prospect_id = null) => {
   try {
     // Fetch advisor details
     const advisorResponse = await $axios.get(`/api/users/advisor/${advisor_id}`);
+    console.log(advisorResponse)
+
     const advisorEmail = advisorResponse.data.email;
     const advisorWantsEmail = advisorResponse.data.email_surveys
+    console.log(advisorWantsEmail)
 
     if (!advisorWantsEmail) {
       return
