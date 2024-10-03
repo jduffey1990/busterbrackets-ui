@@ -468,7 +468,7 @@
                         <v-responsive min-width="300px">
                           <v-text-field
                               v-model="userResponse"
-                              label="Unlisted Values"
+                              label="Freeform text entry field"
                               hint="This will be sent to Pomarium"
                               maxlength="400"
                               counter
@@ -480,9 +480,9 @@
                     </div>
                   </template>
                 </v-row>
-                <v-row v-else class="rows-center">
+                <v-row v-else class="rows-center-risk">
                   <!-- First Column: Multi-select and Slider Questions -->
-                  <template v-for="group in section.survey_groups" :key="group.name" class="accordion-list-center">
+                  <template v-for="group in section.survey_groups" :key="group.name" class="accordion-list-center-risk">
                     <v-container class="investments-container">
                       <v-col>
                         <!-- Loop through questions in this group -->
@@ -656,8 +656,7 @@ const showNewProspectModal = ref(false);
 const selectAll = ref({})
 const isActive = ref({});
 const userResponse = ref('')
-const singleLengthGroups = ref([])
-const showOverlay = ref(false);
+const clientData = ref({})
 
 // Initial State
 const initialState = {
@@ -665,7 +664,9 @@ const initialState = {
   last_name: undefined,
   email: undefined,
 };
+
 const newProspect = reactive({...initialState});
+
 
 // Utility Functions
 const groupContainsCheckboxes = (group) => {
@@ -814,7 +815,7 @@ const updateResponse = (q, setInitial = false) => {
       .filter(r => r.question.response_type === 'radio') // Adjust response_type if necessary
       .map(r => r.question.default_value);
 
-  // You can add extra validation logic here for radio responses if necessary
+
 };
 
 const sendFreeResponse = async (prospect_id = null) => {
@@ -834,36 +835,61 @@ const sendFreeResponse = async (prospect_id = null) => {
           response_type: "Prospect Response"
         });
 
-        console.log('Response sent to Pendo for prospect:', userResponse.value);
       } else {
         console.error('Pendo is not initialized.');
       }
     }
     // If no prospect_id, then it's a client
     else {
-      const response = await $axios.get(`/api/users/simple/${user_id}`);
-      const user_data = response.data;
-
       // Check if Pendo is available for client data
       if (window.pendo) {
         // Send the data to Pendo for a client
         pendo.track('User Freeform Response', {
           response: userResponse.value,  // Capture the user's freeform response
           timestamp: getMSTDate(),       // Capture the current time
-          user_name: user_data.full_name,
-          user_email: user_data.email,
-          user_firm: user_data.firm.name,
+          user_name: clientData.value.full_name,
+          user_email: clientData.value.email,
+          user_firm: clientData.value.firm.name,
           response_type: "Client Response",
         });
 
-        console.log('Response sent to Pendo for client:', userResponse.value);
-        show({message: 'Thank you for your help in making our app better!'});
       } else {
         console.error('Pendo is not initialized.');
       }
     }
   } catch (error) {
     console.error('Error sending freeform response:', error);
+  }
+};
+
+const sendEmail = async (prospect_id = null) => {
+  try {
+    // Fetch advisor details
+    const advisorResponse = await $axios.get(`/api/users/simple/${advisor_id}`);
+    const advisorEmail = advisorResponse.data.email;
+
+    // Create the message based on whether userInfo has a firm or not
+    let message = "";
+    if (prospect_id === null) {
+      // User is a client with a firm (data is structured differently)
+      message = `${clientData.value.full_name} just finished another survey. You can reach out to them at `
+          + `${clientData.value.email}.`;
+    } else {
+      // User is a new prospect
+      message = `${newProspect.first_name} ${newProspect.last_name} just finished their survey as a new prospect. You`
+          + ` can reach out to them at ${newProspect.email}.`;
+    }
+
+    // Post the advisor's email and the message to the email-sending endpoint
+    await $axios.post('/api/surveys/email-survey-complete/', {
+      advisor_email: advisorEmail,  // Send to the advisor
+      message: message,             // Send the constructed message
+    });
+
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+    show({message: parseError(error), error: true});  // Display error message to the user
   }
 };
 
@@ -896,10 +922,12 @@ const submit = async (prospect_id) => {
         await sendFreeResponse(null)
       }
       await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
+      await sendEmail(null)
     } else {
       if (userResponse.value.length) {
         await sendFreeResponse(prospect_id)
       }
+      await sendEmail(prospect_id)
     }
 
     show({message: 'Survey saved!'});
@@ -926,6 +954,12 @@ const getCompanies = async () => {
     show({message: parseError(error), error: true});
   }
 };
+
+const getClientData = async () => {
+  const response = await $axios.get(`/api/users/simple/${user_id}`);
+  clientData.value = response.data;
+  console.log("Here is the simple client's data", clientData.value)
+}
 
 //I am unsure why the list of ticks needs to be moved into an object, but it doesn't take much space so...
 const getTicks = (ticks) => {
@@ -996,8 +1030,10 @@ onMounted(async () => {
   }
 
   survey.value = surveyData;
-  console.log("here is you survey:", survey.value)
   await getCompanies();
+  if (user_id) {
+    await getClientData();
+  }
 });
 
 onBeforeRouteLeave((to, from, next) => {
@@ -1042,9 +1078,9 @@ window.addEventListener('beforeunload', (event) => {
 
 .twin-columns {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .multi-dropdown {
@@ -1108,6 +1144,14 @@ window.addEventListener('beforeunload', (event) => {
   align-items: center;
   justify-content: center;
   margin-top: 0;
+  min-width: 80%;
+}
+
+.rows-center-risk {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
 }
 
 .accordion-list {
@@ -1119,6 +1163,14 @@ window.addEventListener('beforeunload', (event) => {
 }
 
 .accordion-list-center {
+  display: block; /* Ensures all items are part of one continuous list */
+  margin: 0px;
+  padding: 0px 12px 12px 12px;
+  width: 100%;
+  background-color: transparent;
+}
+
+.accordion-list-center-risk {
   display: block; /* Ensures all items are part of one continuous list */
   margin: 0px;
   padding: 0px 12px 12px 12px;
