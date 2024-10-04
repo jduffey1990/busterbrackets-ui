@@ -876,7 +876,7 @@ const sendEmail = async (prospect_id = null) => {
     // Create the message based on whether userInfo has a firm or not
     let message = "";
     let subject = "";
-    let imageUrl = "https://your-image-url.com/image.png";  // Replace with the actual URL or base64-encoded image
+    let imageUrl = "https://t4.ftcdn.net/jpg/03/03/62/45/240_F_303624505_u0bFT1Rnoj8CMUSs8wMCwoKlnWlh5Jiq.jpg";  // Replace with the actual URL or base64-encoded image
 
     if (prospect_id === null) {
       message = `
