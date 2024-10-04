@@ -866,35 +866,36 @@ const sendEmail = async (prospect_id = null) => {
   try {
     // Fetch advisor details
     const advisorResponse = await $axios.get(`/api/users/advisor/${advisor_id}`);
-    console.log(advisorResponse)
-
     const advisorEmail = advisorResponse.data.email;
-    const advisorWantsEmail = advisorResponse.data.email_surveys
-    console.log(advisorWantsEmail)
+    const advisorWantsEmail = advisorResponse.data.email_surveys;
 
     if (!advisorWantsEmail) {
-      return
+      return;
     }
 
     // Create the message based on whether userInfo has a firm or not
     let message = "";
     let subject = "";
+    let imageUrl = "https://your-image-url.com/image.png";  // Replace with the actual URL or base64-encoded image
+
     if (prospect_id === null) {
-      // User is a client with a firm (data is structured differently)
-      message = `${clientData.value.full_name} just finished another survey. You can reach out to them at `
-          + `${clientData.value.email}.`;
-      subject = "A Pomarium client has updated their values!"
+      message = `
+        <p>${clientData.value.full_name} just finished another survey. You can reach out to them at ${clientData.value.email}.</p>
+        <img src="${imageUrl}" alt="Survey Completed" />
+      `;
+      subject = "A Pomarium client has updated their values!";
     } else {
-      // User is a new prospect
-      message = `${newProspect.first_name} ${newProspect.last_name} just finished their survey as a new prospect. You`
-          + ` can reach out to them at ${newProspect.email}.`;
-      subject = "CONGRATS! You have a new Pomarium prospect!"
+      message = `
+        <p>${newProspect.first_name} ${newProspect.last_name} just finished their survey as a new prospect. You can reach out to them at ${newProspect.email}.</p>
+        <img src="${imageUrl}" alt="New Prospect" />
+      `;
+      subject = "CONGRATS! You have a new Pomarium prospect!";
     }
 
     // Post the advisor's email and the message to the email-sending endpoint
     await $axios.post('/api/surveys/email-survey-complete/', {
-      advisor_email: advisorEmail,  // Send to the advisor
-      message: message,             // Send the constructed message
+      advisor_email: advisorEmail,
+      message: message,
       subject: subject,
     });
 
