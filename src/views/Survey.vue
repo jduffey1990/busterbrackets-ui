@@ -880,14 +880,18 @@ const sendEmail = async (prospect_id = null) => {
 
     if (prospect_id === null) {
       message = `
-        <p>${clientData.value.full_name} just finished another survey. You can reach out to them at ${clientData.value.email}.</p>
-        <img src="${imageUrl}" alt="Survey Completed" />
+        <p class="text-h5">${clientData.value.full_name} just submitted their survey.
+        Head to your dashboard or reach out to them at ${clientData.value.email}.</p>
+        <img src="${imageUrl}" alt="Survey Completed" /><br><br>
+        <a href="https://app.getpomarium.com">app.getpomarium.com</a>
       `;
       subject = "A Pomarium client has updated their values!";
     } else {
       message = `
-        <p>${newProspect.first_name} ${newProspect.last_name} just finished their survey as a new prospect. You can reach out to them at ${newProspect.email}.</p>
-        <img src="${imageUrl}" alt="New Prospect" />
+        <p class="text-h5">${newProspect.first_name} ${newProspect.last_name} just took your Pomarium survey via your unique advisor link!
+        Head to your dashboard or reach out to them at ${newProspect.email}.</p>
+        <img src="${imageUrl}" alt="New Prospect" /><br><br>
+        <a href="https://app.getpomarium.com">app.getpomarium.com</a>
       `;
       subject = "CONGRATS! You have a new Pomarium prospect!";
     }
