@@ -205,6 +205,24 @@
       </div>
     </v-col>
   </v-row>
+  <div class="d-flex my-4 align-center">
+    <div class="text-h6 my-4">Number of Holdings</div>
+  </div>
+  <v-row>
+    <v-col cols="6">
+      <v-select
+          label="Number of Holdings"
+          class="mb-4"
+          v-model="holdings"
+          :items="holdingItems"
+          item-title="title"
+          item-value="value"
+      ></v-select>
+      <div class="d-flex justify-end mb-4">
+        <v-btn class="ml-2" color="primary" @click="saveHoldings">Save</v-btn>
+      </div>
+    </v-col>
+  </v-row>
 
 </template>
 
@@ -232,19 +250,20 @@ const {
 //state management
 const factorLevers = ref({});
 const allocations = ref([]);
-const backupAllocations = ref([])
+const backupAllocations = ref([]);
 const canEdit = computed(() => isSuper && user_id);
 const currentAdvisor = ref();
-const editing = ref(false)
-const buttonText = ref('Edit Allocations')
+const editing = ref(false);
+const buttonText = ref('Edit Allocations');
 let isDefaultAllocation = false;
 const advisorFee = ref();
 const tickerSearchResults = ref([]);
 const nameSearchResults = ref([]);
-const singleFieldEdit = ref(null)
-const gettingTickers = ref(false)
-const page = ref(1)
-const itemsPerPage = ref(15)
+const singleFieldEdit = ref(null);
+const gettingTickers = ref(false);
+const page = ref(1);
+const itemsPerPage = ref(15);
+const holdings = ref();
 
 //Router parameter
 const {
@@ -603,6 +622,33 @@ const saveAdvisorFee = async () => {
   }
 };
 
+const holdingItems = [
+  {title: '25 - 50 (small)', value: 0},
+  {title: '50 - 75 (medium)', value: 1},
+  {title: '75 - 100 (large)', value: 2},
+  {title: '100+ (very large)', value: 3},
+]
+
+const getHoldings = async () => {
+  try {
+    const {data} = await $axios.get(`/api/users/holdings/`);
+    holdings.value = data.holdings_num;
+  } catch (error) {
+    show({message: 'Error fetching holdings', error: true});
+  }
+};
+getHoldings();
+
+const saveHoldings = async () => {
+  try {
+    await $axios.put(`/api/users/holdings/`, {
+      holdings_num: holdings.value,
+    });
+    show({message: 'Number of Holdings saved!'});
+  } catch (error) {
+    show({message: 'Error saving Number of Holdings', error: true});
+  }
+};
 </script>
 
 
