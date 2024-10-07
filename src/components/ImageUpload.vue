@@ -2,7 +2,13 @@
     <div class="d-flex my-6">
       <v-file-input label="Firm logo" @change="handleFileUpload" variant="solo" style="max-width: 400px; font-family: halyard-text;" density="compact"/>
       <v-btn @click="uploadImage" color="primary" class="mx-6 my-2">Upload</v-btn>
+      
     </div>
+    <v-img
+        v-if="logos.firm_logo"
+        :src="logos.firm_logo"
+        style="height: 35px; max-width:200px; margin: 0;"
+    ></v-img>
   </template>
   
   <script setup>
@@ -16,6 +22,17 @@
   const {show} = inject('toast');
   
   const selectedFile = ref(null);
+
+const logos = ref({});
+const getFirmLogo = async () => {
+  try {
+    const response = await $axios.get(`/api/firms/${user.value.firm.id}/logo/`);
+    logos.value = response.data;
+  } catch (error) {
+    console.error('Error fetching firm logo:', error);
+  }
+};
+getFirmLogo();
   
   function handleFileUpload(event) {
     selectedFile.value = event.target.files[0];
@@ -38,6 +55,7 @@
         }
       });
       show({type: 'success', message: 'Image uploaded successfully'});
+      getFirmLogo();
     } catch (error) {
       console.error('FAILURE', error);
     }
