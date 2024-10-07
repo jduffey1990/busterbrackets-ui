@@ -4,11 +4,11 @@
       <v-btn @click="uploadImage" color="primary" class="mx-6 my-2">Upload</v-btn>
       
     </div>
-    <v-img
+    <img
         v-if="logos.firm_logo"
         :src="logos.firm_logo"
         style="height: 35px; max-width:200px; margin: 0;"
-    ></v-img>
+    ></img>
   </template>
   
   <script setup>
