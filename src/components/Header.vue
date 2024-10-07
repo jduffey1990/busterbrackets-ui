@@ -145,8 +145,6 @@ const getFirmLogo = async () => {
     logos.value = response.data;
   } catch (error) {
     console.error('Error fetching firm logo:', error);
-    const parsedError = parseError(error);
-    show({type: 'error', message: parsedError.message});
   }
 };
 

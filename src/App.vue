@@ -42,16 +42,14 @@ const $axios = inject('$axios');
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 const {user} = storeToRefs(useUserStore());
-const firm_id = user.value.firm.id;
+
 
 const theme = ref(null);
 const getTheme = async () => {
   try {
-    const response = await $axios.get(`/api/firms/${firm_id}/firmSettings/`);
+    const response = await $axios.get(`/api/firms/${user.value.firm.id}/firmSettings/`);
     theme.value = response.data.theme;
   } catch (error) {
-    const parsedError = parseError(error);
-    show({type: 'error', message: parsedError.message});
   }
 };
 getTheme();
