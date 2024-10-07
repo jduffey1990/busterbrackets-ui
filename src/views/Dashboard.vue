@@ -73,23 +73,23 @@
           <!-- Data table for clients -->
           <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown">
             <template v-slot:item.actions="{ item }">
-              <!-- Button to view client details -->
-              <v-btn
+              <!-- Button to archive a client -->
+              <v-icon
+                  icon="mdi-delete"
                   color="primary"
                   class="ml-2"
                   size="small"
-                  @click="goToClient(item)"
-              >View Client
-              </v-btn>
-
-              <!-- Button to archive a client -->
-              <v-btn
-                  color="secondary"
-                  class="ml-2 secondary-btn"
-                  size="small"
                   @click="archiveClient(item)"
-              >Archive
+              >
+              </v-icon>
+            </template>
+            <template v-slot:item.full_name="{ item }">
+              <v-btn variant="text" @click="goToClient(item)">
+                {{ item.full_name }}
               </v-btn>
+            </template>
+            <template v-slot:item.accounts="{item}">
+              {{ accounts[findIndex(item.id)] }}
             </template>
             <template #bottom v-if="clients.length < 10"></template>
           </v-data-table>
@@ -256,11 +256,12 @@ const displayState = reactive({
 
 // Data tables headers
 const headers = [
-  {key: 'actions', sortable: false, width: 0, nowrap: true},
   {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
   {title: 'Email', key: 'email', width: 0, nowrap: true},
   {title: 'Last Survey Date', key: 'last_survey_taken_date', width: 0, nowrap: true},
-  {},
+  {title: 'Accounts', key: 'accounts', width: 0, nowrap: true},
+  {key: 'actions', sortable: false, width: 0, nowrap: true},
+  {}
 ];
 
 // Fetch clients data
@@ -270,6 +271,7 @@ const getClients = async () => {
     ...d,
     last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
   }));
+  await getAccountsForAllClients();
 };
 
 const getAdvisors = async () => {
@@ -414,6 +416,18 @@ const clientsToShow = () => {
 
 const prospectsToShow = () => {
   return displayState.searchedProspects ? prospectsShown.value=foundProspect.value : prospectsShown.value=prospects.value;
+};
+
+const accounts = ref([]);
+const getAccountsForAllClients = async () => {
+  for (const client of clients.value) {
+    const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${client.id}/accounts/`);
+    accounts.value.push(data.length);
+  }
+};
+
+const findIndex = (id) => {
+  return clients.value.findIndex((client) => client.id === id);
 };
 </script>
 

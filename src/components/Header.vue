@@ -4,12 +4,21 @@
       <div class="nav_bar">
         <v-app-bar-title>
           <router-link to="/" custom v-slot="{ navigate }">
-            <v-img
+            <v-img v-if="onSurvey"
+                :width="166"
+                :src="logos.firm_logo"
+                @click="navigate"
+                class="cursor-pointer"
+                style="max-height: 35px;"
+            ></v-img>
+            <v-img v-else
                 :width="166"
                 src="@/assets/pomarium.svg"
                 @click="navigate"
                 class="cursor-pointer"
+                style="max-height: 35px;"
             ></v-img>
+
           </router-link>
         </v-app-bar-title>
 
@@ -89,12 +98,14 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onUnmounted, computed} from 'vue';
+import {ref, onMounted, onUnmounted, computed, inject, watch} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 import {useRouter} from 'vue-router';
+import { useRoute } from 'vue-router';
 
 const router = useRouter();
+const $axios = inject('$axios');
 
 const {user, isLoggedIn, isFirmAdminOrGreater, isSuper} = storeToRefs(
     useUserStore()
@@ -125,6 +136,42 @@ const appBarStyle = computed(() => {
   return {
     backgroundColor: `rgba(255, 255, 255, ${opacity.value})`,
   };
+});
+
+const logos = ref({});
+const getFirmLogo = async () => {
+  try {
+    const response = await $axios.get(`/api/firms/${user.value.firm.id}/logo/`);
+    logos.value = response.data;
+  } catch (error) {
+    console.error('Error fetching firm logo:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  }
+};
+
+onMounted(() => {
+  getFirmLogo();
+});
+
+const onSurvey = ref(false);
+//check if url contains survey every time the route changes
+const checkSurvey = () => {
+  if (window.location.href.includes('survey')) {
+    onSurvey.value = true;
+  } else {
+    onSurvey.value = false;
+  }
+};
+
+const route = useRoute();
+
+onMounted(() => {
+  checkSurvey();
+});
+
+watch(route, () => {
+  checkSurvey();
 });
 </script>
 

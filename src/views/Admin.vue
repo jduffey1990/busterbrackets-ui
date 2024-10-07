@@ -17,6 +17,7 @@
     <v-tabs v-model="currentTab">
       <v-tab>Advisors ({{ advisors.length }})</v-tab>
       <v-tab>Billing</v-tab>
+      <v-tab>White Label Settings</v-tab>
     </v-tabs>
 
     <!-- Content of the selected tab -->
@@ -103,6 +104,17 @@
       <v-tabs-window-item>
         <Billing/>
       </v-tabs-window-item>
+      <v-tabs-window-item>
+        <ImageUpload/>
+        <div>
+          <h4 class="pt-6">Background Color</h4>
+          <v-radio-group row class="my-4" style="font-family: halyard-text;" v-model="theme">
+            <v-radio value="1" label="Pomarium Theme"></v-radio>
+            <v-radio value="2" label="White"></v-radio>
+          </v-radio-group>
+          <v-btn @click="saveWhiteLabelSettings">Save</v-btn>
+        </div>
+      </v-tabs-window-item>
     </v-tabs-window>
 
     <!-- Dialog for creating a new advisor -->
@@ -162,6 +174,7 @@ import {parseError} from '@/utils/error';
 import {useRouter} from 'vue-router';
 import moment from 'moment';
 import Billing from './Billing.vue';
+import ImageUpload from '@/components/ImageUpload.vue';
 
 // Injecting services and router
 const $axios = inject('$axios');
@@ -177,6 +190,7 @@ const currentTab = ref();
 const advisors = ref([]);
 const clients = ref([]);
 const prospects = ref([]);
+const theme = ref();
 
 // Initial state for new advisor form
 const initialState = {
@@ -334,5 +348,32 @@ const archiveProspect = async (advisorId, {id}) => {
     }
   }
 };
-</script>
 
+const whiteLabelSettings = ref({});
+
+const getWhiteLabelSettings = async () => {
+  try {
+    const response = await $axios.get(`/api/firms/${user.value.firm.id}/firmSettings/`);
+    whiteLabelSettings.value = response.data;
+    theme.value = `${response.data.theme}`;
+  } catch (error) {
+    console.error('Error fetching white label settings:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  }
+};
+getWhiteLabelSettings();
+
+const saveWhiteLabelSettings = async () => {
+  whiteLabelSettings.value.theme = Number(theme.value);
+  try {
+    const response = await $axios.put(`/api/firms/${user.value.firm.id}/firmSettings/`, whiteLabelSettings.value);
+    show({type: 'success', message: 'White label settings saved!'});
+    location.reload();
+  } catch (error) {
+    console.error('Error saving white label settings:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  }
+};
+</script>

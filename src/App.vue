@@ -1,5 +1,5 @@
 <template>
-  <v-app class="app-background">
+  <v-app :class="[ onSurvey ? (theme === 1 ? appBackground : whiteBackground) : appBackground ]">
     <Header/>
 
     <UiToast>
@@ -36,14 +36,63 @@ import {useOverlayStore} from '@/store/overlay';
 
 // Use the overlay store to manage state
 const overlayStore = useOverlayStore();
+import { inject, ref } from 'vue';
+const $axios = inject('$axios');
 
+import {useUserStore} from '@/store/user';
+import {storeToRefs} from 'pinia';
+const {user} = storeToRefs(useUserStore());
+const firm_id = user.value.firm.id;
+
+const theme = ref(null);
+const getTheme = async () => {
+  try {
+    const response = await $axios.get(`/api/firms/${firm_id}/firmSettings/`);
+    theme.value = response.data.theme;
+  } catch (error) {
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  }
+};
+getTheme();
+
+// Define the classes for the background
+const appBackground = 'appBackground';
+const whiteBackground = 'whiteBackground';
+
+const onSurvey = ref(false);
+//check if url contains survey every time the route changes
+const checkSurvey = () => {
+  if (window.location.href.includes('survey')) {
+    onSurvey.value = true;
+  } else {
+    onSurvey.value = false;
+  }
+};
+import { onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+onMounted(() => {
+  checkSurvey();
+});
+
+watch(route, () => {
+  checkSurvey();
+});
 </script>
-
 
 <style>
 
-.app-background {
+.appBackground {
   background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%) !important;
+  min-height: 87vh;
+  width: 100% !important;
+}
+
+.whiteBackground {
+  background-color: white !important;
   min-height: 87vh;
   width: 100% !important;
 }
@@ -59,5 +108,4 @@ const overlayStore = useOverlayStore();
   }
 
 }
-
 </style>
