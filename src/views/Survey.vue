@@ -862,7 +862,7 @@ const sendFreeResponse = async (prospect_id = null) => {
   }
 };
 
-const sendEmail = async (prospect_id = null) => {
+const sendEmail = async () => {
   try {
     // Fetch advisor details
     const advisorResponse = await $axios.get(`/api/users/advisor/${advisor_id}`);
@@ -873,28 +873,25 @@ const sendEmail = async (prospect_id = null) => {
       return;
     }
 
-    // Create the message based on whether userInfo has a firm or not
-    let message = "";
-    let subject = "";
-    let imageUrl = "https://t4.ftcdn.net/jpg/03/03/62/45/240_F_303624505_u0bFT1Rnoj8CMUSs8wMCwoKlnWlh5Jiq.jpg";  // Replace with the actual URL or base64-encoded image
+    let message = `
+      <p>Hi ${advisorResponse.data.full_name},</p>
 
-    if (prospect_id === null) {
-      message = `
-        <p class="text-h5">${clientData.value.full_name} just submitted their survey.
-        Head to your dashboard or reach out to them at ${clientData.value.email}.</p>
-        <img src="${imageUrl}" alt="Survey Completed" /><br><br>
-        <a href="https://app.getpomarium.com">app.getpomarium.com</a>
-      `;
-      subject = "A Pomarium client has updated their values!";
-    } else {
-      message = `
-        <p class="text-h5">${newProspect.first_name} ${newProspect.last_name} just took your Pomarium survey via your unique advisor link!
-        Head to your dashboard or reach out to them at ${newProspect.email}.</p>
-        <img src="${imageUrl}" alt="New Prospect" /><br><br>
-        <a href="https://app.getpomarium.com">app.getpomarium.com</a>
-      `;
-      subject = "CONGRATS! You have a new Pomarium prospect!";
-    }
+      <p>Great news - you’ve got a new prospect! 🎉 ${newProspect.first_name} ${newProspect.last_name} completed a
+      Pomarium survey from your unique advisor link.</p>
+
+      <img src="https://cliply.co/wp-content/uploads/2021/09/CLIPLY_372109170_FREE_FIREWORKS_400.gif" alt="Celebration GIF" /><br><br>  <!-- Embed a GIF -->
+
+      <p>Here are your next steps:</p>
+      <ul>
+        <li>Review their results here @ <a href="https://app.getpomarium.com">Pomarium</a>.</li>
+        <li>Reach out to them at <a href="mailto:${newProspect.email}">${newProspect.email}</a> with a sneak peek.</li>
+        <li>Schedule a call to review their results together!</li>
+      </ul>
+
+      <p>PS: Keep sharing your link, it’s working! 👍🏽</p>
+    `;
+    let subject = "New Prospect Alert! ✨ A Potential Client Just Completed Your Survey";
+
 
     // Post the advisor's email and the message to the email-sending endpoint
     await $axios.post('/api/surveys/email-survey-complete/', {
@@ -939,12 +936,11 @@ const submit = async (prospect_id) => {
         await sendFreeResponse(null)
       }
       await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
-      await sendEmail(null)
     } else {
       if (userResponse.value.length) {
         await sendFreeResponse(prospect_id)
       }
-      await sendEmail(prospect_id)
+      await sendEmail()
     }
 
     show({message: 'Survey saved!'});
@@ -1183,7 +1179,7 @@ window.addEventListener('beforeunload', (event) => {
   display: block; /* Ensures all items are part of one continuous list */
   margin: 0px;
   padding: 0px 12px 12px 12px;
-  width: 100%;
+  width: 60%;
   background-color: transparent;
 }
 

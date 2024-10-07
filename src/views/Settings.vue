@@ -38,7 +38,7 @@
 
           <v-switch
               v-model="account.email_surveys"
-              label="A client/prospect completes a survey"
+              label="A prospect completes a survey"
               color="success"
               :false-value="false"
               :true-value="true"
