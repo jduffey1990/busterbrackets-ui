@@ -879,7 +879,6 @@ const sendEmail = async () => {
       <p>Great news - you’ve got a new prospect! 🎉 ${newProspect.first_name} ${newProspect.last_name} completed a
       Pomarium survey from your unique advisor link.</p>
 
-      <img src="https://cliply.co/wp-content/uploads/2021/09/CLIPLY_372109170_FREE_FIREWORKS_400.gif" alt="Celebration GIF" /><br><br>  <!-- Embed a GIF -->
 
       <p>Here are your next steps:</p>
       <ul>
