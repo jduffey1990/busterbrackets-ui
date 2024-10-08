@@ -200,9 +200,6 @@
           item-title="title"
           item-value="value"
       ></v-select>
-      <div class="d-flex justify-end mb-4">
-        <v-btn class="ml-2" color="primary" @click="saveAdvisorFee">Save</v-btn>
-      </div>
     </v-col>
   </v-row>
   <div class="d-flex my-4 align-center">
@@ -610,18 +607,6 @@ const rates = Array.from({length: 301}, (_, i) => ({
   title: ((i / 100)).toFixed(2) + "%",
 }));
 
-//save advisor fee
-const saveAdvisorFee = async () => {
-  try {
-    await $axios.put(`/api/users/advisor-fee/`, {
-      advisor_fee: (advisorFee.value / 100).toFixed(4),
-    });
-    show({message: 'Advisor Fee saved!'});
-  } catch (error) {
-    show({message: 'Error saving Advisor Fee', error: true});
-  }
-};
-
 const holdingItems = [
   {title: '25 - 50 (small)', value: 0},
   {title: '50 - 75 (medium)', value: 1},
@@ -644,7 +629,10 @@ const saveHoldings = async () => {
     await $axios.put(`/api/users/holdings/`, {
       holdings_num: holdings.value,
     });
-    show({message: 'Number of Holdings saved!'});
+    await $axios.put(`/api/users/advisor-fee/`, {
+      advisor_fee: (advisorFee.value / 100).toFixed(4),
+    });
+    show({message: 'Advisor Fee % and Number of Holdings saved!'});
   } catch (error) {
     show({message: 'Error saving Number of Holdings', error: true});
   }
