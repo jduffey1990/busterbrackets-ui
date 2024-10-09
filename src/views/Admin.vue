@@ -2,7 +2,7 @@
   <!-- Main container that checks if the user is associated with a firm -->
   <div v-if="user.firm">
     <!-- Header section with the firm name and button to create a new advisor -->
-    <div class="d-flex my-4">
+    <div class="admin-header">
       <div class="text-h4">{{ user.firm?.name }} Admin Dashboard</div>
       <v-spacer></v-spacer>
       <v-btn
@@ -15,92 +15,12 @@
 
     <!-- Tabs for navigation, showing the number of advisors -->
     <v-tabs v-model="currentTab">
-      <v-tab>Advisors ({{ advisors.length }})</v-tab>
-      <v-tab>Billing</v-tab>
+      <v-tab>Admin</v-tab>
       <v-tab>White Label Settings</v-tab>
     </v-tabs>
 
     <!-- Content of the selected tab -->
     <v-tabs-window v-model="currentTab">
-      <v-tabs-window-item>
-        <!-- Table displaying advisors and action buttons -->
-        <v-data-table :items="advisors" :headers="baseHeaders">
-          <template v-slot:item.actions="{ item }">
-            <!-- Button to view clients of the advisor -->
-            <v-btn
-                color="primary"
-                @click="viewClients(item.id)"
-                :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
-            >
-              {{ !displayState[item.id]?.showClients ? displayState.hidden : displayState.shown }}
-            </v-btn>
-            <!-- Button to view prospects of the advisor -->
-            <v-btn
-                color="secondary"
-                @click="viewProspects(item.id)"
-                class="ml-5 secondary-btn"
-                :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
-            >
-              {{ !displayState[item.id]?.showProspects ? displayState.hiddenProspects : displayState.shownProspects }}
-            </v-btn>
-          </template>
-        </v-data-table>
-
-        <!-- Dynamic tables for clients and prospects of each advisor -->
-        <template v-for="advisor in advisors" :key="advisor.id">
-          <!-- Table for clients -->
-          <v-data-table
-              v-if="displayState[advisor.id]?.showClients"
-              :headers="clientHeaders"
-              :items="displayState[advisor.id]?.clients"
-          >
-            <template v-slot:item.actions="{ item }">
-              <!-- Button to view a client -->
-              <v-btn
-                  color="primary"
-                  class="ml-2"
-                  size="small"
-                  @click="goToClient(item)"
-              >View Client
-              </v-btn>
-              <!-- Button to archive a client -->
-              <v-btn
-                  color="secondary"
-                  class="ml-2 secondary-btn"
-                  size="small"
-                  @click="archiveClient(advisor.id, item)"
-              >Archive
-              </v-btn>
-            </template>
-          </v-data-table>
-
-          <!-- Table for prospects -->
-          <v-data-table
-              v-if="displayState[advisor.id]?.showProspects"
-              :headers="clientHeaders"
-              :items="displayState[advisor.id]?.prospects"
-          >
-            <template v-slot:item.actions="{ item }">
-              <!-- Button to accept a prospect -->
-              <v-btn
-                  color="primary"
-                  class="ml-2"
-                  size="small"
-                  @click="acceptProspect(advisor.id, item)"
-              >Accept Prospect
-              </v-btn>
-              <!-- Button to archive a prospect -->
-              <v-btn
-                  color="secondary"
-                  class="ml-2 secondary-btn"
-                  size="small"
-                  @click="archiveProspect(advisor.id, item)"
-              >Archive
-              </v-btn>
-            </template>
-          </v-data-table>
-        </template>
-      </v-tabs-window-item>
       <v-tabs-window-item>
         <Billing/>
       </v-tabs-window-item>
@@ -377,3 +297,33 @@ const saveWhiteLabelSettings = async () => {
   }
 };
 </script>
+
+<style scoped>
+.admin-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media only screen and (max-width: 700px) {
+  .admin-header {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .v-locale--is-ltr {
+    transform: translateY(100px);
+  }
+
+  .v-container {
+    transform: translateY(100px);
+  }
+
+  .v-main {
+    padding-top: 50px;
+  }
+
+}
+</style>

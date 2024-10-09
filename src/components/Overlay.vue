@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-import {defineProps, defineEmits} from 'vue';
 
 // Define props
 const props = defineProps({
@@ -82,7 +81,7 @@ const closeOverlay = () => {
   font-size: 20px;
   cursor: pointer;
   z-index: 100; /* Ensure button stays on top of other content */
-  
+
 }
 
 .overlay-image {

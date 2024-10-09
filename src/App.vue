@@ -3,7 +3,7 @@
     <Header/>
 
     <UiToast>
-      <v-main>
+      <v-main class="padding-add">
         <v-container>
           <router-view></router-view>
         </v-container>
@@ -36,11 +36,13 @@ import {useOverlayStore} from '@/store/overlay';
 
 // Use the overlay store to manage state
 const overlayStore = useOverlayStore();
-import { inject, ref } from 'vue';
+import {inject, ref} from 'vue';
+
 const $axios = inject('$axios');
 
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
+
 const {user} = storeToRefs(useUserStore());
 
 
@@ -67,8 +69,8 @@ const checkSurvey = () => {
     onSurvey.value = false;
   }
 };
-import { onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import {onMounted, watch} from 'vue';
+import {useRoute} from 'vue-router';
 
 const route = useRoute();
 
@@ -101,8 +103,8 @@ watch(route, () => {
 
 @media only screen and (max-width: 700px) {
 
-  .app-background {
-    padding-top: 80px;
+  .v-main {
+    padding-top: 150px !important;
   }
 
 }
