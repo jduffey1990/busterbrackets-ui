@@ -71,7 +71,7 @@
           @click="downloadCSV(allData, accountHeaders, 'billing')"
           size="small"
           class="mb-4 mt-4 float-right"
-      >Download CSV
+      >Download CSV firm data
       </v-btn>
 
     </div>
@@ -111,7 +111,8 @@
         type="secondary"
         class="my-4"
     >
-      Click "Take Survey with Client" to start adding clients to your list.
+      If an advisor has no associated clients, they can add clients by taking a survey with the client from the
+      <router-link :to="{ name: 'Dashboard' }">Dashboard</router-link>
     </v-alert>
   </div>
 </template>
@@ -199,7 +200,7 @@ const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
     response.data.forEach((data) => {
       data.created_at = formatDate(data.created_at);
       data.value = addCommas(data.value, true);
-      data.deleted_at = formatDate(data.deleted_at);
+      data.deleted_at = data.deleted_at === "Invalid date" ? "Active Account" : formatDate(data.deleted_at);
       data.last_survey_taken_date = formatDate(data.last_survey_taken_date);
 
       allData.value.push(data)
