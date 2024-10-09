@@ -65,6 +65,16 @@
     </div>
 
     <!-- Data table to display the accounts for the chosen advisor -->
+    <div class="csv-download">
+      <v-btn
+          color="primary"
+          @click="downloadCSV(allData, accountHeaders, 'billing')"
+          size="small"
+          class="mb-4 mt-4 float-right"
+      >Download CSV
+      </v-btn>
+
+    </div>
     <v-data-table
         v-if="chosenAdvisor && accountsData[chosenAdvisor.id]"
         :headers="accountHeaders"
@@ -73,6 +83,15 @@
     >
       <template v-slot:item.value="{ item }">
         {{ addCommas(item.value) }}
+      </template>
+      <template v-slot:item.deleted_at="{ item }">
+        {{ item.deleted_at === "Invalid date" ? "Active Account" : formatDate(item.deleted_at) }}
+      </template>
+      <template v-slot:item.created_at="{ item }">
+        {{ formatDate(item.created_at) }}
+      </template>
+      <template v-slot:item.last_survey_taken_date="{ item }">
+        {{ item.last_survey_taken_date ? formatDate(item.last_survey_taken_date) : "Live Account" }}
       </template>
       <template #item.account_name="{ item }">
         <router-link
@@ -102,10 +121,8 @@ import {ref, onMounted, inject, computed, watch,} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 import {parseError} from '@/utils/error';
-import {addCommas, formatDate, feeRatePercentage} from '@/utils/string';
-import {funLookAtFunction} from "@/utils/string";
+import {addCommas, formatDate, funLookAtFunction} from '@/utils/string';
 import {downloadCSV} from '@/utils/file';
-import {id} from "vuetify/locale";
 
 const $axios = inject('$axios');
 const {show} = inject('toast');
@@ -119,6 +136,7 @@ const allFirms = ref([]);
 const firmAdvisorList = ref([]);
 const chosenAdvisor = ref(null);
 const chosenFirm = ref(null);
+const allData = ref([])
 
 const advisorsLength = ref(0)
 const clientsLength = ref(0)
@@ -126,10 +144,10 @@ const accountsLength = ref(0)
 
 const accountHeaders = [
   {title: 'Client', key: 'user_name'},
-  {title: 'Account', value: 'account_name'},
-  {title: 'Last Survey', value: 'last_survey_taken_date'},
-  {title: 'Acc Start', value: 'created_at'},
-  {title: 'Acc End', key: 'closed_at'},
+  {title: 'Account', key: 'account_name'},
+  {title: 'Last Survey', key: 'last_survey_taken_date'},
+  {title: 'Acc Start', key: 'created_at'},
+  {title: 'Acc End', key: 'deleted_at'},
   {title: 'Acc Value', key: 'value'}
 ];
 
@@ -167,12 +185,26 @@ const fetchAdminData = async () => {
   }
 };
 
+const flattenAccountsData = (accountsData) => {
+  // Flatten the accountsData object into a single array of accounts
+  return Object.values(accountsData).flat();
+};
+
 const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
   try {
     const response = await $axios.get(`/api/billing/${advisor_id}/account-data/`);
 
     // Store accounts in accountsData by advisor ID
     accountsData.value[advisor_id] = response.data;
+    response.data.forEach((data) => {
+      data.created_at = formatDate(data.created_at);
+      data.value = addCommas(data.value, true);
+      data.deleted_at = formatDate(data.deleted_at);
+      data.last_survey_taken_date = formatDate(data.last_survey_taken_date);
+
+      allData.value.push(data)
+    });
+
 
     // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
     response.data.forEach((account) => {
@@ -304,6 +336,12 @@ watch(chosenFirm, async (newFirm) => {
 .advisor-select {
   max-width: 400px;
   margin-bottom: 20px;
+}
+
+.csv-download {
+  display: flex;
+  align-items: center;
+  justify-content: end;
 }
 
 @media only screen and (max-width: 1275px) {
