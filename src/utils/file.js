@@ -2,11 +2,10 @@ export const downloadCSV = (data, headers, title) => {
     const csvHeaders = headers.map((header) => header.title).join(",");
 
     let csvContent = csvHeaders + "\n";
-    console.log("here is your data:", data)
+
     data.forEach((row) => {
         const rowContent = headers
             .map((header) => {
-                console.log(header.key)
                 const value = row[header.key];
                 return `"${String(value).replace(/"/g, '""')}"`;
             })

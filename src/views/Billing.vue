@@ -153,14 +153,11 @@ const accountHeaders = [
 ];
 
 const fetchAdminData = async () => {
-  console.log("fetchAdminData function called");
   try {
 
     const response = await $axios.get(`/api/firms/${firmId.value}/advisors-and-admin/`);
     firmAdvisorList.value = response.data;
     advisorsLength.value = firmAdvisorList.value.length;
-
-    console.log("Here is the advisor list:", firmAdvisorList.value);
 
     let accountsArray = [];
     let clientsSet = new Set();
@@ -177,7 +174,6 @@ const fetchAdminData = async () => {
     clientsLength.value = clientsSet.size;
 
     // Log final accounts data object (keyed by advisor ID)
-    console.log("Final accounts data (by advisor):", accountsData.value);
 
   } catch (error) {
     console.error('Error fetching billing data:', error);
@@ -215,7 +211,6 @@ const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
       accountsArray.push(account);  // Add account to the total accountsArray
     });
 
-    console.log(`Accounts for advisor ${advisor_id}:`, accountsData.value[advisor_id]);
   } catch (error) {
     console.error('Error fetching accounts data:', error);
     const parsedError = parseError(error);
@@ -236,7 +231,6 @@ const fetchFirms = async () => {
   try {
     const response = await $axios.get('/api/firms/');
     allFirms.value = response.data
-    console.log("here is the allfirms data", allFirms.value)
     await fetchAdminData()
   } catch (error) {
     console.error('Error fetching firms:', error);
