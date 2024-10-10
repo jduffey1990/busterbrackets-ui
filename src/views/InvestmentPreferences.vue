@@ -121,27 +121,17 @@
       </template>
 
       <template v-slot:item.ticker="{ item, index }">
-        <v-text-field
+        <v-autocomplete
             v-model="item.ticker"
+            :items="allTickerValues"
+            item-title="company_name"
+            item-value="symbol"
             :label="isEmpty(item.ticker)"
             hide-details
             min-width="250px"
-            @input="onTickerInput(item)"
-            @click="singleFieldEdit = index"
             clearable
-        />
-
-        <!-- Conditional v-select rendering based on the clicked field -->
-        <v-select
-            v-if="singleFieldEdit === index"
-            :items="tickerSearchResults"
-            item-text="name"
-            item-value="ticker"
-            :label=countValues(tickerSearchResults)
-            v-model="item.ticker"
-            @update:modelValue="onTickerSelect($event, item)"
-            hide-no-data
-            min-width="600px"
+            @update:model-value="onTickerSelect($event, item)"
+            class="autocomplete"
         />
       </template>
       <template v-slot:item.min_risk="{ item }">
@@ -248,7 +238,7 @@ const {
 const factorLevers = ref({});
 const allocations = ref([]);
 const backupAllocations = ref([]);
-const canEdit = computed(() => isSuper && user_id);
+const canEdit = computed(() => isSuper);
 const currentAdvisor = ref();
 const editing = ref(false);
 const buttonText = ref('Edit Allocations');
@@ -261,6 +251,8 @@ const gettingTickers = ref(false);
 const page = ref(1);
 const itemsPerPage = ref(15);
 const holdings = ref();
+const allTickerValues = ref([])
+
 
 //Router parameter
 const {
@@ -383,56 +375,42 @@ const removeRow = (index) => {
   backupAllocations.value.splice(index, 1); // Remove the item at the given index
 };
 
-const formatResults = (ticker) => {
-  return `(${ticker.ticker}) ${ticker.name}`;
-}
-
-
-const onTickerInput = debounce(async (item) => {
-  if (item.ticker === 'Search Here') {
-    return
-  }
-  if (item.ticker.length >= 3) {
-    try {
-      gettingTickers.value = true //change label for dropdown while getting values
-      // Call your Django backend, which interacts with Alpha Vantage
-      const {data} = await $axios.get(`/api/general/ticker-search/?query=${item.ticker}`);
-
-      // Map the search results to extract both ticker and name
-      nameSearchResults.value = data.map(match => ({
-        name: match['2. name'],   // Name of the ETF
-        ticker: match['1. symbol'], // Ticker symbol of the ETF
-      }));
-      const addEntry = [`(${item.ticker.toUpperCase()})`]
-      // For the v-select, we only need an array of ticker symbols
-      tickerSearchResults.value = nameSearchResults.value.map(etf => formatResults(etf)).concat(addEntry)
-      gettingTickers.value = false
-    } catch (error) {
-      console.error('Error fetching ETFs:', error);
-    }
-  } else {
-    tickerSearchResults.value = [];  // Clear results if the input is less than 3 characters
-  }
-}, 300);
 
 const onTickerSelect = (selectedTicker, item) => {
   singleFieldEdit.value = null;
 
-  // Extract ticker using a regular expression from the selected item
-  const matchedTicker = selectedTicker.match(/\((.*?)\)/)?.[1];  // Extracts the text inside parentheses (e.g., SPY)
+  // Extract ticker using regex to get the part inside parentheses
+  const matchedTicker = selectedTicker.match(/\(([^)]+)\)/)?.[1];  // Extract the text inside parentheses
 
-  // Extract the name by removing the ticker and parentheses from the selected item
-  const indexOfName = selectedTicker.indexOf(" ") + 1;
-  const selectedName = selectedTicker.slice(indexOfName);  // Extracts the name after the ticker (e.g., SPDR S&P 500 ETF Trust)
+  // Extract the name by finding the space after the closing parenthesis
+  const indexOfName = selectedTicker.indexOf(")") + 2;  // This will get the index right after the closing parenthesis and space
+  const selectedName = selectedTicker.slice(indexOfName).trim();  // Extract the name and trim any extra spaces
 
-  // Assign both the name and ticker
-  item.name = selectedName || '';  // Set the name
-  item.ticker = matchedTicker || '';  // Set the ticker
+  // Assign both the name and ticker to the item
+  item.name = selectedName || '';  // Assign the extracted name
+  item.ticker = matchedTicker || '';  // Assign the extracted ticker
 
-  tickerSearchResults.value = []
-  nameSearchResults.value = []
+  // Clear the search results after selection
+  tickerSearchResults.value = [];
+  nameSearchResults.value = [];
 };
 
+
+const getTickers = async () => {
+  try {
+    const {data} = await $axios.get(
+        `/api/companies/get-stock-tickers/`
+    );
+
+    allTickerValues.value = data.map(s => (
+        `(${s.symbol}) ${s.company_name}`
+    ));
+
+    console.log("here is your data:", allTickerValues.value)
+  } catch (error) {
+    console.error("Error fetching allocations", error);
+  }
+}
 
 //DB management and access
 const getAllocations = async () => {
@@ -575,6 +553,7 @@ const submitChanges = async () => {
 
 
 onMounted(async () => {
+  await getTickers()
   await getAllocations();
   await getFactorLevers()
   if (canEdit.value) {
