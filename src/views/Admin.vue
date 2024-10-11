@@ -25,6 +25,8 @@
         <Billing/>
       </v-tabs-window-item>
       <v-tabs-window-item>
+        <h4 class="pt-6">White Label</h4>
+        <p>Please note: this only affects the survey. Pages on the app from the advisor view will remain branded as Pomarium.</p>
         <ImageUpload/>
         <div>
           <h4 class="pt-6">Background Color</h4>
