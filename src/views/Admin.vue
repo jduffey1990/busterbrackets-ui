@@ -22,7 +22,7 @@
     <!-- Content of the selected tab -->
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item>
-        <Billing/>
+        <Billing @updateChosenFirm="handleChosenFirmUpdate"/>
       </v-tabs-window-item>
       <v-tabs-window-item>
         <h4 class="pt-6">White Label</h4>
@@ -111,6 +111,7 @@ const currentTab = ref();
 const advisors = ref([]);
 const clients = ref([]);
 const theme = ref();
+const chosenFirm = ref(null);
 
 // Initial state for new advisor form
 const initialState = {
@@ -134,6 +135,10 @@ const baseHeaders = [
   {text: 'Actions', value: 'actions', sortable: false},
 ];
 
+function handleChosenFirmUpdate(updatedFirm) {
+  chosenFirm.value = updatedFirm;
+}
+
 // Function to fetch advisors from the API
 const getAdvisors = async () => {
   const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors/`);
@@ -147,12 +152,24 @@ if (user.value.firm) {
 
 // Function to create a new advisor
 const createNewAdvisor = async () => {
+  let firm
   try {
-    await $axios.post(`/api/firms/${user.value.firm.id}/advisors/`, newAdvisor);
+    if (chosenFirm.value) {
+      firm = chosenFirm.value.id
+    } else {
+      firm = user.value.firm.id
+    }
+
+    await $axios.post(`/api/firms/${firm}/advisors/`, newAdvisor);
     openCreateNewAdvisorModal.value = false;
     getAdvisors();
-    resetForm();
     show({message: 'Advisor created!'});
+
+    // Set a timeout before reloading the page
+    setTimeout(() => {
+      window.location.reload();
+    }, 1200); // Delay of 1200 milliseconds
+
   } catch (error) {
     show({message: parseError(error), error: true});
   }

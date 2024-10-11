@@ -134,6 +134,7 @@ const allFirms = ref([]);
 const firmAdvisorList = ref([]);
 const chosenAdvisor = ref(null);
 const chosenFirm = ref(null);
+const emit = defineEmits(['updateChosenFirm']);
 const allData = ref([])
 
 const advisorsLength = ref(0)
@@ -260,6 +261,7 @@ onMounted(() => {
 
 watch(chosenFirm, async (newFirm) => {
   if (newFirm) {
+    emit('updateChosenFirm', newFirm);
     await fetchAdminData();  // Fetch data for the newly selected firm
   }
 });
