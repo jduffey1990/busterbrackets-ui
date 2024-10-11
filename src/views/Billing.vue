@@ -90,9 +90,6 @@
       <template v-slot:item.created_at="{ item }">
         {{ formatDate(item.created_at) }}
       </template>
-      <template v-slot:item.last_survey_taken_date="{ item }">
-        {{ item.last_survey_taken_date ? formatDate(item.last_survey_taken_date) : "Live Account" }}
-      </template>
       <template #item.account_name="{ item }">
         <router-link
             :to="{
@@ -146,7 +143,7 @@ const accountsLength = ref(0)
 const accountHeaders = [
   {title: 'Client', key: 'user_name'},
   {title: 'Account', key: 'account_name'},
-  {title: 'Last Survey', key: 'last_survey_taken_date'},
+  {title: 'Last Four', key: 'last_four'},
   {title: 'Acc Start', key: 'created_at'},
   {title: 'Acc End', key: 'deleted_at'},
   {title: 'Acc Value', key: 'value'}
@@ -197,7 +194,6 @@ const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
       data.created_at = formatDate(data.created_at);
       data.value = addCommas(data.value, true);
       data.deleted_at = data.deleted_at === "Invalid date" ? "Active Account" : formatDate(data.deleted_at);
-      data.last_survey_taken_date = formatDate(data.last_survey_taken_date);
 
       allData.value.push(data)
     });

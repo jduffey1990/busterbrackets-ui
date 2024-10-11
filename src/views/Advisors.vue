@@ -1,44 +1,44 @@
 <template>
 
-<v-tabs v-model="currentTab">
-  <v-tab>Advisors</v-tab>
-  <v-tab>Billing</v-tab>
-</v-tabs>
-<v-tabs-window v-model="currentTab">
-  <v-tabs-window-item>
-    <!-- Header for the Advisors section -->
-    <div class="text-h4 my-4">Advisors</div>
+  <v-tabs v-model="currentTab">
+    <v-tab>Advisors</v-tab>
+    <v-tab>Accounts Manager</v-tab>
+  </v-tabs>
+  <v-tabs-window v-model="currentTab">
+    <v-tabs-window-item>
+      <!-- Header for the Advisors section -->
+      <div class="text-h4 my-4">Advisors</div>
 
-    <!-- Data table displaying the list of advisors with action buttons -->
-    <v-data-table :items="advisors" :headers="headers">
-      <template v-slot:item.actions="{ item }">
-        <!-- Button to edit advisor preferences -->
-        <v-btn
-            color="primary"
-            @click="editPreferences(item)"
-            size="small"
-            class="ml-2"
-        >
-          Edit Preferences
-        </v-btn>
+      <!-- Data table displaying the list of advisors with action buttons -->
+      <v-data-table :items="advisors" :headers="headers">
+        <template v-slot:item.actions="{ item }">
+          <!-- Button to edit advisor preferences -->
+          <v-btn
+              color="primary"
+              @click="editPreferences(item)"
+              size="small"
+              class="ml-2"
+          >
+            Edit Preferences
+          </v-btn>
 
-        <!-- Button to copy reset password URL to clipboard -->
-        <v-btn
-            color="info"
-            @click="copyText(item)"
-            size="small"
-            v-if="item.reset_password_link"
-            class="ml-2"
-        >
-          Get Reset Password URL
-        </v-btn>
-      </template>
-    </v-data-table>
-  </v-tabs-window-item>
-  <v-tabs-window-item>
-    <Billing/>
-  </v-tabs-window-item>
-</v-tabs-window>
+          <!-- Button to copy reset password URL to clipboard -->
+          <v-btn
+              color="info"
+              @click="copyText(item)"
+              size="small"
+              v-if="item.reset_password_link"
+              class="ml-2"
+          >
+            Get Reset Password URL
+          </v-btn>
+        </template>
+      </v-data-table>
+    </v-tabs-window-item>
+    <v-tabs-window-item>
+      <Billing/>
+    </v-tabs-window-item>
+  </v-tabs-window>
 </template>
 
 <script setup>

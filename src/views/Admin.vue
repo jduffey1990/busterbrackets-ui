@@ -94,7 +94,6 @@ import {storeToRefs} from 'pinia';
 import {reactive, ref, inject} from 'vue';
 import {parseError} from '@/utils/error';
 import {useRouter} from 'vue-router';
-import moment from 'moment';
 import Billing from './Billing.vue';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -111,7 +110,6 @@ const openCreateNewAdvisorModal = ref(false);
 const currentTab = ref();
 const advisors = ref([]);
 const clients = ref([]);
-const prospects = ref([]);
 const theme = ref();
 
 // Initial state for new advisor form
@@ -136,45 +134,10 @@ const baseHeaders = [
   {text: 'Actions', value: 'actions', sortable: false},
 ];
 
-const clientHeaders = [
-  {key: 'actions', sortable: false, width: 0, nowrap: true},
-  {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
-  {title: 'Email', key: 'email', width: 0, nowrap: true},
-  {title: 'Last Survey Date', key: 'last_survey_taken_date', width: 0, nowrap: true},
-  {},
-];
-
-// Display state for clients and prospects
-const displayState = reactive({
-  hidden: 'Display Clients',
-  shown: 'Hide Clients',
-  hiddenProspects: 'Display Prospects',
-  shownProspects: 'Hide Prospects',
-  currentAdvisorViewing: null,
-});
-
 // Function to fetch advisors from the API
 const getAdvisors = async () => {
   const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors/`);
   advisors.value = data;
-};
-
-// Fetch clients for a specific advisor
-const getClients = async (advisorId) => {
-  const {data} = await $axios.get(`/api/advisors/${advisorId}/clients/`);
-  displayState[advisorId].clients = data.map((d) => ({
-    ...d,
-    last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
-  }));
-};
-
-// Fetch prospects for a specific advisor
-const getProspects = async (advisorId) => {
-  const {data} = await $axios.get(`/api/advisors/${advisorId}/prospects/`);
-  displayState[advisorId].prospects = data.map((d) => ({
-    ...d,
-    last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
-  }));
 };
 
 // Fetch advisors if the user is associated with a firm
@@ -192,82 +155,6 @@ const createNewAdvisor = async () => {
     show({message: 'Advisor created!'});
   } catch (error) {
     show({message: parseError(error), error: true});
-  }
-};
-
-// Handle button click to view clients
-const viewClients = (advisorId) => {
-  if (!displayState[advisorId]) {
-    displayState[advisorId] = {showClients: false, showProspects: false};
-  }
-  if (!displayState[advisorId].showClients) {
-    getClients(advisorId);
-    displayState.currentAdvisorViewing = advisorId;
-  } else {
-    displayState.currentAdvisorViewing = null;
-  }
-  displayState[advisorId].showClients = !displayState[advisorId].showClients;
-  displayState[advisorId].showProspects = false; // Ensure prospects are hidden
-};
-
-// Handle button click to view prospects
-const viewProspects = (advisorId) => {
-  if (!displayState[advisorId]) {
-    displayState[advisorId] = {showClients: false, showProspects: false};
-  }
-  if (!displayState[advisorId].showProspects) {
-    getProspects(advisorId);
-    displayState.currentAdvisorViewing = advisorId;
-  } else {
-    displayState.currentAdvisorViewing = null;
-  }
-  displayState[advisorId].showProspects = !displayState[advisorId].showProspects;
-  displayState[advisorId].showClients = false; // Ensure clients are hidden
-};
-
-// Navigate to client details page
-const goToClient = ({id}) => {
-  router.push(`/clients/${id}#values`);
-};
-
-// Archive a client
-const archiveClient = async (advisorId, {id}) => {
-  if (confirm('Are you sure you want to archive this client?')) {
-    try {
-      await $axios.patch(`/api/advisors/${advisorId}/clients/${id}/`, {is_archived: true});
-      await getClients(advisorId); // Refresh the clients list for the specific advisor
-      show({message: 'Client archived!'});
-    } catch (error) {
-      show({message: parseError(error), error: true});
-    }
-  }
-};
-
-// Accept a prospect and convert to client
-const acceptProspect = async (advisorId, {id}) => {
-  if (confirm('Are you sure you want to accept this prospect as a client?')) {
-    try {
-      await $axios.patch(`/api/advisors/${advisorId}/prospects/${id}/`, {role: 'client'});
-      await $axios.post(`/api/advisors/${advisorId}/clients/${id}/portfolio/`);
-      await getClients(advisorId); // Refresh the clients list for the specific advisor
-      await getProspects(advisorId); // Refresh the prospects list for the specific advisor
-      show({message: 'Client created!'});
-    } catch (error) {
-      show({message: parseError(error), error: true});
-    }
-  }
-};
-
-// Archive a prospect
-const archiveProspect = async (advisorId, {id}) => {
-  if (confirm('Are you sure you want to archive this prospect?')) {
-    try {
-      await $axios.patch(`/api/advisors/${advisorId}/prospects/${id}/`, {is_archived: true});
-      await getProspects(advisorId); // Refresh the prospects list for the specific advisor
-      show({message: 'Prospect archived!'});
-    } catch (error) {
-      show({message: parseError(error), error: true});
-    }
   }
 };
 
