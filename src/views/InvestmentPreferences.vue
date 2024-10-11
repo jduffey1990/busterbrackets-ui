@@ -222,7 +222,6 @@ import {onMounted} from 'vue';
 import {ref} from 'vue';
 import {inject} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
-import {debounce} from 'lodash';
 
 const router = useRouter();
 const {show} = inject('toast');
@@ -362,13 +361,6 @@ const addNewRow = () => {
 
 const isEmpty = (ticker) => {
   return ticker ? "" : "Search Here"
-}
-
-const countValues = (ticker) => {
-  if (gettingTickers.value === true) {
-    return "Loading..."
-  }
-  return `Select Items (${tickerSearchResults.value.length})`
 }
 
 const removeRow = (index) => {
