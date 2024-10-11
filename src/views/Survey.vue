@@ -899,7 +899,6 @@ const sendEmail = async () => {
       subject: subject,
     });
 
-    console.log('Email sent successfully');
   } catch (error) {
     console.error('Error sending email:', error);
     show({message: parseError(error), error: true});  // Display error message to the user
@@ -970,7 +969,6 @@ const getCompanies = async () => {
 const getClientData = async () => {
   const response = await $axios.get(`/api/users/simple/${user_id}`);
   clientData.value = response.data;
-  console.log("Here is the simple client's data", clientData.value)
 }
 
 //I am unsure why the list of ticks needs to be moved into an object, but it doesn't take much space so...

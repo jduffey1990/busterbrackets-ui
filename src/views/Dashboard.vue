@@ -29,8 +29,9 @@
 
     <!-- Tabs for switching between clients and prospects -->
     <v-tabs v-model="currentTab">
-      <v-tab>Clients ({{ clients.length }})</v-tab>
-      <v-tab>Prospects ({{ prospects.length }})</v-tab>
+      <v-tab @click="resetDisplayState">Clients ({{ clients.length }})</v-tab>
+      <v-tab @click="resetDisplayState">Prospects ({{ prospects.length }})</v-tab>
+      <v-tab @click="resetDisplayState">My Firm ({{ advisors.length }})</v-tab>
     </v-tabs>
 
     <!-- Content of the selected tab -->
@@ -89,7 +90,7 @@
               </v-btn>
             </template>
             <template v-slot:item.accounts="{item}">
-              {{ accounts[findIndex(item.id)] }}
+              {{ accounts[findAccIndex(clients, item.id)] }}
             </template>
             <template #bottom v-if="clients.length < 10"></template>
           </v-data-table>
@@ -155,6 +156,61 @@
             </template>
           </v-data-table>
         </div>
+      </v-tabs-window-item>
+      <v-tabs-window-item :key="2">
+        <div class="client_display">
+          <v-text-field
+            v-model="advisorSearchInput"
+            append-inner-icon="mdi-magnify"
+            append-icon="mdi-close"
+            density="compact"
+            label="Search for a fellow advisor"
+            variant="solo"
+            hide-details
+            single-line
+            @click:append-inner="findAdvisor(advisorSearchInput)"
+            @keydown.enter="findAdvisor(advisorSearchInput)"
+            @click:append="advisorSearchInput = '', findAdvisor(advisorSearchInput)"
+            style="width: 400px; font-family: halyard-text;"
+            class="mb-4 "
+          ></v-text-field>
+          <v-data-table :items="advisorsShown" :headers="advisorHeaders">
+          <template v-slot:item.actions="{ item }">
+            <v-btn
+                color="primary"
+                @click="getClients(item.id), changeAdvisorViewing(item.id)"
+                :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
+            >
+              {{ displayState.showOtherClients && displayState.currentAdvisorViewing === item.id ? 'Hide Clients' : 'Display Clients' }}
+            </v-btn>          
+          </template>
+        </v-data-table>
+        <v-text-field v-if="displayState.showOtherClients"
+            v-model="otherSearchInput"
+            append-inner-icon="mdi-magnify"
+            append-icon="mdi-close"
+            density="compact"
+            label="Search for a client"
+            variant="solo"
+            hide-details
+            single-line
+            @click:append-inner="findOtherClient(otherSearchInput)"
+            @click:append="otherSearchInput = ''"
+            style="width: 400px; font-family: halyard-text;"
+            class="my-4 "
+          ></v-text-field>
+        <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers">
+          <template v-slot:item.full_name="{ item }">
+            <v-btn variant="text" @click="goToClient(item)">
+              {{ item.full_name }}
+            </v-btn>
+          </template>
+          <template v-slot:item.accounts="{item}">
+            {{ otherAccounts[findAccIndex(otherClients, item.id)] }}
+          </template>
+        </v-data-table>
+        </div>
+        
       </v-tabs-window-item>
     </v-tabs-window>
 
@@ -233,7 +289,13 @@ const initialState = {
 };
 const newClient = reactive({...initialState});
 const clients = ref([]);
+const otherClients = ref([]);
+const otherClientsShown = ref([]);
+const otherSearchInput = ref('');
+const otherFoundClient = ref([]);
+const advisorSearchInput = ref('');
 const advisors = ref([]);
+const advisorsShown = ref([]);
 const prospects = ref([]);
 const clientsShown = ref([]);
 const searchInput = ref('');
@@ -246,12 +308,15 @@ const prospectsShown = ref([]);
 const displayState = reactive({
   showClients: false,
   showProspects: false,
+  showOtherClients: false,
   hidden: 'Display Clients',
   shown: 'Hide Clients',
   hiddenProspects: 'Display Prospects',
   shownProspects: 'Hide Prospects',
   searched: false,
   searchedProspects: false,
+  searchedOtherClients: false,
+  currentAdvisorViewing: null,
 });
 
 // Data tables headers
@@ -264,21 +329,38 @@ const headers = [
   {}
 ];
 
+const advisorHeaders = [
+  {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
+  {title: 'Email', key: 'email', width: 0, nowrap: true},
+  {key: 'actions', sortable: false, width: 0, nowrap: true},
+  {}
+]
+
 // Fetch clients data
-const getClients = async () => {
-  const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
-  clients.value = data.map((d) => ({
-    ...d,
-    last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
-  }));
-  await getAccountsForAllClients();
+const getClients = async (a) => {
+  const {data} = await $axios.get(`/api/advisors/${a}/clients/`);
+  if(a === advisor_id){
+    clients.value = data.map((d) => ({
+      ...d,
+      last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+    }));
+    await getAccountsForAllClients(clients, accounts);
+  } else {
+    otherClients.value = data.map((d) => ({
+      ...d,
+      last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+    }));
+    await getAccountsForAllClients(otherClients, otherAccounts);
+    otherClientsShown.value = otherClients.value;
+  }
+  
 };
 
 const getAdvisors = async () => {
-  if (isFirmAdminOrGreater.value) {
-    const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors/`);
-    advisors.value = data;
-  }
+    const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
+    advisors.value = data.filter(advisor => advisor.share_clients === true);
+    advisors.value = advisors.value.filter(advisor => advisor.id !== advisor_id);
+    advisorsShown.value = advisors.value;
 };
 
 // Fetch prospects data
@@ -291,8 +373,8 @@ const getProspects = async () => {
 };
 
 // Initial data fetch
-getClients();
-isFirmAdminOrGreater.value && getAdvisors()
+getAdvisors();
+getClients(advisor_id);
 getProspects();
 
 // Form reset
@@ -410,6 +492,28 @@ const findProspect = (search) => {
   }
 };
 
+const findOtherClient = (search) => {
+  if (search === '') {
+    displayState.searchedOtherClients = false;
+  } else {
+    otherFoundClient.value = otherClients.value.filter((client) => {
+      return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
+    });
+    displayState.searchedOtherClients = true;
+    otherClientsToShow();
+  }
+};
+
+const findAdvisor = (search) => {
+  if (search === '') {
+    advisorsShown.value = advisors.value;
+  } else {
+    advisorsShown.value = advisors.value.filter((advisor) => {
+      return advisor.full_name.toLowerCase().includes(search.toLowerCase()) || advisor.email.toLowerCase().includes(search.toLowerCase());
+    });
+  }
+};
+
 const clientsToShow = () => {
   return displayState.searched ? clientsShown.value=foundClient.value : clientsShown.value=clients.value;
 };
@@ -418,16 +522,36 @@ const prospectsToShow = () => {
   return displayState.searchedProspects ? prospectsShown.value=foundProspect.value : prospectsShown.value=prospects.value;
 };
 
+const otherClientsToShow = () => {
+  return displayState.searchedOtherClients ? otherClientsShown.value=otherFoundClient.value : otherClientsShown.value=otherClients.value;
+};
+
 const accounts = ref([]);
-const getAccountsForAllClients = async () => {
-  for (const client of clients.value) {
+const otherAccounts = ref([]);
+const getAccountsForAllClients = async (c, acc) => {
+  acc.value = [];
+  for (const client of c.value) {
     const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${client.id}/accounts/`);
-    accounts.value.push(data.length);
+    acc.value.push(data.length);
   }
 };
 
-const findIndex = (id) => {
-  return clients.value.findIndex((client) => client.id === id);
+const findAccIndex = (c, id) => {
+  return c.findIndex((client) => client.id === id);
+};
+
+const changeAdvisorViewing = (id) => {
+  displayState.showOtherClients = !displayState.showOtherClients;
+  displayState.currentAdvisorViewing === null ?
+  displayState.currentAdvisorViewing = id :
+  displayState.currentAdvisorViewing = null;
+};
+
+const resetDisplayState = () => {
+  displayState.showClients = false;
+  displayState.showProspects = false;
+  displayState.showOtherClients = false;
+  displayState.currentAdvisorViewing = null;
 };
 </script>
 

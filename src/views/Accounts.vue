@@ -116,7 +116,7 @@ const router = useRouter();
 const {params: {user_id}, query: {account_id}} = useRoute();
 const lastUrl = window.history.state.back;
 const goBack = () => {
-  lastUrl === "/billing" ? router.push(lastUrl) : router.push(`/clients/${user_id}#accounts`);
+  router.push(lastUrl);
 };
 
 // Define state variables

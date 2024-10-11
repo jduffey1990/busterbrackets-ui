@@ -44,6 +44,18 @@
               :true-value="true"
               inset
           ></v-switch>
+          <div class="d-flex justify-center">
+            <v-card-subtitle class="sub_header">Privacy</v-card-subtitle>
+          </div>
+          <p>Allow other Advisors in your firm see your clients</p>
+          <v-switch
+              v-model="account.share_clients"
+              :label="account.share_clients ? 'Yes' : 'No'"
+              color="success"
+              :false-value="false"
+              :true-value="true"
+              inset
+          ></v-switch>
         </v-container>
       </v-card-text>
     </v-card>
@@ -61,7 +73,7 @@ const $axios = inject('$axios');
 const {show} = inject('toast');
 
 // Get user data
-const {first_name, last_name, email, email_surveys} = useUserStore().user;
+const {first_name, last_name, email, email_surveys, share_clients} = useUserStore().user;
 const {isAdvisorOrGreater} = useUserStore();
 
 // Reactive data for account and accountCopy
@@ -69,7 +81,8 @@ const account = reactive({
   first_name,
   last_name,
   email,
-  email_surveys
+  email_surveys,
+  share_clients
 });
 
 const accountCopy = reactive({...account}); // Create a copy of the account
