@@ -542,6 +542,7 @@ const findAccIndex = (c, id) => {
 
 const changeAdvisorViewing = (id) => {
   displayState.showOtherClients = !displayState.showOtherClients;
+  displayState.currentAdvisorViewing === null ? (otherClientsShown.value = []) && (otherClients.value = []) : null;
   displayState.currentAdvisorViewing === null ?
   displayState.currentAdvisorViewing = id :
   displayState.currentAdvisorViewing = null;
