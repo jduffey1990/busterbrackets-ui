@@ -406,7 +406,6 @@ const getTickers = async () => {
         `(${s.symbol}) ${s.company_name}`
     ));
 
-    console.log("here is your data:", allTickerValues.value)
   } catch (error) {
     console.error("Error fetching allocations", error);
   }
@@ -439,8 +438,6 @@ const getAllocations = async () => {
         high: roundToTwoDecimals(min_risk + step * 3),    // Add 3 steps to get high value
       };
     });
-
-    console.log("Here are allocations with risk levels", allocations.value);
 
     // Backup allocations
     backupAllocations.value = data.map(allocation => ({
