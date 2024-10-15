@@ -28,17 +28,6 @@
       </template>
     </div>
 
-    <!-- Alert indicating user is a super admin, shown if canEdit is true -->
-    <v-alert type="secondary" title="Super Admin Only" v-if="canEdit" class="mb-4">
-      You are viewing this as a super admin.
-    </v-alert>
-
-    <!-- Alert indicating read-only access, shown if canEdit (not superuser) is false -->
-    <v-alert type="secondary" title="Read Only" v-else class="mb-4">
-      Your investment preferences are read only. Please contact
-      support@pomarium.com if you need assistance.
-    </v-alert>
-
     <!-- Section for factor levers -->
     <div class="text-h6 mb-3">Factor Levers</div>
     <!-- Checkbox for Momentum factor -->
@@ -230,14 +219,15 @@ const $axios = inject('$axios');
 //User store... user for session control and isSuper for auth
 const {
   user: {id: advisor_id},
-  isSuper,
+  isAdvisorOrGreater,
+  isSuper
 } = useUserStore();
 
 //state management
 const factorLevers = ref({});
 const allocations = ref([]);
 const backupAllocations = ref([]);
-const canEdit = computed(() => isSuper);
+const canEdit = computed(() => isAdvisorOrGreater);
 const currentAdvisor = ref();
 const editing = ref(false);
 const buttonText = ref('Edit Allocations');
@@ -443,8 +433,6 @@ const getAllocations = async () => {
   }
 };
 
-getAllocations();
-
 const getFirmAdvisorFee = async () => {
   try {
     const {data} = await $axios.get(`/api/users/advisor-fee/`);
@@ -532,9 +520,7 @@ const submitChanges = async () => {
     editing.value = false;
     buttonText.value = 'Edit Allocations';
     show({message: 'Allocations saved successfully!'});
-
-    // Refresh the page after successful submission
-    window.location.reload();
+    await getAllocations()
   } catch (error) {
     show({message: 'Failed to save allocations', error: true});
   }
@@ -545,9 +531,11 @@ onMounted(async () => {
   await getTickers()
   await getAllocations();
   await getFactorLevers()
-  if (canEdit.value) {
+  if (isSuper) {
     const {data} = await $axios.get(`/api/users/${user_id || advisor_id}/`);
-
+    currentAdvisor.value = data;
+  } else {
+    const {data} = await $axios.get("/api/users/me/");
     currentAdvisor.value = data;
   }
 });

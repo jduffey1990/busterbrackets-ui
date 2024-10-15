@@ -5,18 +5,18 @@
         <v-app-bar-title>
           <router-link to="/" custom v-slot="{ navigate }">
             <v-img v-if="onSurvey && goodLogo"
-                :width="166"
-                :src="logos.firm_logo"
-                @click="navigate"
-                class="cursor-pointer"
-                style="max-height: 35px;"
+                   :width="166"
+                   :src="logos.firm_logo"
+                   @click="navigate"
+                   class="cursor-pointer"
+                   style="max-height: 35px;"
             ></v-img>
             <v-img v-else
-                :width="166"
-                src="@/assets/pomarium.svg"
-                @click="navigate"
-                class="cursor-pointer"
-                style="max-height: 35px;"
+                   :width="166"
+                   src="@/assets/pomarium.svg"
+                   @click="navigate"
+                   class="cursor-pointer"
+                   style="max-height: 35px;"
             ></v-img>
 
           </router-link>
@@ -61,10 +61,6 @@
                 <v-list-item-title>Settings</v-list-item-title>
               </v-list-item>
 
-              <v-list-item link :to="{ name: 'InvestmentPreferences' }">
-                <v-list-item-title>Investment Preferences</v-list-item-title>
-              </v-list-item>
-
               <v-list-item
                   link
                   href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
@@ -102,7 +98,7 @@ import {ref, onMounted, onUnmounted, computed, inject, watch} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 import {useRouter} from 'vue-router';
-import { useRoute } from 'vue-router';
+import {useRoute} from 'vue-router';
 
 const router = useRouter();
 const $axios = inject('$axios');

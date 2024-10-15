@@ -32,6 +32,7 @@
       <v-tab @click="resetDisplayState">Clients ({{ clients.length }})</v-tab>
       <v-tab @click="resetDisplayState">Prospects ({{ prospects.length }})</v-tab>
       <v-tab @click="resetDisplayState">My Firm ({{ advisors.length }})</v-tab>
+      <v-tab v-if="isAdvisorOrGreater && !isSuper" @click="resetDisplayState">Investment Preferences</v-tab>
     </v-tabs>
 
     <!-- Content of the selected tab -->
@@ -56,19 +57,19 @@
           </v-btn>
 
           <v-text-field
-            v-model="searchInput"
-            append-inner-icon="mdi-magnify"
-            append-icon="mdi-close"
-            density="compact"
-            label="Search for a client"
-            variant="solo"
-            hide-details
-            single-line
-            @click:append-inner="findClient(searchInput)"
-            @keydown.enter="findClient(searchInput)"
-            @click:append="searchInput = ''"
-            style="width: 400px; font-family: halyard-text;"
-            class="mb-4 "
+              v-model="searchInput"
+              append-inner-icon="mdi-magnify"
+              append-icon="mdi-close"
+              density="compact"
+              label="Search for a client"
+              variant="solo"
+              hide-details
+              single-line
+              @click:append-inner="findClient(searchInput)"
+              @keydown.enter="findClient(searchInput)"
+              @click:append="searchInput = ''"
+              style="width: 400px; font-family: halyard-text;"
+              class="mb-4 "
           ></v-text-field>
 
           <!-- Data table for clients -->
@@ -118,19 +119,19 @@
           </v-btn>
 
           <v-text-field
-            v-model="searchInputP"
-            append-inner-icon="mdi-magnify"
-            append-icon="mdi-close"
-            density="compact"
-            label="Search for a prospect"
-            variant="solo"
-            hide-details
-            single-line
-            @click:append-inner="findProspect(searchInputP)"
-            @keydown.enter="findProspect(searchInputP)"
-            @click:append="searchInputP = ''"
-            style="width: 400px; font-family: halyard-text;"
-            class="mb-4"
+              v-model="searchInputP"
+              append-inner-icon="mdi-magnify"
+              append-icon="mdi-close"
+              density="compact"
+              label="Search for a prospect"
+              variant="solo"
+              hide-details
+              single-line
+              @click:append-inner="findProspect(searchInputP)"
+              @keydown.enter="findProspect(searchInputP)"
+              @click:append="searchInputP = ''"
+              style="width: 400px; font-family: halyard-text;"
+              class="mb-4"
           ></v-text-field>
 
           <!-- Data table for prospects -->
@@ -160,57 +161,62 @@
       <v-tabs-window-item :key="2">
         <div class="client_display">
           <v-text-field
-            v-model="advisorSearchInput"
-            append-inner-icon="mdi-magnify"
-            append-icon="mdi-close"
-            density="compact"
-            label="Search for a fellow advisor"
-            variant="solo"
-            hide-details
-            single-line
-            @click:append-inner="findAdvisor(advisorSearchInput)"
-            @keydown.enter="findAdvisor(advisorSearchInput)"
-            @click:append="advisorSearchInput = '', findAdvisor(advisorSearchInput)"
-            style="width: 400px; font-family: halyard-text;"
-            class="mb-4 "
+              v-model="advisorSearchInput"
+              append-inner-icon="mdi-magnify"
+              append-icon="mdi-close"
+              density="compact"
+              label="Search for a fellow advisor"
+              variant="solo"
+              hide-details
+              single-line
+              @click:append-inner="findAdvisor(advisorSearchInput)"
+              @keydown.enter="findAdvisor(advisorSearchInput)"
+              @click:append="advisorSearchInput = '', findAdvisor(advisorSearchInput)"
+              style="width: 400px; font-family: halyard-text;"
+              class="mb-4 "
           ></v-text-field>
           <v-data-table :items="advisorsShown" :headers="advisorHeaders">
-          <template v-slot:item.actions="{ item }">
-            <v-btn
-                color="primary"
-                @click="getClients(item.id), changeAdvisorViewing(item.id)"
-                :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
-            >
-              {{ displayState.showOtherClients && displayState.currentAdvisorViewing === item.id ? 'Hide Clients' : 'Display Clients' }}
-            </v-btn>          
-          </template>
-        </v-data-table>
-        <v-text-field v-if="displayState.showOtherClients"
-            v-model="otherSearchInput"
-            append-inner-icon="mdi-magnify"
-            append-icon="mdi-close"
-            density="compact"
-            label="Search for a client"
-            variant="solo"
-            hide-details
-            single-line
-            @click:append-inner="findOtherClient(otherSearchInput)"
-            @click:append="otherSearchInput = ''"
-            style="width: 400px; font-family: halyard-text;"
-            class="my-4 "
+            <template v-slot:item.actions="{ item }">
+              <v-btn
+                  color="primary"
+                  @click="getClients(item.id), changeAdvisorViewing(item.id)"
+                  :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
+              >
+                {{
+                  displayState.showOtherClients && displayState.currentAdvisorViewing === item.id ? 'Hide Clients' : 'Display Clients'
+                }}
+              </v-btn>
+            </template>
+          </v-data-table>
+          <v-text-field v-if="displayState.showOtherClients"
+                        v-model="otherSearchInput"
+                        append-inner-icon="mdi-magnify"
+                        append-icon="mdi-close"
+                        density="compact"
+                        label="Search for a client"
+                        variant="solo"
+                        hide-details
+                        single-line
+                        @click:append-inner="findOtherClient(otherSearchInput)"
+                        @click:append="otherSearchInput = ''"
+                        style="width: 400px; font-family: halyard-text;"
+                        class="my-4 "
           ></v-text-field>
-        <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers">
-          <template v-slot:item.full_name="{ item }">
-            <v-btn variant="text" @click="goToClient(item)">
-              {{ item.full_name }}
-            </v-btn>
-          </template>
-          <template v-slot:item.accounts="{item}">
-            {{ otherAccounts[findAccIndex(otherClients, item.id)] }}
-          </template>
-        </v-data-table>
+          <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers">
+            <template v-slot:item.full_name="{ item }">
+              <v-btn variant="text" @click="goToClient(item)">
+                {{ item.full_name }}
+              </v-btn>
+            </template>
+            <template v-slot:item.accounts="{item}">
+              {{ otherAccounts[findAccIndex(otherClients, item.id)] }}
+            </template>
+          </v-data-table>
         </div>
-        
+
+      </v-tabs-window-item>
+      <v-tabs-window-item :key="3">
+        <InvestmentPreferences/>
       </v-tabs-window-item>
     </v-tabs-window>
 
@@ -263,6 +269,7 @@ import {ref, reactive, computed, inject} from 'vue';
 import {useRouter} from 'vue-router';
 import moment from 'moment';
 import {parseError} from '@/utils/error';
+import InvestmentPreferences from "@/views/InvestmentPreferences.vue";
 
 // Injected dependencies
 const $axios = inject('$axios');
@@ -273,8 +280,9 @@ const router = useRouter();
 
 // User store
 const userStore = useUserStore();
+const {isAdvisorOrGreater, isSuper} = useUserStore()
 const {user} = storeToRefs(userStore);
-const isFirmAdminOrGreater = computed(() => userStore.isFirmAdminOrGreater);
+
 
 // User info
 const {id: advisor_id} = user.value;
@@ -339,7 +347,7 @@ const advisorHeaders = [
 // Fetch clients data
 const getClients = async (a) => {
   const {data} = await $axios.get(`/api/advisors/${a}/clients/`);
-  if(a === advisor_id){
+  if (a === advisor_id) {
     clients.value = data.map((d) => ({
       ...d,
       last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
@@ -353,14 +361,14 @@ const getClients = async (a) => {
     await getAccountsForAllClients(otherClients, otherAccounts);
     otherClientsShown.value = otherClients.value;
   }
-  
+
 };
 
 const getAdvisors = async () => {
-    const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
-    advisors.value = data.filter(advisor => advisor.share_clients === true);
-    advisors.value = advisors.value.filter(advisor => advisor.id !== advisor_id);
-    advisorsShown.value = advisors.value;
+  const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
+  advisors.value = data.filter(advisor => advisor.share_clients === true);
+  advisors.value = advisors.value.filter(advisor => advisor.id !== advisor_id);
+  advisorsShown.value = advisors.value;
 };
 
 // Fetch prospects data
@@ -515,15 +523,15 @@ const findAdvisor = (search) => {
 };
 
 const clientsToShow = () => {
-  return displayState.searched ? clientsShown.value=foundClient.value : clientsShown.value=clients.value;
+  return displayState.searched ? clientsShown.value = foundClient.value : clientsShown.value = clients.value;
 };
 
 const prospectsToShow = () => {
-  return displayState.searchedProspects ? prospectsShown.value=foundProspect.value : prospectsShown.value=prospects.value;
+  return displayState.searchedProspects ? prospectsShown.value = foundProspect.value : prospectsShown.value = prospects.value;
 };
 
 const otherClientsToShow = () => {
-  return displayState.searchedOtherClients ? otherClientsShown.value=otherFoundClient.value : otherClientsShown.value=otherClients.value;
+  return displayState.searchedOtherClients ? otherClientsShown.value = otherFoundClient.value : otherClientsShown.value = otherClients.value;
 };
 
 const accounts = ref([]);
@@ -544,8 +552,8 @@ const changeAdvisorViewing = (id) => {
   displayState.showOtherClients = !displayState.showOtherClients;
   displayState.currentAdvisorViewing === null ? (otherClientsShown.value = []) && (otherClients.value = []) : null;
   displayState.currentAdvisorViewing === null ?
-  displayState.currentAdvisorViewing = id :
-  displayState.currentAdvisorViewing = null;
+      displayState.currentAdvisorViewing = id :
+      displayState.currentAdvisorViewing = null;
 };
 
 const resetDisplayState = () => {

@@ -31,8 +31,6 @@
     >Please do not include and exclude the same company in your selections.
     </v-alert>
 
-    <!--steps are "weeds" "trees" "boundaries". First step into the survey_seed file found
-    at app/surveys/management/survey_seed.py by accessing the section to create the header -->
     <div v-if="survey" class="survey_div trans-background">
       <v-stepper v-model="currentStep">
         <template v-slot:default="{ prev, next }">
@@ -118,7 +116,64 @@
               <!--Checkbox dropdowns.  Working on the different subgroups has made this not so beautiful,
               but we're getting there-->
               <v-container class="twin-columns">
-                <v-row v-if="section.tag === 'pullYourWeeds'" class="rows">
+                <v-row v-if="section.tag === 'aboutYou'" class="rows-center-risk">
+                  <!-- First Column: Multi-select and Slider Questions -->
+                  <template v-for="group in section.survey_groups" :key="group.name" class="accordion-list-center-risk">
+                    <h5 class="survey_header">{{ group.name }}</h5>
+                    <v-container class="investments-container">
+                      <v-col>
+                        <!-- Loop through questions in this group -->
+
+                        <div v-for="q in group.survey_questions" :key="q.question.id" class="investments-container">
+                          <v-col v-if="q.question.response_type === 'radio'" lass="radio-box">
+                            <!-- RADIO type question -->
+                            <div>
+                              <div class="text-h5">
+                                {{ q.question.text }}
+                              </div>
+                              <v-radio-group v-model="q.question.default_value" @change="updateResponse(q)" row>
+                                <v-radio
+                                    v-for="(option, index) in q.question.slider_ticks"
+                                    :key="index"
+                                    :label="option"
+                                    :value="option"
+                                ></v-radio>
+                              </v-radio-group>
+                            </div>
+                          </v-col>
+
+                          <!-- MULTI_SELECT type question -->
+                          <div v-else class="autocomplete-invest">
+                            <div class="text-h5 mt-8">
+                              {{ q.question.text }}
+                            </div>
+                            <v-autocomplete
+                                v-model="q.question.default_value"
+                                :items="q.question.slider_ticks"
+                                label="Multiple Responses Possible"
+                                chips
+                                closable-chips
+                                multiple
+                                @update:model-value="updateResponse(q)"
+                                class="mt-3"
+                            >
+                            </v-autocomplete>
+                            <v-text-field
+                                v-if="otherSelected && q.question.tag === 'interests'"
+                                v-model="pushToInterests"
+                                label="What else would you like to add?"
+                                maxlength="400"
+                                counter
+                                type="input"
+                                clearable
+                            ></v-text-field>
+                          </div>
+                        </div>
+                      </v-col>
+                    </v-container>
+                  </template>
+                </v-row>
+                <v-row v-else-if="section.tag === 'pullYourWeeds'" class="rows">
                   <div class="accordion-list">
                     <h5 class="text-h5 mb-1">Avoid Investing in Specific Products or Operations</h5>
                     <template v-for="group in positionExclude(section.survey_groups, 'products')"
@@ -657,6 +712,8 @@ const selectAll = ref({})
 const isActive = ref({});
 const userResponse = ref('')
 const clientData = ref({})
+const otherSelected = ref(false);
+const pushToInterests = ref('')
 
 // Initial State
 const initialState = {
@@ -810,10 +867,10 @@ const updateResponse = (q, setInitial = false) => {
     );
   }
 
-  // Handle radio button responses (if needed, do extra validation here)
-  const radioResponses = surveyResponses
-      .filter(r => r.question.response_type === 'radio') // Adjust response_type if necessary
-      .map(r => r.question.default_value);
+  console.log("here is q:", q)
+  if (q.question.tag === "interests" && q.question.default_value.indexOf("Other") !== -1) {
+    otherSelected.value = true
+  }
 
 
 };
@@ -919,10 +976,21 @@ const submit = async (prospect_id) => {
         ? `/api/prospects/${prospect_id}/responses/`
         : `/api/advisors/${advisor_id}/clients/${user_id}/responses/`;
 
-    let mappedSurveyResponses = surveyResponses.map(sr => ({
-      ...sr.question,
-      default_value: JSON.stringify(sr.question.default_value),
-    }))
+    let mappedSurveyResponses = surveyResponses.map(sr => {
+      if (sr.question.tag === "interests" && pushToInterests.value.length > 0) {
+        if (Array.isArray(sr.question.default_value)) {
+          sr.question.default_value.push(pushToInterests.value);  // Use spread to push items individually
+        }
+      }
+
+
+      let response = {
+        ...sr.question,
+        default_value: JSON.stringify(sr.question.default_value),
+      };
+
+      return response;
+    });
 
     await $axios.post(
         url,
@@ -1023,6 +1091,7 @@ onMounted(async () => {
       user_id,
     });
   }
+
   //adding values profile to visual state of the survey.  small survey so not super concerned about O = n^3
   for (let section of surveyData.survey_sections) {
     for (let group of section.survey_groups) {
