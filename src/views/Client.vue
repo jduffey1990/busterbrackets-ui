@@ -649,7 +649,7 @@ const getAccounts = async () => {
 
 const downloadAccountCSV = async (account) => {
   window.open(
-      `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/`
+      `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/standard`
   );
 };
 
