@@ -54,7 +54,7 @@ const getTheme = async () => {
   } catch (error) {
   }
 };
-getTheme();
+
 
 // Define the classes for the background
 const appBackground = 'appBackground';
@@ -75,6 +75,7 @@ import {useRoute} from 'vue-router';
 const route = useRoute();
 
 onMounted(() => {
+  getTheme();
   checkSurvey();
 });
 

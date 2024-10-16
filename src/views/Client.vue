@@ -285,6 +285,21 @@
               Create New Account
             </v-btn>
           </router-link>
+            <v-tooltip
+                location="top"
+                color="primary"
+                text="Click to download a CSV of all accounts allocations combined."
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn 
+                  class="ml-3" 
+                  @click="downloadAccountCSVAll()"
+                  v-bind="props"
+                >
+                  Download Combined CSV
+                </v-btn>
+              </template>
+            </v-tooltip>
         </div>
 
         <v-alert title="No accounts yet..." type="secondary" v-if="!accounts.length"
@@ -296,10 +311,21 @@
           <template v-slot:item.actions="{ item }">
             <v-btn
                 color="primary"
-                @click="downloadAccountCSV(item)"
                 size="small"
                 class="ml-2"
+                append-icon="mdi-chevron-down"
             >Download CSV
+              <v-menu activator="parent">
+                <v-list>
+                  <v-list-item
+                      v-for="i in templateItems"
+                      :title="i.title"
+                      :key="i.value"
+                      @click="downloadAccountCSV(item, i.value)"
+                    >
+                  </v-list-item>
+                </v-list>
+              </v-menu>
             </v-btn>
 
             <router-link
@@ -320,6 +346,15 @@
                 Edit
               </v-btn>
             </router-link>
+          </template>
+          <template v-slot:item.delete="{ item }">
+            <v-icon
+                @click="deleteAccount(item)"
+                color="primary"
+                icon="mdi-delete"
+                class="ml-2"
+            >
+            </v-icon>
           </template>
           <template #bottom v-if="accounts.length < 10"></template>
         </v-data-table>
@@ -620,7 +655,12 @@ const accountHeaders = [
     width: 0,
     nowrap: true,
   },
-
+  {
+    title: '',
+    key: 'delete',
+    width: 0,
+    nowrap: true,
+  },
 ];
 
 const accounts = ref([]);
@@ -630,12 +670,14 @@ const getAccounts = async () => {
         `/api/advisors/${advisor_id}/clients/${user_id}/accounts/`
     );
 
-    accounts.value = data.map((d) => ({
+    accounts.value = data
+      .filter((d) => !d.is_archived)
+      .map((d) => ({
       ...d,
       value: currencyFormat(d.value),
       fractional: d.fractional ? 'Yes' : 'No',
       active: d.active ? 'Yes' : 'No',
-    }));
+      }));
 
     const accountsTab = tabs.value.find((t) => t.label === 'Accounts');
 
@@ -647,11 +689,32 @@ const getAccounts = async () => {
     console.error("Error fetching accounts:", error);
   }
 };
-
-const downloadAccountCSV = async (account) => {
+const downloadAccountCSV = async (account,template) => {
+  console.log(template, "template");
   window.open(
-      `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/`
+      `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/${template}/`,
   );
+};
+
+const downloadAccountCSVAll = async () => {
+  window.open(
+      `${import.meta.env.VITE_BASE_URL}/api/accounts/${user_id}/download-all/`
+  );
+};
+
+const deleteAccount = async (account) => {
+  // pop up a confirmation dialog
+  if (!confirm('Are you sure you want to delete this account?')) {
+    return;
+  } else{
+    try {
+      await $axios.patch(`/api/accounts/${account.id}/archive/`, {is_archived: true, active: false});
+      show({message: 'Account deleted!'});
+      getAccounts();
+  } catch (error) {
+      show({message: parseError(error), error: true});
+    }
+  }
 };
 
 const currentTab = ref();
@@ -664,7 +727,6 @@ const tabs = ref([
   {label: 'Analytics'}
 ]);
 
-import {funLookAtFunction} from "@/utils/string";
 
 const getValue = (response) => {
   let color;
@@ -904,6 +966,17 @@ const refresh = () => {
     location.reload();
   }
 };
+
+const templateItems = [{
+  title: 'Orion',
+  value: 'orion'
+}, {
+  title: 'Raymond James',
+  value: 'rj'
+}, {
+  title: 'Standard',
+  value: 'standard'
+}];
 </script>
 
 <style scoped>

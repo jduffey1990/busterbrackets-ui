@@ -143,6 +143,7 @@ const custodians = [
   {value: 'fidelity', title: 'Fidelity'},
   {value: 'raymond_james', title: 'Raymond James'},
   {value: 'pershing', title: 'Pershing'},
+  {value: 'lpl_financial', title: 'LPL Financial'},
 ];
 
 const riskTolerances = [
