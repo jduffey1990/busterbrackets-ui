@@ -286,6 +286,7 @@
             </v-btn>
           </router-link>
             <v-tooltip
+                v-if="accounts.length >= 2"
                 location="top"
                 color="primary"
                 text="Click to download a CSV of all accounts allocations combined."
@@ -690,7 +691,6 @@ const getAccounts = async () => {
   }
 };
 const downloadAccountCSV = async (account,template) => {
-  console.log(template, "template");
   window.open(
       `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/${template}/`,
   );
