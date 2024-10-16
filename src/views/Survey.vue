@@ -119,54 +119,51 @@
                 <v-row v-if="section.tag === 'aboutYou'" class="rows-center-risk">
                   <!-- First Column: Multi-select and Slider Questions -->
                   <template v-for="group in section.survey_groups" :key="group.name" class="accordion-list-center-risk">
-                    <h5 class="survey_header">{{ group.name }}</h5>
-                    <v-container class="investments-container">
-                      <v-col>
+                    <v-container class="about-container">
+                      <v-col class="py-0">
                         <!-- Loop through questions in this group -->
 
-                        <div v-for="q in group.survey_questions" :key="q.question.id" class="investments-container">
-                          <v-col v-if="q.question.response_type === 'radio'" lass="radio-box">
-                            <!-- RADIO type question -->
-                            <div>
-                              <div class="text-h5">
-                                {{ q.question.text }}
-                              </div>
-                              <v-radio-group v-model="q.question.default_value" @change="updateResponse(q)" row>
-                                <v-radio
-                                    v-for="(option, index) in q.question.slider_ticks"
-                                    :key="index"
-                                    :label="option"
-                                    :value="option"
-                                ></v-radio>
-                              </v-radio-group>
-                            </div>
-                          </v-col>
+                        <div v-for="q in group.survey_questions" :key="q.question.id" class="about-container">
 
                           <!-- MULTI_SELECT type question -->
-                          <div v-else class="autocomplete-invest">
+                          <div class="autocomplete-invest">
                             <div class="text-h5 mt-8">
                               {{ q.question.text }}
                             </div>
-                            <v-autocomplete
-                                v-model="q.question.default_value"
-                                :items="q.question.slider_ticks"
-                                label="Multiple Responses Possible"
-                                chips
-                                closable-chips
-                                multiple
-                                @update:model-value="updateResponse(q)"
-                                class="mt-3"
-                            >
-                            </v-autocomplete>
-                            <v-text-field
-                                v-if="otherSelected && q.question.tag === 'interests'"
-                                v-model="pushToInterests"
-                                label="What else would you like to add?"
-                                maxlength="400"
-                                counter
-                                type="input"
-                                clearable
-                            ></v-text-field>
+                            <div v-if="multipleQFunction(q.question.tag)">
+                              <v-autocomplete
+                                  v-model="q.question.default_value"
+                                  :items="q.question.slider_ticks"
+                                  label="Multiple Responses Possible"
+                                  chips
+                                  closable-chips
+                                  multiple
+                                  @update:model-value="updateResponse(q)"
+                                  class="mt-3"
+                              >
+                              </v-autocomplete>
+                              <v-text-field
+                                  v-if="otherSelected && q.question.tag === 'interests'"
+                                  v-model="pushToInterests"
+                                  label="What else would you like to add?"
+                                  maxlength="400"
+                                  counter
+                                  type="input"
+                                  clearable
+                                  class="mt-1"
+                              ></v-text-field>
+                            </div>
+                            <div v-else>
+                              <v-autocomplete
+                                  v-model="q.question.default_value"
+                                  :items="q.question.slider_ticks"
+                                  label="Single Response Possible"
+                                  @update:model-value="updateResponse(q)"
+                                  class="mt-3"
+                                  clearable
+                              >
+                              </v-autocomplete>
+                            </div>
                           </div>
                         </div>
                       </v-col>
@@ -812,6 +809,11 @@ const groupLengthCheck = (group) => {
   return group.survey_questions.length > 1
 }
 
+const multipleQFunction = (tag) => {
+  const qArray = ["annualIncome", "ageRange", "gender"]
+  return !qArray.includes(tag)
+}
+
 //dev tools showed the position value was created for
 const sortValues = (values) => {
   if (values[0].question.response_type === 'checkbox') {
@@ -1401,6 +1403,12 @@ window.addEventListener('beforeunload', (event) => {
   align-items: center;
 }
 
+.about-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 !important;
+}
 
 @media only screen and (max-width: 1275px) {
 

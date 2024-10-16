@@ -62,6 +62,40 @@
         :disabled="!canEdit"
     ></v-checkbox>
 
+    <div class="d-flex my-4 align-center">
+      <div class="text-h6 my-4">Advisor Fee %</div>
+    </div>
+    <v-row>
+      <v-col cols="6">
+        <v-select
+            label="Advisor Fee"
+            class="mb-4"
+            v-model="advisorFee"
+            :items="rates"
+            item-title="title"
+            item-value="value"
+        ></v-select>
+      </v-col>
+    </v-row>
+    <div class="d-flex my-4 align-center">
+      <div class="text-h6 my-4">Number of Holdings</div>
+    </div>
+    <v-row>
+      <v-col cols="6">
+        <v-select
+            label="Number of Holdings"
+            class="mb-4"
+            v-model="holdings"
+            :items="holdingItems"
+            item-title="title"
+            item-value="value"
+        ></v-select>
+        <div class="d-flex justify-end mb-4">
+          <v-btn class="ml-2" color="primary" @click="saveHoldings">Save</v-btn>
+        </div>
+      </v-col>
+    </v-row>
+
 
     <hr class="my-10"/>
 
@@ -70,19 +104,18 @@
       <div class="text-h6">Asset Allocation Guidelines</div>
       <v-spacer></v-spacer>
 
-      <!-- File input for uploading CSV, shown if canEdit (superadmin only) is true -->
       <input
           type="file"
           accept="text/csv"
           v-if="canEdit"
           @change="onFileUpload($event)"
       />
+
     </div>
 
     <!-- Alert indicating default allocations, shown if isDefaultAllocation is true -->
     <v-alert type="info" v-if="isDefaultAllocation" class="mb-4">
-      You are currently using the default allocations. Reach out to support@getpomarium.com to set up your preferred
-      allocations.
+      You are currently using the default allocations.
     </v-alert>
 
     <v-btn v-if="canEdit" @click="changeEditButton" color="primary">{{ buttonText }}</v-btn>
@@ -166,39 +199,7 @@
 
 
   </div>
-  <div class="d-flex my-4 align-center">
-    <div class="text-h6 my-4">Advisor Fee %</div>
-  </div>
-  <v-row>
-    <v-col cols="6">
-      <v-select
-          label="Advisor Fee"
-          class="mb-4"
-          v-model="advisorFee"
-          :items="rates"
-          item-title="title"
-          item-value="value"
-      ></v-select>
-    </v-col>
-  </v-row>
-  <div class="d-flex my-4 align-center">
-    <div class="text-h6 my-4">Number of Holdings</div>
-  </div>
-  <v-row>
-    <v-col cols="6">
-      <v-select
-          label="Number of Holdings"
-          class="mb-4"
-          v-model="holdings"
-          :items="holdingItems"
-          item-title="title"
-          item-value="value"
-      ></v-select>
-      <div class="d-flex justify-end mb-4">
-        <v-btn class="ml-2" color="primary" @click="saveHoldings">Save</v-btn>
-      </div>
-    </v-col>
-  </v-row>
+
 
 </template>
 
@@ -606,5 +607,10 @@ const saveHoldings = async () => {
   justify-content: space-between;
   align-items: center;
   margin: 0 10px 0 10px;
+}
+
+#file-upload-button {
+  height: 90px;
+  cursor: pointer;
 }
 </style>
