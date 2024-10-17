@@ -65,7 +65,7 @@
                 <v-chip
                     v-for="v in getValue(val)"
                     :color="v?.color"
-                    class="mr-2"
+                    class="mr-2 my-1"
                 >
                   <v-icon :icon="v.icon" v-if="v.icon"></v-icon>
                   <span v-else-if="v.text">{{ v.text }}</span>
@@ -167,6 +167,63 @@
             </div>
           </div>
 
+          <hr/>
+
+          <div class="my-8 table-content">
+            <div class="d-flex justify-start flex-row">
+              <v-tooltip text="Tooltip" location="top">
+                <template v-slot:activator="{ props }">
+                  <div class="text-h4" v-bind="props">Your worst values fits</div>
+                  <v-icon
+                      v-bind="props"
+                      size="20"
+                      color="grayblue"
+                      class="ml-1 translate">mdi-information
+                  </v-icon>
+                </template>
+              </v-tooltip>
+            </div>
+
+            <v-data-table
+                :items="worstCompanies"
+                :headers="worstHeaders"
+                :items-per-page="-1"
+                hide-default-header
+                mobile-breakpoint="700"
+            >
+              <!-- Custom Header Slot -->
+              <template
+                  v-for="header in worstHeaders"
+                  :key="header.key"
+                  v-slot:[`header.${header.key}`]="{ column }">
+                <span>{{ column.title }}</span>
+                <v-tooltip
+                    v-if="column.tooltip"
+                    :text="column.tooltip"
+                    location="top"
+                >
+                  <template v-slot:activator="{ props }">
+                    <v-icon
+                        v-bind="props"
+                        small
+                        color="grayblue"
+                        class="ml-2">mdi-information
+                    </v-icon>
+                  </template>
+                </v-tooltip>
+              </template>
+
+
+              <template v-slot:item="{ item }">
+                <tr>
+                  <td style="white-space: nowrap;">{{ item.name }}</td>
+                  <td>{{ item.ticker }}</td>
+                  <td>{{ item.worst_value }}</td>
+                </tr>
+              </template>
+              <template #bottom></template>
+            </v-data-table>
+          </div>
 
           <hr/>
 
@@ -285,22 +342,22 @@
               Create New Account
             </v-btn>
           </router-link>
-            <v-tooltip
-                v-if="accounts.length >= 2"
-                location="top"
-                color="primary"
-                text="Click to download a CSV of all accounts allocations combined."
-            >
-              <template v-slot:activator="{ props }">
-                <v-btn 
-                  class="ml-3" 
+          <v-tooltip
+              v-if="accounts.length >= 2"
+              location="top"
+              color="primary"
+              text="Click to download a CSV of all accounts allocations combined."
+          >
+            <template v-slot:activator="{ props }">
+              <v-btn
+                  class="ml-3"
                   @click="downloadAccountCSVAll()"
                   v-bind="props"
-                >
-                  Download Combined CSV
-                </v-btn>
-              </template>
-            </v-tooltip>
+              >
+                Download Combined CSV
+              </v-btn>
+            </template>
+          </v-tooltip>
         </div>
 
         <v-alert title="No accounts yet..." type="secondary" v-if="!accounts.length"
@@ -323,7 +380,7 @@
                       :title="i.title"
                       :key="i.value"
                       @click="downloadAccountCSV(item, i.value)"
-                    >
+                  >
                   </v-list-item>
                 </v-list>
               </v-menu>
@@ -408,6 +465,7 @@ const {show} = inject('toast');
 const client = ref({});
 const clientLoading = ref(false);
 const excludedQuestionIDs = ref('')
+const worstCompanies = ref({})
 
 const hasValuesProfile = computed(
     () => !!Object.keys(valuesProfile.value).length
@@ -503,6 +561,28 @@ const allocationHeaders = [
   {}
 ];
 
+const worstHeaders = [
+  {
+    title: 'Company',
+    key: 'name',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Ticker',
+    key: 'ticker',
+    width: 0,
+    nowrap: true,
+  },
+  {
+    title: 'Values Fit',
+    key: 'worst_value',
+    width: 0,
+    nowrap: true,
+    tooltip: 'A percentage description of how well this company meets your values, as calculated by our algorithm.'
+  },
+];
+
 let orderedColors = ref([])
 
 const getPortfolios = async () => {
@@ -514,6 +594,7 @@ const getPortfolios = async () => {
     } = await $axios.get(
         `/api/advisors/${advisor_id}/clients/${user_id}/portfolio/values/`
     );
+
 
     portfolioValues.value = [
       ...Object.keys(valuesPortfolio).map((title) => ({
@@ -529,7 +610,6 @@ const getPortfolios = async () => {
     ].sort(
         (a, b) => a.title.localeCompare(b.title) || b.type.localeCompare(a.type)
     );
-
     const {
       data: {portfolio: sectorsPortfolio},
     } = await $axios.get(
@@ -549,8 +629,9 @@ const getPortfolios = async () => {
 
     const {
       allocations: {pomarium},
-      portfolio_data: {pomarium_names, values_fit, investment_fit}
+      portfolio_data: {pomarium_names, values_fit, investment_fit, worst_values, worst_values_names}
     } = data[0];
+
 
     for (let i in pomarium) {
       pomarium[i] = (Math.round(pomarium[i] * 100 * 100) / 100).toFixed(2);
@@ -566,9 +647,17 @@ const getPortfolios = async () => {
           value: pomarium[p],
           values_fit: values_fit && values_fit[p] ? `${(Math.round(values_fit[p] * 100) / 100).toFixed(0)}%` : "",
           investment_fit: investment_fit && investment_fit[p] ? `${(Math.round(investment_fit[p] * 100) / 100).toFixed(0)}%` : "",
-          image: getImagePathFromTicker(p)
+          image: getImagePathFromTicker(p),
         }))
         .sort((a, b) => b.value - a.value);
+
+    worstCompanies.value = Object.keys(worst_values)
+        .map(ticker => ({
+          ticker: ticker,
+          name: worst_values_names[ticker],
+          worst_value: `${(Math.round(worst_values[ticker] * 100) / 100).toFixed(2)}%`
+        }))
+        .sort((a, b) => parseFloat(b.worst_value) - parseFloat(a.worst_value));
 
   } catch (error) {
     console.error('Error in getPortfolios:', error);
@@ -672,13 +761,13 @@ const getAccounts = async () => {
     );
 
     accounts.value = data
-      .filter((d) => !d.is_archived)
-      .map((d) => ({
-      ...d,
-      value: currencyFormat(d.value),
-      fractional: d.fractional ? 'Yes' : 'No',
-      active: d.active ? 'Yes' : 'No',
-      }));
+        .filter((d) => !d.is_archived)
+        .map((d) => ({
+          ...d,
+          value: currencyFormat(d.value),
+          fractional: d.fractional ? 'Yes' : 'No',
+          active: d.active ? 'Yes' : 'No',
+        }));
 
     const accountsTab = tabs.value.find((t) => t.label === 'Accounts');
 
@@ -690,7 +779,7 @@ const getAccounts = async () => {
     console.error("Error fetching accounts:", error);
   }
 };
-const downloadAccountCSV = async (account,template) => {
+const downloadAccountCSV = async (account, template) => {
   window.open(
       `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/${template}/`,
   );
@@ -706,12 +795,12 @@ const deleteAccount = async (account) => {
   // pop up a confirmation dialog
   if (!confirm('Are you sure you want to delete this account?')) {
     return;
-  } else{
+  } else {
     try {
       await $axios.patch(`/api/accounts/${account.id}/archive/`, {is_archived: true, active: false});
       show({message: 'Account deleted!'});
       getAccounts();
-  } catch (error) {
+    } catch (error) {
       show({message: parseError(error), error: true});
     }
   }
@@ -723,14 +812,17 @@ const tabs = ref([
   {label: 'Values Profile'},
   {label: 'Recommendations'},
   {label: 'Accounts'},
-  // ...(isSuper ? [{label: 'Analytics'}] : []),
   {label: 'Analytics'}
 ]);
 
 
 const getValue = (response) => {
+  if (!response.value) {
+    return
+  }
   let color;
   let icon;
+  const qArray = ["annualIncome", "ageRange", "gender"]
 
   if (response.sections.tag === 'plantYourTrees') {
     color = 'green';
@@ -746,19 +838,23 @@ const getValue = (response) => {
     color = 'green';
   }
 
-  if (response.question.response_type === 'checkbox') {
-    return [{icon, color}];
+  if (response.question.tag === "areThereAnySpecificCompaniesYouWouldWantToInvestIn") {
+    color = 'red';
   }
 
-  if (response.question.response_type === 'multi_select') {
-    return response.value.map((v) => ({text: v, color}));
+  if (response.question.response_type === 'checkbox') {
+    return [{icon, color}];
   }
 
   if (response.question.response_type === 'slider') {
     return [{text: response.question.slider_ticks[response.value]}];
   }
-  if (response.question.response_type === 'radio') {
+  if (response.question.response_type === 'radio' || qArray.includes(response.question.tag)) {
     return [{text: response.value}];
+  }
+
+  if (response.question.response_type === 'multi_select') {
+    return response.value.map((v) => ({text: v, color}));
   }
 };
 
@@ -1025,6 +1121,10 @@ const templateItems = [{
 
 :deep(.v-overlay__content) {
   max-width: 40% !important;
+}
+
+.translate {
+  transform: translateY(10px) !important;
 }
 
 

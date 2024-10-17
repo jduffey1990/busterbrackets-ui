@@ -77,24 +77,49 @@
         :items-per-page="-1"
         class="elevation-1 mt-10"
     >
+      <template
+          v-for="header in metricHeaders"
+          :key="header.key"
+          v-slot:[`header.${header.key}`]="{ column }">
+        <span>{{ column.title }}</span>
+        <v-tooltip
+            v-if="column.tooltip"
+            :text="column.tooltip"
+            location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <v-icon
+                v-bind="props"
+                small
+                color="grayblue"
+                class="ml-2">mdi-information
+            </v-icon>
+          </template>
+        </v-tooltip>
+      </template>
       <template v-slot:top>
         <v-toolbar flat color="secondary">
-          <v-toolbar-title>U.S. Large & Mid Cap Stock Comparison</v-toolbar-title>
+          <v-toolbar-title>US Large Mid cap stock comparison (5 year)</v-toolbar-title>
         </v-toolbar>
       </template>
       <template #bottom v-if="metricHeaders.length < 10"></template>
     </v-data-table>
 
-    <div class="mt-2 mb-10">
+    <div class="mt-2 mb-2">
       <h6>
         <sup>*</sup>As of {{ formatDate(props.metrics.as_of) }}
+      </h6>
+    </div>
+    <div class="mt-2 mb-10">
+      <h6>
+        <sup>*</sup>Advisor Fee: {{ getAdvisorFee() }}
       </h6>
     </div>
   </div>
 </template>
 
 <script setup>
-import {computed} from "vue";
+import {computed, ref, watch} from "vue";
 
 import ScatterChart from '../components/ScatterChart.vue';
 
@@ -110,6 +135,12 @@ const props = defineProps({
 
 // Use a computed property to safely access client
 const client = computed(() => props.client);
+const clientLoaded = ref(false);
+
+const getAdvisorFee = () => {
+  clientLoaded.value = true
+  return toPercentage(client.value.advisor_fee)
+}
 
 // Define headers for the v-data-table
 const metricHeaders = [
@@ -119,13 +150,20 @@ const metricHeaders = [
     sortable: false,
   },
   {
-    title: 'Pomarium',
+    title: `${client.value.first_name}'s Recommendation`,
     key: 'pomariumValue',
     sortable: false,
   },
   {
     title: 'Market',
     key: 'marketValue',
+    sortable: false,
+    tooltip: "Market is a backtested version of the current Russell 1000 to account for the effects of hindsight" +
+        " and survivorship bias"
+  },
+  {
+    title: 'Russell 1000 ETF (IWB)',
+    key: 'iwb',
     sortable: false,
   },
 ];
@@ -194,46 +232,105 @@ const metricTableData = computed(() => {
       metric: 'Investment Fit Score',
       pomariumValue: `${Math.round(props.metrics.pomarium["investment_fit"])}%`,
       marketValue: `${Math.round(props.metrics.market["investment_fit"])}%`,
+      iwb: `${Math.round(props.metrics.IWB["investment_fit"])}%`,
+
     },
     {
       metric: 'Values Fit Score',
       pomariumValue: `${Math.round(props.metrics.pomarium["values_fit"])}%`,
       marketValue: `${Math.round(props.metrics.market["values_fit"])}%`,
+      iwb: `${Math.round(props.metrics.IWB["values_fit"])}%`,
     },
     {
       metric: '1yr Return',
       pomariumValue: toPercentage(props.metrics.pomarium["1yr return"]),
       marketValue: toPercentage(props.metrics.market["1yr return"]),
+      iwb: toPercentage(props.metrics.IWB["1yr return"]),
+
     },
     {
       metric: '3yr Return',
       pomariumValue: toPercentage(props.metrics.pomarium["3yr return"]),
       marketValue: toPercentage(props.metrics.market["3yr return"]),
+      iwb: toPercentage(props.metrics.IWB["3yr return"]),
     },
     {
       metric: '5yr Return',
       pomariumValue: toPercentage(props.metrics.pomarium["5yr return"]),
       marketValue: toPercentage(props.metrics.market["5yr return"]),
+      iwb: toPercentage(props.metrics.IWB["5yr return"]),
     },
     {
-      metric: '5yr Max Drawdown',
+      metric: 'Max Drawdown',
       pomariumValue: toPercentage(props.metrics.pomarium["5yr max drawdown"]),
       marketValue: toPercentage(props.metrics.market["5yr max drawdown"]),
+      iwb: toPercentage(props.metrics.IWB["5yr max drawdown"]),
     },
     {
       metric: 'Volatility',
       pomariumValue: toPercentage(props.metrics.pomarium["volatility"]),
       marketValue: toPercentage(props.metrics.market["volatility"]),
+      iwb: toPercentage(props.metrics.IWB["volatility"]),
     },
     {
       metric: 'Tracking Error',
       pomariumValue: toPercentage(props.metrics.pomarium["tracking_error"]),
       marketValue: toPercentage(props.metrics.market["tracking_error"]),
+      iwb: toPercentage(props.metrics.IWB["tracking_error"]),
     },
     {
       metric: 'Beta (Market Exposure Metric)',
       pomariumValue: props.metrics.pomarium["beta"].toFixed(2), // Beta usually isn't a percentage
       marketValue: props.metrics.market["beta"].toFixed(2),
+      iwb: props.metrics.IWB["beta"].toFixed(2),
+    },
+    {
+      metric: 'Sharpe Ratio',
+      pomariumValue: props.metrics.pomarium["sharpe ratio"].toFixed(2),
+      marketValue: props.metrics.market["sharpe ratio"].toFixed(2),
+      iwb: props.metrics.IWB["sharpe ratio"].toFixed(2),
+    },
+    {
+      metric: 'Sortino Ratio',
+      pomariumValue: props.metrics.pomarium["sortino ratio"].toFixed(2),
+      marketValue: props.metrics.market["sortino ratio"].toFixed(2),
+      iwb: props.metrics.IWB["sortino ratio"].toFixed(2),
+    },
+    {
+      metric: 'Up Capture',
+      pomariumValue: `${Math.round(props.metrics.pomarium["upcapture"])}%`,
+      marketValue: `${Math.round(props.metrics.market["upcapture"])}%`,
+      iwb: `${Math.round(props.metrics.IWB["upcapture"])}%`,
+    },
+    {
+      metric: 'Down Capture',
+      pomariumValue: `${Math.round(props.metrics.pomarium["downcapture"])}%`,
+      marketValue: `${Math.round(props.metrics.market["downcapture"])}%`,
+      iwb: `${Math.round(props.metrics.IWB["downcapture"])}%`,
+    },
+    {
+      metric: 'Correlation',
+      pomariumValue: props.metrics.pomarium["correlation"].toFixed(2),
+      marketValue: props.metrics.market["correlation"].toFixed(2),
+      iwb: props.metrics.IWB["correlation"].toFixed(2),
+    },
+    {
+      metric: 'Best Year',
+      pomariumValue: toPercentage(props.metrics.pomarium["best_year"]),
+      marketValue: toPercentage(props.metrics.market["best_year"]),
+      iwb: toPercentage(props.metrics.IWB["best_year"]),
+    },
+    {
+      metric: 'Worst Year',
+      pomariumValue: toPercentage(props.metrics.pomarium["worst_year"]),
+      marketValue: toPercentage(props.metrics.market["worst_year"]),
+      iwb: toPercentage(props.metrics.IWB["worst_year"]),
+    },
+    {
+      metric: 'Active Share',
+      pomariumValue: `${Math.round(props.metrics.pomarium["active_share"])}%`,
+      marketValue: `${Math.round(props.metrics.market["active_share"])}%`,
+      iwb: `${Math.round(props.metrics.IWB["active_share"])}%`,
     }
   ];
 });
@@ -264,6 +361,10 @@ const wholeTableData = computed(() => {
       medium: toPercentage(props.metrics.full_portfolio[2]['5yr max drawdown']),
       high: toPercentage(props.metrics.full_portfolio[3]['5yr max drawdown']),
       veryHigh: toPercentage(props.metrics.full_portfolio[4]['5yr max drawdown']),
+      "US Stocks (VTI)": toPercentage(props.metrics.full_portfolio['VTI']['5yr max drawdown']),
+      "Int Stocks (VXUS)": toPercentage(props.metrics.full_portfolio['VXUS']['5yr max drawdown']),
+      "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']['5yr max drawdown']),
+      "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']['5yr max drawdown']),
     },
     {
       metric: '3 Year Return (Net of fees)',
@@ -277,14 +378,18 @@ const wholeTableData = computed(() => {
       "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']["3yr return"]),
       "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']["3yr return"]),
     },
-    // {
-    //   metric: 'Expense Ratio',
-    //   veryLow: props.metrics.full_portfolio[0]['expense_ratio'].toFixed(2),
-    //   low: props.metrics.full_portfolio[1]['expense_ratio'].toFixed(2),
-    //   medium: props.metrics.full_portfolio[2]['expense_ratio'].toFixed(2),
-    //   high: props.metrics.full_portfolio[3]['expense_ratio'].toFixed(2),
-    //   veryHigh: props.metrics.full_portfolio[4]['expense_ratio'].toFixed(2),
-    // },
+    {
+      metric: 'Sharpe Ratio',
+      veryLow: props.metrics.full_portfolio[0]['sharpe ratio'].toFixed(2),
+      low: props.metrics.full_portfolio[1]['sharpe ratio'].toFixed(2),
+      medium: props.metrics.full_portfolio[2]['sharpe ratio'].toFixed(2),
+      high: props.metrics.full_portfolio[3]['sharpe ratio'].toFixed(2),
+      veryHigh: props.metrics.full_portfolio[4]['sharpe ratio'].toFixed(2),
+      "US Stocks (VTI)": props.metrics.full_portfolio['VTI']['sharpe ratio'].toFixed(2),
+      "Int Stocks (VXUS)": props.metrics.full_portfolio['VXUS']['sharpe ratio'].toFixed(2),
+      "Bonds (BND)": props.metrics.full_portfolio['BND']['sharpe ratio'].toFixed(2),
+      "Cash (SHV)": props.metrics.full_portfolio['SHV']['sharpe ratio'].toFixed(2),
+    },
   ];
 });
 

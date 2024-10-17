@@ -869,7 +869,6 @@ const updateResponse = (q, setInitial = false) => {
     );
   }
 
-  console.log("here is q:", q)
   if (q.question.tag === "interests" && q.question.default_value.indexOf("Other") !== -1) {
     otherSelected.value = true
   }
