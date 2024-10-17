@@ -139,7 +139,7 @@
               <v-col class="pie_graph">
                 <div class="d-flex justify-center align-center h-100">
                   <PieChart
-                      :data="getPieChart(portfolioSectors)"
+                      :data="getPieChart(portfolioSectors, 'sectors')"
                       :options="{
                       responsive: true,
                       plugins: {
@@ -156,7 +156,7 @@
                   <tbody>
                   <tr v-for="(p, index) in portfolioSectors" :key="index" class="pl-10">
                     <td class="sector-dot">
-                      <v-icon :color="orderedColors[index]">mdi-circle</v-icon>
+                      <v-icon :color="orderedColorsSectors[index]">mdi-circle</v-icon>
                     </td>
                     <td class="text-no-wrap">{{ p.title }}</td>
                     <td class="text-no-wrap">{{ p.value }}%</td>
@@ -168,133 +168,175 @@
           </div>
 
           <hr/>
+          <v-row>
+            <v-col cols="12" md="6">
+              <div class="my-8 table-content">
+                <div class="d-flex justify-start flex-row">
+                  <v-tooltip
+                      text="These companies were excluded from your portfolio, likely among others."
+                      location="top">
+                    <template v-slot:activator="{ props }">
+                      <div class="text-h4" v-bind="props">Lowest Value Scores</div>
+                      <v-icon
+                          v-bind="props"
+                          size="20"
+                          color="grayblue"
+                          class="ml-1 translate">mdi-information
+                      </v-icon>
+                    </template>
+                  </v-tooltip>
+                </div>
 
-          <div class="my-8 table-content">
-            <div class="d-flex justify-start flex-row">
-              <v-tooltip text="Tooltip" location="top">
+                <v-data-table
+                    :items="worstCompanies"
+                    :headers="worstHeaders"
+                    :items-per-page="-1"
+                    hide-default-header
+                    mobile-breakpoint="700"
+                >
+                  <!-- Custom Header Slot -->
+                  <template
+                      v-for="header in worstHeaders"
+                      :key="header.key"
+                      v-slot:[`header.${header.key}`]="{ column }">
+                    <span>{{ column.title }}</span>
+                    <v-tooltip
+                        v-if="column.tooltip"
+                        :text="column.tooltip"
+                        location="top"
+                    >
+                      <template v-slot:activator="{ props }">
+                        <v-icon
+                            v-bind="props"
+                            small
+                            color="grayblue"
+                            class="ml-1">mdi-information
+                        </v-icon>
+                      </template>
+                    </v-tooltip>
+                  </template>
+
+
+                  <template v-slot:item="{ item }">
+                    <tr>
+                      <td style="white-space: nowrap;">{{ item.name }}</td>
+                      <td>{{ item.ticker }}</td>
+                      <td>{{ item.worst_value }}</td>
+                    </tr>
+                  </template>
+                  <template #bottom></template>
+                </v-data-table>
+              </div>
+            </v-col>
+            <v-col cols="12" md="1">
+              <v-spacer></v-spacer>
+            </v-col>
+            <v-col cols="12" md="4" class="py-5">
+              <div class="text-h4 pt-4">Total Removed Companies (Value Based)</div>
+              <v-col class="pie_graph">
+                <div class="d-flex justify-center align-center h-100">
+                  <PieChart
+                      :data="getPieChart(eliminatedCount, 'elim')"
+                      :options="{
+                      responsive: true,
+                      plugins: {
+                        legend: {
+                          display: false,
+                        },
+                      },
+                    }"
+                  />
+                </div>
+              </v-col>
+
+              <v-table>
+                <tbody>
+                <tr v-for="(e, index) in eliminatedCount" :key="index" class="pl-10">
+                  <td class="sector-dot">
+                    <v-icon :color="orderedColorsElim[index]">mdi-circle</v-icon>
+                  </td>
+                  <td class="text-no-wrap">{{ e.title }}</td>
+                  <td class="text-no-wrap" style="color: red">{{ e.value }}</td>
+                </tr>
+                </tbody>
+              </v-table>
+
+            </v-col>
+          </v-row>
+
+
+        </div>
+
+        <hr/>
+
+        <div class="my-8 table-content">
+          <div class="text-h4">Pomarium Allocations</div>
+          <div class="d-flex justify-end" v-if="!edditingAllocations">
+            <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
+            <v-btn color="primary" @click="refresh">Refresh</v-btn>
+          </div>
+          <div class="d-flex justify-end" v-else>
+            <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
+            <v-btn @click="switchEditAllocations">Cancel</v-btn>
+          </div>
+          <v-data-table
+              :items="allocations"
+              :headers="allocationHeaders"
+              :items-per-page="-1"
+              hide-default-header
+              mobile-breakpoint="700"
+          >
+            <!-- Custom Header Slot -->
+            <template
+                v-for="header in allocationHeaders"
+                :key="header.key"
+                v-slot:[`header.${header.key}`]="{ column }">
+              <span>{{ column.title }}</span>
+              <v-tooltip
+                  v-if="column.tooltip"
+                  :text="column.tooltip"
+                  location="top"
+              >
                 <template v-slot:activator="{ props }">
-                  <div class="text-h4" v-bind="props">Your worst values fits</div>
                   <v-icon
                       v-bind="props"
-                      size="20"
+                      small
                       color="grayblue"
-                      class="ml-1 translate">mdi-information
+                      class="ml-2">mdi-information
                   </v-icon>
                 </template>
               </v-tooltip>
-            </div>
-
-            <v-data-table
-                :items="worstCompanies"
-                :headers="worstHeaders"
-                :items-per-page="-1"
-                hide-default-header
-                mobile-breakpoint="700"
-            >
-              <!-- Custom Header Slot -->
-              <template
-                  v-for="header in worstHeaders"
-                  :key="header.key"
-                  v-slot:[`header.${header.key}`]="{ column }">
-                <span>{{ column.title }}</span>
-                <v-tooltip
-                    v-if="column.tooltip"
-                    :text="column.tooltip"
-                    location="top"
-                >
-                  <template v-slot:activator="{ props }">
-                    <v-icon
-                        v-bind="props"
-                        small
-                        color="grayblue"
-                        class="ml-2">mdi-information
-                    </v-icon>
-                  </template>
-                </v-tooltip>
-              </template>
+            </template>
 
 
-              <template v-slot:item="{ item }">
-                <tr>
-                  <td style="white-space: nowrap;">{{ item.name }}</td>
-                  <td>{{ item.ticker }}</td>
-                  <td>{{ item.worst_value }}</td>
-                </tr>
-              </template>
-              <template #bottom></template>
-            </v-data-table>
-          </div>
+            <template v-slot:item="{ item }">
+              <tr>
+                <td>
+                  <v-checkbox-btn v-if="edditingAllocations"
+                                  @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
+                </td>
+                <td style="padding: 0px;">
+                  <LazyImage
+                      :src="item.image"
+                      :alt="item.ticker"
+                      style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
+                </td>
+                <td style="white-space: nowrap;">{{ item.company }}</td>
+                <td>{{ item.ticker }}</td>
+                <td>{{ item.allocation }}</td>
+                <td>{{ item.values_fit }}</td>
+                <td>{{ item.investment_fit }}</td>
+              </tr>
+            </template>
+            <template #bottom></template>
+          </v-data-table>
 
-          <hr/>
-
-          <div class="my-8 table-content">
-            <div class="text-h4">Pomarium Allocations</div>
-            <div class="d-flex justify-end" v-if="!edditingAllocations">
-              <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
-              <v-btn color="primary" @click="refresh">Refresh</v-btn>
-            </div>
-            <div class="d-flex justify-end" v-else>
-              <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
-              <v-btn @click="switchEditAllocations">Cancel</v-btn>
-            </div>
-            <v-data-table
-                :items="allocations"
-                :headers="allocationHeaders"
-                :items-per-page="-1"
-                hide-default-header
-                mobile-breakpoint="700"
-            >
-              <!-- Custom Header Slot -->
-              <template
-                  v-for="header in allocationHeaders"
-                  :key="header.key"
-                  v-slot:[`header.${header.key}`]="{ column }">
-                <span>{{ column.title }}</span>
-                <v-tooltip
-                    v-if="column.tooltip"
-                    :text="column.tooltip"
-                    location="top"
-                >
-                  <template v-slot:activator="{ props }">
-                    <v-icon
-                        v-bind="props"
-                        small
-                        color="grayblue"
-                        class="ml-2">mdi-information
-                    </v-icon>
-                  </template>
-                </v-tooltip>
-              </template>
-
-
-              <template v-slot:item="{ item }">
-                <tr>
-                  <td>
-                    <v-checkbox-btn v-if="edditingAllocations"
-                                    @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
-                  </td>
-                  <td style="padding: 0px;">
-                    <LazyImage
-                        :src="item.image"
-                        :alt="item.ticker"
-                        style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
-                  </td>
-                  <td style="white-space: nowrap;">{{ item.company }}</td>
-                  <td>{{ item.ticker }}</td>
-                  <td>{{ item.allocation }}</td>
-                  <td>{{ item.values_fit }}</td>
-                  <td>{{ item.investment_fit }}</td>
-                </tr>
-              </template>
-              <template #bottom></template>
-            </v-data-table>
-
-            <div class="d-flex justify-end" v-if="edditingAllocations">
-              <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
-              <v-btn @click="switchEditAllocations">Cancel</v-btn>
-            </div>
+          <div class="d-flex justify-end" v-if="edditingAllocations">
+            <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
+            <v-btn @click="switchEditAllocations">Cancel</v-btn>
           </div>
         </div>
+
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
@@ -466,6 +508,9 @@ const client = ref({});
 const clientLoading = ref(false);
 const excludedQuestionIDs = ref('')
 const worstCompanies = ref({})
+const eliminatedCount = ref({})
+const orderedColorsSectors = ref([])
+const orderedColorsElim = ref([])
 
 const hasValuesProfile = computed(
     () => !!Object.keys(valuesProfile.value).length
@@ -583,8 +628,6 @@ const worstHeaders = [
   },
 ];
 
-let orderedColors = ref([])
-
 const getPortfolios = async () => {
   portfoliosLoading.value = true;
 
@@ -629,9 +672,8 @@ const getPortfolios = async () => {
 
     const {
       allocations: {pomarium},
-      portfolio_data: {pomarium_names, values_fit, investment_fit, worst_values, worst_values_names}
+      portfolio_data: {pomarium_names, values_fit, investment_fit, worst_values, worst_values_names, eliminations}
     } = data[0];
-
 
     for (let i in pomarium) {
       pomarium[i] = (Math.round(pomarium[i] * 100 * 100) / 100).toFixed(2);
@@ -659,12 +701,19 @@ const getPortfolios = async () => {
         }))
         .sort((a, b) => parseFloat(b.worst_value) - parseFloat(a.worst_value));
 
+    eliminatedCount.value = Object.keys(eliminations)
+        .map(industry => ({
+          title: industry,
+          value: eliminations[industry],
+        }))
+        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
+
+
+    portfoliosLoading.value = false;
+    hasRequestedPortfolios.value = true;
   } catch (error) {
     console.error('Error in getPortfolios:', error);
   }
-
-  hasRequestedPortfolios.value = true;
-  portfoliosLoading.value = false;
 };
 
 const portfolioValuesComparison = computed(() => {
@@ -885,10 +934,11 @@ onMounted(async () => {
   await fetchValuesProfile()
 });
 
-watch(currentTab, (e) => {
-  if (e === 1 && !hasRequestedPortfolios.value) {
+watch(currentTab, (newVal) => {
+  // More robust check to prevent unnecessary calls
+  if (newVal === 1 && !hasRequestedPortfolios.value) {
     getPortfolios();
-  } else if (e === 3 && !Object.keys(metrics.value).length) {
+  } else if (newVal === 3 && !Object.keys(metrics.value).length) {
     getMetrics();
   }
 });
@@ -908,21 +958,35 @@ const getUniqueRandomColor = (colors, usedColors) => {
   return color;
 };
 
-const getPieChart = (data) => {
+const getPieChart = (data, whichVariable) => {
   const labels = data.map((d) => d.title);
   const usedColors = new Set();
 
-  orderedColors.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
+  if (whichVariable === "elim") {
+    orderedColorsElim.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
 
-  return {
-    labels,
-    datasets: [
-      {
-        backgroundColor: orderedColors.value,
-        data: data.map((d) => d.value),
-      },
-    ],
-  };
+    return {
+      labels,
+      datasets: [
+        {
+          backgroundColor: orderedColorsElim.value,
+          data: data.map((d) => d.value),
+        },
+      ],
+    };
+  } else {
+    orderedColorsSectors.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
+
+    return {
+      labels,
+      datasets: [
+        {
+          backgroundColor: orderedColorsSectors.value,
+          data: data.map((d) => d.value),
+        },
+      ],
+    };
+  }
 };
 
 const getBarChart = (data) => {
@@ -1121,6 +1185,12 @@ const templateItems = [{
 
 :deep(.v-overlay__content) {
   max-width: 40% !important;
+}
+
+.worst-div {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .translate {
