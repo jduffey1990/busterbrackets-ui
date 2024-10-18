@@ -232,7 +232,7 @@
               <v-spacer></v-spacer>
             </v-col>
             <v-col cols="12" md="4" class="py-5">
-              <div class="text-h4 pt-4">Total Removed Companies (Value Based)</div>
+              <div class="text-h4 pt-4">Total Excluded Companies (Value Based)</div>
               <v-col class="pie_graph">
                 <div class="d-flex justify-center align-center h-100">
                   <PieChart
