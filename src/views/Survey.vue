@@ -31,7 +31,7 @@
     >Please do not include and exclude the same company in your selections.
     </v-alert>
 
-    <div class="eliminations-container">
+    <div v-if="survey" class="eliminations-container">
       <v-card class="eliminations-card">
         <v-card-title>Eliminated Companies</v-card-title>
         <v-card-subtitle>Your selections today have eliminated {{ animatedEliminations }} companies</v-card-subtitle>
