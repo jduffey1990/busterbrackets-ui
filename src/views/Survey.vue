@@ -31,6 +31,14 @@
     >Please do not include and exclude the same company in your selections.
     </v-alert>
 
+    <div class="eliminations-container">
+      <v-card class="eliminations-card">
+        <v-card-title>Eliminated Companies</v-card-title>
+        <v-card-subtitle>Your selections today have eliminated {{ animatedEliminations }} companies</v-card-subtitle>
+      </v-card>
+    </div>
+
+
     <div v-if="survey" class="survey_div trans-background">
       <v-stepper v-model="currentStep">
         <template v-slot:default="{ prev, next }">
@@ -679,6 +687,7 @@ const {show} = inject('toast');
 //imported components
 import Overlay from '@/components/Overlay.vue';
 import {funLookAtFunction} from "@/utils/string";
+import {debounce} from "chart.js/helpers";
 
 // Stores
 const {
@@ -711,6 +720,9 @@ const userResponse = ref('')
 const clientData = ref({})
 const otherSelected = ref(false);
 const pushToInterests = ref('')
+const eliminations = ref(0);
+const animatedEliminations = ref(0);
+
 
 // Initial State
 const initialState = {
@@ -840,7 +852,7 @@ const sortValues = (values) => {
   return values;
 };
 
-const updateResponse = (q, setInitial = false) => {
+const updateResponse = async (q, setInitial = false) => {
   // Find if this question's response is already in surveyResponses
   const position = surveyResponses.findIndex(s => s.question.id === q.question.id);
 
@@ -873,8 +885,10 @@ const updateResponse = (q, setInitial = false) => {
     otherSelected.value = true
   }
 
+  await getElims()
 
 };
+
 
 const sendFreeResponse = async (prospect_id = null) => {
   freeFormSubmitted.value = true;
@@ -962,6 +976,59 @@ const sendEmail = async () => {
     show({message: parseError(error), error: true});  // Display error message to the user
   }
 };
+
+const getElims = async () => {
+  if (surveyResponses.length > 0) {
+    let mappedSurveyResponses = surveyResponses.map(sr => {
+      if (sr.question.tag === "interests" && pushToInterests.value.length > 0) {
+        if (Array.isArray(sr.question.default_value)) {
+          sr.question.default_value.push(...pushToInterests.value); // Spread operator
+        }
+      }
+
+      let response = {
+        ...sr.question,
+        default_value: JSON.stringify(sr.question.default_value), // Ensure backend expects this
+        name: sr.question["text"]
+      };
+
+      return response;
+    });
+
+    try {
+      // Send the mapped responses to the backend
+      const result = await $axios.post(
+          `/api/advisors/${advisor_id}/clients/${user_id}/eliminations/`,
+          mappedSurveyResponses
+      );
+
+      // Assuming the response contains eliminations count, update it
+      eliminations.value = result.data.eliminations_count; // Update the reactive state
+
+    } catch (error) {
+      console.error("API call failed", error);
+    }
+  }
+};
+
+watch(eliminations, (newValue, oldValue) => {
+  const duration = 1000; // Animation duration (1 second)
+  const frameRate = 60; // 60 frames per second for smooth animation
+  const totalFrames = Math.round((duration / 1000) * frameRate);
+  let frame = 0;
+
+  const counter = setInterval(() => {
+    frame++;
+    // Calculate the animated value for each frame
+    animatedEliminations.value = Math.round(
+        oldValue + (newValue - oldValue) * (frame / totalFrames)
+    );
+    // Clear the interval when the animation is done
+    if (frame === totalFrames) {
+      clearInterval(counter);
+    }
+  }, 1000 / frameRate);
+});
 
 
 //submit is called in the client pathway without an id.  it is called in createNewProspect with the prospect_id
@@ -1154,6 +1221,34 @@ window.addEventListener('beforeunload', (event) => {
 
 .v-col-6 {
   min-width: 300px !important;
+}
+
+.eliminations-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.eliminations-card {
+  background-color: #FEFCF7; /* Light brand background color */
+  color: #07152A; /* Dark text color */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for elevation */
+  max-width: 500px; /* Set a reasonable max width */
+  text-align: center;
+}
+
+.v-card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #903F30; /* Brand color for the title */
+}
+
+.v-card-subtitle {
+  font-size: 1rem;
+  color: #636970; /* Slightly lighter text color for subtitle */
+  margin-top: 10px;
 }
 
 .twin-columns {
@@ -1444,6 +1539,20 @@ window.addEventListener('beforeunload', (event) => {
 
 
 @media only screen and (max-width: 700px) {
+
+  .eliminations-card {
+    max-width: 90%; /* Make it more responsive for small screens */
+    padding: 15px;
+  }
+
+  .v-card-title {
+    font-size: 1.25rem;
+  }
+
+  .v-card-subtitle {
+    font-size: 1rem;
+  }
+
 
   .survey_header {
     font-size: 1rem;
