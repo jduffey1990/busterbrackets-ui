@@ -61,7 +61,7 @@
                   <v-card class="eliminations-card" v-if="section.tag === 'pullYourWeeds'">
                     <v-card-title>Eliminated Companies</v-card-title>
                     <v-card-subtitle class="text-wrap">
-                      Your selections today have eliminated
+                      Your selections have eliminated
                       <span
                           :class="{'animated-eliminations-active': numberChanging}"
                           class="animated-eliminations"
@@ -112,7 +112,7 @@
                         closable-chips
                         multiple
                         clear-on-select
-                        @update:model-value="updateResponse(q)"
+                        @update:model-value="updateResponse(q, section.tag)"
                         class="autocomplete"
                     >
                       <template v-slot:label>
@@ -157,7 +157,7 @@
                                   chips
                                   closable-chips
                                   multiple
-                                  @update:model-value="updateResponse(q)"
+                                  @update:model-value="updateResponse(q, section.tag)"
                                   class="mt-3"
                               >
                               </v-autocomplete>
@@ -177,7 +177,7 @@
                                   v-model="q.question.default_value"
                                   :items="q.question.slider_ticks"
                                   label="Single Response Possible"
-                                  @update:model-value="updateResponse(q)"
+                                  @update:model-value="updateResponse(q, section.tag)"
                                   class="mt-3"
                                   clearable
                               >
@@ -258,7 +258,7 @@
                               >
                                 <v-checkbox
                                     v-model="q.question.default_value"
-                                    @input="updateResponse(q)"
+                                    @input="updateResponse(q, section.tag)"
                                     :label="q.question.text"
 
                                 ></v-checkbox>
@@ -353,7 +353,7 @@
                                   class="ml-8">
                                 <v-checkbox
                                     v-model="q.question.default_value"
-                                    @input="updateResponse(q)"
+                                    @input="updateResponse(q, section.tag)"
                                     :label="q.question.text"
                                 ></v-checkbox>
                                 <v-tooltip
@@ -398,7 +398,7 @@
                                 <!-- Select All Checkbox -->
                                 <v-checkbox
                                     v-model="group.survey_questions[0].question.default_value"
-                                    @input="updateResponse(group.survey_questions[0])"
+                                    @input="updateResponse(group.survey_questions[0], section.tag)"
                                     label=""
                                     class="ml-3"
                                 ></v-checkbox>
@@ -502,7 +502,7 @@
                               >
                                 <v-checkbox
                                     v-model="q.question.default_value"
-                                    @input="updateResponse(q)"
+                                    @input="updateResponse(q, section.tag)"
                                     :label="q.question.text"
 
                                 ></v-checkbox>
@@ -569,7 +569,7 @@
                                 :max="q.question.slider_ticks.length - 1"
                                 :step="1.0"
                                 :ticks="getTicks(q.question.slider_ticks)"
-                                @end="updateResponse(q)"
+                                @end="updateResponse(q, section.tag)"
                                 show-ticks="always"
                                 color="primary"
                                 max-width="1000px"
@@ -582,7 +582,8 @@
                               <div class="text-h5">
                                 {{ q.question.text }}
                               </div>
-                              <v-radio-group v-model="q.question.default_value" @change="updateResponse(q)" row>
+                              <v-radio-group v-model="q.question.default_value" @change="updateResponse(q, section.tag)"
+                                             row>
                                 <v-radio
                                     v-for="(option, index) in q.question.slider_ticks"
                                     :key="index"
@@ -605,7 +606,7 @@
                                 chips
                                 closable-chips
                                 multiple
-                                @update:model-value="updateResponse(q)"
+                                @update:model-value="updateResponse(q, section.tag)"
                             >
                             </v-autocomplete>
                           </div>
@@ -734,6 +735,7 @@ const pushToInterests = ref('')
 const eliminations = ref(0);
 const animatedEliminations = ref(0);
 const numberChanging = ref(false)
+const previousResponses = [];
 
 
 // Initial State
@@ -777,9 +779,11 @@ const toggleAllCheckboxes = (group) => {
   group.survey_questions.forEach(q => {
     if (q.question.response_type === 'checkbox') {
       q.question.default_value = selectAll.value[group.name];
-      updateResponse(q, true)
+      updateResponse(q, null, true)
+
     }
   });
+  getElims()
 };
 
 const selectAllCheck = (group) => {
@@ -864,7 +868,7 @@ const sortValues = (values) => {
   return values;
 };
 
-const updateResponse = async (q, setInitial = false) => {
+const updateResponse = async (q, section, setInitial = false) => {
   // Find if this question's response is already in surveyResponses
   const position = surveyResponses.findIndex(s => s.question.id === q.question.id);
 
@@ -897,8 +901,9 @@ const updateResponse = async (q, setInitial = false) => {
     otherSelected.value = true
   }
 
-  await getElims()
-
+  if (section === "pullYourWeeds") {
+    await getElims()
+  }
 };
 
 
@@ -990,28 +995,46 @@ const sendEmail = async () => {
 };
 
 const getElims = async () => {
-  if (surveyResponses.length > 0) {
-    let mappedSurveyResponses = surveyResponses.map(sr => {
-      if (sr.question.tag === "interests" && pushToInterests.value.length > 0) {
-        if (Array.isArray(sr.question.default_value)) {
-          sr.question.default_value.push(...pushToInterests.value); // Spread operator
-        }
-      }
+  // Initialize mappedSurveyResponses as an empty array
+  let mappedSurveyResponses = [];
 
+  // Check if surveyResponses is not empty
+  if (surveyResponses.length > 0) {
+    mappedSurveyResponses = surveyResponses.map(sr => {
+      // Construct the response object
       let response = {
         ...sr.question,
-        default_value: JSON.stringify(sr.question.default_value), // Ensure backend expects this
+        default_value: JSON.stringify(sr.question.default_value), // Convert to string for backend
         name: sr.question["text"]
       };
 
-      return response;
+      return response
     });
+  }
 
+  console.log("first mapped", mappedSurveyResponses)
+  let filteredSurveyResponses = mappedSurveyResponses.filter((q) => q.default_value !== "false")
+  // Filter out duplicate questions in previousResponses (based on question id)
+  const filteredPreviousResponses = previousResponses.filter(prevResp => {
+    return !surveyResponses.some(surveyResp => surveyResp.question.id === prevResp.id);
+  });
+
+  // Check if there are previous responses and concatenate them
+  let finalResponses
+  if (previousResponses.length > 0) {
+    finalResponses = filteredSurveyResponses.concat(filteredPreviousResponses);
+  }
+
+  // Log the final mapped responses for debugging
+  console.log("here are the mapped responses", finalResponses);
+
+  // Check if mappedSurveyResponses is not empty before making API call
+  if (finalResponses.length !== 0) {
     try {
       // Send the mapped responses to the backend
       const result = await $axios.post(
           `/api/advisors/${advisor_id}/clients/${user_id}/eliminations/`,
-          mappedSurveyResponses
+          finalResponses
       );
 
       // Assuming the response contains eliminations count, update it
@@ -1022,6 +1045,7 @@ const getElims = async () => {
     }
   }
 };
+
 
 watch(eliminations, (newValue, oldValue) => {
   const duration = 1000; // Animation duration (1 second)
@@ -1181,15 +1205,34 @@ onMounted(async () => {
         const foundQuestion = valuesProfile.find(vp => vp.question.id === q.question.id);
         if (foundQuestion) {
           q.question.default_value = foundQuestion.value;
+          //let's make something for eliminations to use from valuesProfile
+          const {
+            sections: {tag: sectionTag}, // Aliasing the `tag` from `sections` to `sectionTag`
+            value,
+            question: {id, text, response_type, slider_ticks, tag: questionTag} // Aliasing the `tag` from `question` to `questionTag`
+          } = foundQuestion;
+
+          if (sectionTag === "pullYourWeeds" && foundQuestion.value !== false) {
+            previousResponses.push({
+              default_value: JSON.stringify(value),
+              id: id,
+              name: text,
+              response_type: response_type,
+              slider_ticks: slider_ticks,
+              tag: questionTag, // This is the `tag` from `question`
+              text: text,
+            });
+          }
         }
         if (q.question.response_type === 'slider' && q.question.default_value === undefined) {
           q.question.default_value = 1;
-          updateResponse(q, true);
+          updateResponse(q, null, true);
         }
       }
     }
   }
 
+  await getElims()
   survey.value = surveyData;
   await getCompanies();
   if (user_id) {
