@@ -168,6 +168,43 @@
           </div>
 
           <hr/>
+
+          <div class="my-8 canvas-item" v-if="eliminatedCount">
+            <div class="text-h4">Total Excluded Companies (Value Based)</div>
+            <div class="pie_section">
+
+              <v-col class="pie_table">
+                <v-table>
+                  <tbody>
+                  <tr v-for="(e, index) in eliminatedCount" :key="index" class="pl-10">
+                    <td class="sector-dot">
+                      <v-icon :color="orderedColorsElim[index]">mdi-circle</v-icon>
+                    </td>
+                    <td class="text-no-wrap">{{ e.title }}</td>
+                    <td class="text-no-wrap" style="color: red">{{ e.value }}</td>
+                  </tr>
+                  </tbody>
+                </v-table>
+              </v-col>
+
+              <v-col class="pie_graph">
+                <div class="d-flex justify-center align-center h-100">
+                  <PieChart
+                      :data="getPieChart(eliminatedCount, 'elim')"
+                      :options="{
+                            responsive: true,
+                            plugins: {
+                              legend: {
+                                display: false,
+                              },
+                            },
+                          }"
+                  />
+                </div>
+              </v-col>
+            </div>
+          </div>
+          <hr/>
           <v-row>
             <v-col cols="12" md="6">
               <div class="my-8 table-content">
@@ -219,6 +256,12 @@
 
                   <template v-slot:item="{ item }">
                     <tr>
+                      <td style="padding: 0px;">
+                        <LazyImage
+                            :src="item.image"
+                            :alt="item.ticker"
+                            style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
+                      </td>
                       <td style="white-space: nowrap;">{{ item.name }}</td>
                       <td>{{ item.ticker }}</td>
                       <td>{{ item.worst_value }}</td>
@@ -227,40 +270,6 @@
                   <template #bottom></template>
                 </v-data-table>
               </div>
-            </v-col>
-            <v-col cols="12" md="1">
-              <v-spacer></v-spacer>
-            </v-col>
-            <v-col cols="12" md="4" class="py-5">
-              <div class="text-h4 pt-4">Total Excluded Companies (Value Based)</div>
-              <v-col class="pie_graph">
-                <div class="d-flex justify-center align-center h-100">
-                  <PieChart
-                      :data="getPieChart(eliminatedCount, 'elim')"
-                      :options="{
-                      responsive: true,
-                      plugins: {
-                        legend: {
-                          display: false,
-                        },
-                      },
-                    }"
-                  />
-                </div>
-              </v-col>
-
-              <v-table>
-                <tbody>
-                <tr v-for="(e, index) in eliminatedCount" :key="index" class="pl-10">
-                  <td class="sector-dot">
-                    <v-icon :color="orderedColorsElim[index]">mdi-circle</v-icon>
-                  </td>
-                  <td class="text-no-wrap">{{ e.title }}</td>
-                  <td class="text-no-wrap" style="color: red">{{ e.value }}</td>
-                </tr>
-                </tbody>
-              </v-table>
-
             </v-col>
           </v-row>
 
@@ -608,6 +617,12 @@ const allocationHeaders = [
 
 const worstHeaders = [
   {
+    title: '',
+    key: 'image',
+    width: 0,
+    nowrap: true
+  },
+  {
     title: 'Company',
     key: 'name',
     width: 0,
@@ -695,11 +710,12 @@ const getPortfolios = async () => {
 
     worstCompanies.value = Object.keys(worst_values)
         .map(ticker => ({
+          image: getImagePathFromTicker(ticker),
           ticker: ticker,
           name: worst_values_names[ticker],
-          worst_value: `${(Math.round(worst_values[ticker] * 100) / 100).toFixed(2)}%`
+          worst_value: `${(Math.round(worst_values[ticker]))}%`
         }))
-        .sort((a, b) => parseFloat(b.worst_value) - parseFloat(a.worst_value));
+        .sort((a, b) => parseFloat(a.worst_value) - parseFloat(b.worst_value));
 
     eliminatedCount.value = Object.keys(eliminations)
         .map(industry => ({

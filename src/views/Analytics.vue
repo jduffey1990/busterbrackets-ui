@@ -68,7 +68,7 @@
           <v-toolbar-title>Whole Portfolio Analysis</v-toolbar-title>
         </v-toolbar>
       </template>
-      <template #bottom v-if="wholeHeaders.length < 10"></template>
+      <template #bottom></template>
     </v-data-table>
 
     <v-data-table
@@ -102,7 +102,7 @@
           <v-toolbar-title>US Large Mid cap stock comparison (5 year)</v-toolbar-title>
         </v-toolbar>
       </template>
-      <template #bottom v-if="metricHeaders.length < 10"></template>
+      <template #bottom></template>
     </v-data-table>
 
     <div class="mt-2 mb-2">
@@ -116,6 +116,20 @@
       </h6>
     </div>
   </div>
+  <hr>
+  <div>
+    <p class="disclosure-analytics">All performance is hypothetical and backtested. The backtested performance assumes
+      monthly rebalancing and the
+      reinvestment of dividends and does not account for transaction costs, market impacts, and taxes. The only fees
+      that are included are ETF and mutual fund expense ratios and an advisor fee, if specified. The performance is
+      based on historical data and is provided for informational purposes only. Historical data used for backtesting has
+      been sourced from reliable third-party vendors, but the accuracy of data cannot be guaranteed. The backtested
+      results may be subject to survivorship bias, meaning the analysis only includes companies or securities that have
+      survived until the end of the test period. The market proxy benchmark is provided to include the effects of
+      hindsight and survivorship bias in the benchmark. Results do not represent actual portfolios. Past performance is
+      no guarantee of future returns.</p>
+  </div>
+
 </template>
 
 <script setup>
@@ -261,28 +275,10 @@ const metricTableData = computed(() => {
       iwb: toPercentage(props.metrics.IWB["5yr return"]),
     },
     {
-      metric: 'Max Drawdown',
-      pomariumValue: toPercentage(props.metrics.pomarium["5yr max drawdown"]),
-      marketValue: toPercentage(props.metrics.market["5yr max drawdown"]),
-      iwb: toPercentage(props.metrics.IWB["5yr max drawdown"]),
-    },
-    {
       metric: 'Volatility',
       pomariumValue: toPercentage(props.metrics.pomarium["volatility"]),
       marketValue: toPercentage(props.metrics.market["volatility"]),
       iwb: toPercentage(props.metrics.IWB["volatility"]),
-    },
-    {
-      metric: 'Tracking Error',
-      pomariumValue: toPercentage(props.metrics.pomarium["tracking_error"]),
-      marketValue: toPercentage(props.metrics.market["tracking_error"]),
-      iwb: toPercentage(props.metrics.IWB["tracking_error"]),
-    },
-    {
-      metric: 'Beta (Market Exposure Metric)',
-      pomariumValue: props.metrics.pomarium["beta"].toFixed(2), // Beta usually isn't a percentage
-      marketValue: props.metrics.market["beta"].toFixed(2),
-      iwb: props.metrics.IWB["beta"].toFixed(2),
     },
     {
       metric: 'Sharpe Ratio',
@@ -295,6 +291,30 @@ const metricTableData = computed(() => {
       pomariumValue: props.metrics.pomarium["sortino ratio"].toFixed(2),
       marketValue: props.metrics.market["sortino ratio"].toFixed(2),
       iwb: props.metrics.IWB["sortino ratio"].toFixed(2),
+    },
+    {
+      metric: 'Max Drawdown',
+      pomariumValue: toPercentage(props.metrics.pomarium["5yr max drawdown"]),
+      marketValue: toPercentage(props.metrics.market["5yr max drawdown"]),
+      iwb: toPercentage(props.metrics.IWB["5yr max drawdown"]),
+    },
+    {
+      metric: 'Beta',
+      pomariumValue: props.metrics.pomarium["beta"].toFixed(1),
+      marketValue: props.metrics.market["beta"].toFixed(1),
+      iwb: props.metrics.IWB["beta"].toFixed(1),
+    },
+    {
+      metric: 'Tracking Error',
+      pomariumValue: toPercentage(props.metrics.pomarium["tracking_error"]),
+      marketValue: toPercentage(props.metrics.market["tracking_error"]),
+      iwb: toPercentage(props.metrics.IWB["tracking_error"]),
+    },
+    {
+      metric: 'Active Share',
+      pomariumValue: `${Math.round(props.metrics.pomarium["active_share"])}%`,
+      marketValue: `${Math.round(props.metrics.market["active_share"])}%`,
+      iwb: `${Math.round(props.metrics.IWB["active_share"])}%`,
     },
     {
       metric: 'Up Capture',
@@ -326,12 +346,6 @@ const metricTableData = computed(() => {
       marketValue: toPercentage(props.metrics.market["worst_year"]),
       iwb: toPercentage(props.metrics.IWB["worst_year"]),
     },
-    {
-      metric: 'Active Share',
-      pomariumValue: `${Math.round(props.metrics.pomarium["active_share"])}%`,
-      marketValue: `${Math.round(props.metrics.market["active_share"])}%`,
-      iwb: `${Math.round(props.metrics.IWB["active_share"])}%`,
-    }
   ];
 });
 
@@ -462,7 +476,7 @@ function formatDate(dateString) {
 }
 
 function toPercentage(value) {
-  return `${(value * 100).toFixed(2)}%`;
+  return `${(value * 100).toFixed(1)}%`;
 }
 </script>
 
@@ -485,15 +499,22 @@ function toPercentage(value) {
   padding-top: 0px;
 }
 
-@media only screen and (max-width: 1275px) {
-  .scatter_graph {
-    max-width: 80%;
-  }
-}
+.disclosure-analytics {
+  font-size: 14px !important;
+  color: rgba(7, 21, 42, 0.6);
+  line-height: 1.3;
+  margin-top: 20px;
 
-@media only screen and (max-width: 700px) {
-  .scatter_graph {
-    max-width: 100%;
+  @media only screen and (max-width: 1275px) {
+    .scatter_graph {
+      max-width: 80%;
+    }
+  }
+
+  @media only screen and (max-width: 700px) {
+    .scatter_graph {
+      max-width: 100%;
+    }
   }
 }
 </style>

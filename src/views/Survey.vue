@@ -31,13 +31,6 @@
     >Please do not include and exclude the same company in your selections.
     </v-alert>
 
-    <div v-if="survey" class="eliminations-container">
-      <v-card class="eliminations-card">
-        <v-card-title>Eliminated Companies</v-card-title>
-        <v-card-subtitle>Your selections today have eliminated {{ animatedEliminations }} companies</v-card-subtitle>
-      </v-card>
-    </div>
-
 
     <div v-if="survey" class="survey_div trans-background">
       <v-stepper v-model="currentStep">
@@ -62,7 +55,24 @@
                 v-for="(section, i) in survey.survey_sections"
                 :value="i + 1"
             >
-              <v-container class="flex-container description">
+              <v-container class="flex-container">
+
+                <div class="eliminations-container">
+                  <v-card class="eliminations-card" v-if="section.tag === 'pullYourWeeds'">
+                    <v-card-title>Eliminated Companies</v-card-title>
+                    <v-card-subtitle class="text-wrap">
+                      Your selections today have eliminated
+                      <span
+                          :class="{'animated-eliminations-active': numberChanging}"
+                          class="animated-eliminations"
+                      >
+                        {{ animatedEliminations }}
+                      </span>
+                      companies
+                    </v-card-subtitle>
+                  </v-card>
+                </div>
+
                 <div
                     class="survey_header"
                     v-if="section.description"
@@ -87,6 +97,7 @@
                       v-for="group in groupsWithMultiSelect(section.survey_groups)"
                       :key="group.name"
                       class="multi-dropdown"
+                      cols="12" md="8"
                   >
                     <!-- Loop through each question in the group -->
                     <v-autocomplete
@@ -722,6 +733,7 @@ const otherSelected = ref(false);
 const pushToInterests = ref('')
 const eliminations = ref(0);
 const animatedEliminations = ref(0);
+const numberChanging = ref(false)
 
 
 // Initial State
@@ -1018,6 +1030,7 @@ watch(eliminations, (newValue, oldValue) => {
   let frame = 0;
 
   const counter = setInterval(() => {
+    numberChanging.value = true
     frame++;
     // Calculate the animated value for each frame
     animatedEliminations.value = Math.round(
@@ -1026,6 +1039,7 @@ watch(eliminations, (newValue, oldValue) => {
     // Clear the interval when the animation is done
     if (frame === totalFrames) {
       clearInterval(counter);
+      numberChanging.value = false
     }
   }, 1000 / frameRate);
 });
@@ -1227,28 +1241,42 @@ window.addEventListener('beforeunload', (event) => {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 10px;
+  transform: translateY(-20px);
 }
 
 .eliminations-card {
-  background-color: #FEFCF7; /* Light brand background color */
+  background-color: #FFFFFF; /* Light brand background color */
   color: #07152A; /* Dark text color */
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for elevation */
-  max-width: 500px; /* Set a reasonable max width */
+  width: fit-content;
+  max-width: 600px; /* Set a reasonable max width */
   text-align: center;
+
 }
 
 .v-card-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #903F30; /* Brand color for the title */
+  color: #000000; /* Brand color for the title */
 }
 
 .v-card-subtitle {
   font-size: 1rem;
   color: #636970; /* Slightly lighter text color for subtitle */
-  margin-top: 10px;
+  margin-top: 0px;
+  text-wrap: auto;
+}
+
+.animated-eliminations {
+  transition: all 0.3s ease;
+}
+
+.animated-eliminations-active {
+  font-size: 3em; /* Larger font size */
+  color: red; /* Red color */
 }
 
 .twin-columns {
@@ -1279,9 +1307,9 @@ window.addEventListener('beforeunload', (event) => {
 }
 
 .survey_header {
-  padding: 10px 20px;
+  padding: 0px 20px;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   align-items: center;
   border: 2px solid rgba(99, 105, 112, 0.5);
   border-radius: 8px;
@@ -1505,6 +1533,10 @@ window.addEventListener('beforeunload', (event) => {
 }
 
 @media only screen and (max-width: 1275px) {
+
+  .eliminations-container {
+    justify-content: center;
+  }
 
   .rows {
     align-items: center;
