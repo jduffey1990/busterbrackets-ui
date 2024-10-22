@@ -768,6 +768,7 @@ const formatLabel = (text) => {
 };
 
 const toggleAllCheckboxes = (group) => {
+  console.log(group)
   //updates selectALL state.  Needed a non-db variable so created selectALL for that function
   if (!(group.name in selectAll.value)) {
     selectAll.value[group.name] = true;
@@ -783,7 +784,10 @@ const toggleAllCheckboxes = (group) => {
 
     }
   });
-  getElims()
+  if (group.position > -1 && group.position < 18) {
+    getElims()
+  }
+
 };
 
 const selectAllCheck = (group) => {
