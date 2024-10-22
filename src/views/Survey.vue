@@ -713,8 +713,11 @@ const user_id = route.query.user_id;
 const advisor = route.query.advisor;
 
 // Reactive State
-const survey = ref(null);
+
 const surveyResponses = reactive([]);
+
+//reference state
+const survey = ref(null);
 const currentStep = ref(null);
 const isAdvisorSurvey = computed(() => advisor === advisor_id);
 const hoveredQuestion = ref(null);
@@ -735,7 +738,10 @@ const pushToInterests = ref('')
 const eliminations = ref(0);
 const animatedEliminations = ref(0);
 const numberChanging = ref(false)
+
+//Non-composition API global variables
 const previousResponses = [];
+let newProspectId = null;
 
 
 // Initial State
@@ -744,7 +750,7 @@ const initialState = {
   last_name: undefined,
   email: undefined,
 };
-
+// below must be after initial state initialization
 const newProspect = reactive({...initialState});
 
 
@@ -768,7 +774,6 @@ const formatLabel = (text) => {
 };
 
 const toggleAllCheckboxes = (group) => {
-  console.log(group)
   //updates selectALL state.  Needed a non-db variable so created selectALL for that function
   if (!(group.name in selectAll.value)) {
     selectAll.value[group.name] = true;
@@ -784,13 +789,24 @@ const toggleAllCheckboxes = (group) => {
 
     }
   });
+  // only call get Elims for groups on the companies page
   if (group.position > -1 && group.position < 18) {
     getElims()
   }
 
 };
 
+const toggleGroup = (groupName) => {
+  //this function is for opening up the table dropdown
+  if (!(groupName in isActive.value)) {
+    isActive.value[groupName] = true;
+  } else {
+    isActive.value[groupName] = !isActive.value[groupName]; // Toggle state
+  }
+};
+
 const selectAllCheck = (group) => {
+  //functionality: if all the questions in the group are selected, group will display selected state
   let selectedCount = 0;
   group.survey_questions.forEach(q => {
     if (q.question.default_value === true) {
@@ -807,6 +823,7 @@ const selectAllCheck = (group) => {
 }
 
 const isIndeterminate = (group) => {
+  //Gives us the "-" in the select all checkboxes
   let selectedCount = 0;
   group.survey_questions.forEach(q => {
     if (q.question.default_value === true) {
@@ -817,15 +834,9 @@ const isIndeterminate = (group) => {
   return selectedCount > 0 && selectedCount < group.survey_questions.length;
 };
 
-const toggleGroup = (groupName) => {
-  if (!(groupName in isActive.value)) {
-    isActive.value[groupName] = true;
-  } else {
-    isActive.value[groupName] = !isActive.value[groupName]; // Toggle state
-  }
-};
 
 const positionExclude = (groupArray, keyword = null) => {
+  //We split groups up by position (db field)
   if (keyword === "drop") {
     return groupArray.filter((group) => group.position < 8);
   } else if (keyword === "single")
@@ -838,10 +849,13 @@ const positionExclude = (groupArray, keyword = null) => {
 };
 
 const groupLengthCheck = (group) => {
+  //if the group is only one question long, we don't have a dropdown caret and functionality
   return group.survey_questions.length > 1
 }
 
 const multipleQFunction = (tag) => {
+  // Could be phased out with some work, was used initially to signify multiresponse with multiple responses possible,
+  // We don't use position at the level of the question, so this is how we are splitting up the investment page
   const qArray = ["annualIncome", "ageRange", "gender"]
   return !qArray.includes(tag)
 }
@@ -965,7 +979,7 @@ const sendEmail = async () => {
     if (!advisorWantsEmail) {
       return;
     }
-
+    //If the advisor takes this from client route, they won't need an update.  This comes from prospect.
     let message = `
       <p>Hi ${advisorResponse.data.full_name},</p>
 
@@ -1015,8 +1029,7 @@ const getElims = async () => {
       return response
     });
   }
-
-  console.log("first mapped", mappedSurveyResponses)
+  //false but present values are mucking the data up
   let filteredSurveyResponses = mappedSurveyResponses.filter((q) => q.default_value !== "false")
   // Filter out duplicate questions in previousResponses (based on question id)
   const filteredPreviousResponses = previousResponses.filter(prevResp => {
@@ -1028,9 +1041,6 @@ const getElims = async () => {
   if (previousResponses.length > 0) {
     finalResponses = filteredSurveyResponses.concat(filteredPreviousResponses);
   }
-
-  // Log the final mapped responses for debugging
-  console.log("here are the mapped responses", finalResponses);
 
   // Check if mappedSurveyResponses is not empty before making API call
   if (finalResponses.length !== 0) {
@@ -1052,6 +1062,7 @@ const getElims = async () => {
 
 
 watch(eliminations, (newValue, oldValue) => {
+  // watches for an update from eliminations (changed through getElim), animates the change
   const duration = 1000; // Animation duration (1 second)
   const frameRate = 60; // 60 frames per second for smooth animation
   const totalFrames = Math.round((duration / 1000) * frameRate);
@@ -1073,7 +1084,8 @@ watch(eliminations, (newValue, oldValue) => {
 });
 
 
-//submit is called in the client pathway without an id.  it is called in createNewProspect with the prospect_id
+//submit is called in the client pathway without an id (no params).  it is called in createNewProspect with the
+// prospect_id
 const submit = async (prospect_id) => {
   isSubmitting.value = true;
   overlayStore.openOverlay(
@@ -1086,6 +1098,7 @@ const submit = async (prospect_id) => {
         ? `/api/prospects/${prospect_id}/responses/`
         : `/api/advisors/${advisor_id}/clients/${user_id}/responses/`;
 
+    //prepare data for API call
     let mappedSurveyResponses = surveyResponses.map(sr => {
       if (sr.question.tag === "interests" && pushToInterests.value.length > 0) {
         if (Array.isArray(sr.question.default_value)) {
@@ -1162,7 +1175,7 @@ const resetForm = () => {
   Object.assign(newProspect, initialState);
 };
 
-let newProspectId = null;
+
 const createNewProspect = async () => {
   try {
     if (!newProspectId) {
@@ -1183,8 +1196,10 @@ const createNewProspect = async () => {
 
 const submitSurvey = () => {
   if (isLoggedIn && !isAdvisorSurvey.value) {
+    //client model submit.  We already have the client info
     submit();
   } else {
+    //collect prospect info, submit happens after modal submission
     showNewProspectModal.value = true;
   }
 };
@@ -1205,6 +1220,8 @@ onMounted(async () => {
   //adding values profile to visual state of the survey.  small survey so not super concerned about O = n^3
   for (let section of surveyData.survey_sections) {
     for (let group of section.survey_groups) {
+      //count is for survey mounting so the selectAll logic works upon load
+      let count = 0
       for (let q of group.survey_questions) {
         const foundQuestion = valuesProfile.find(vp => vp.question.id === q.question.id);
         if (foundQuestion) {
@@ -1217,6 +1234,7 @@ onMounted(async () => {
           } = foundQuestion;
 
           if (sectionTag === "pullYourWeeds" && foundQuestion.value !== false) {
+            //we are packaging the values profile responses for eliminations mounting
             previousResponses.push({
               default_value: JSON.stringify(value),
               id: id,
@@ -1227,11 +1245,20 @@ onMounted(async () => {
               text: text,
             });
           }
+          if (foundQuestion.value === true) {
+            //if true, one more towards select All being true
+            count++
+          }
         }
         if (q.question.response_type === 'slider' && q.question.default_value === undefined) {
           q.question.default_value = 1;
           updateResponse(q, null, true);
         }
+
+      }
+      if (count === group.survey_questions.length) {
+        //all questions are true, selectAll for the group key is true
+        selectAll.value[group.name] = true;
       }
     }
   }
