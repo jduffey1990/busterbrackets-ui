@@ -300,9 +300,9 @@ const metricTableData = computed(() => {
     },
     {
       metric: 'Beta',
-      pomariumValue: props.metrics.pomarium["beta"].toFixed(1),
-      marketValue: props.metrics.market["beta"].toFixed(1),
-      iwb: props.metrics.IWB["beta"].toFixed(1),
+      pomariumValue: props.metrics.pomarium["beta"].toFixed(2),
+      marketValue: props.metrics.market["beta"].toFixed(2),
+      iwb: props.metrics.IWB["beta"].toFixed(2),
     },
     {
       metric: 'Tracking Error',

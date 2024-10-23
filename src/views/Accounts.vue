@@ -144,6 +144,7 @@ const custodians = [
   {value: 'raymond_james', title: 'Raymond James'},
   {value: 'pershing', title: 'Pershing'},
   {value: 'lpl_financial', title: 'LPL Financial'},
+  {value: 'apex', title: 'APEX'}
 ];
 
 const riskTolerances = [
@@ -235,7 +236,7 @@ onBeforeRouteLeave((to, from, next) => {
 });
 
 const checkReady = () => {
-  if (account.name && account.account_type && account.custodian && account.risk_tolerance>=0 && account.last_four.length === 4) {
+  if (account.name && account.account_type && account.custodian && account.risk_tolerance >= 0 && account.last_four.length === 4) {
     return readyToSave.value = true;
   }
   ;
@@ -248,7 +249,7 @@ const validateInput = () => {
   }
   valueShown.value = removeCommas(valueShown.value);
   account.value = valueShown.value;
-  
+
   if (valueShown.value === 0) {
     valueShown.value = '';
   } else {
