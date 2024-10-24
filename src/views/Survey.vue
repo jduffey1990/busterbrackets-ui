@@ -1013,7 +1013,6 @@ const sendEmail = async () => {
 };
 
 const getElims = async () => {
-  console.log("getElims has been called")
   // Initialize mappedSurveyResponses as an empty array
   let mappedSurveyResponses = [];
 
@@ -1046,7 +1045,6 @@ const getElims = async () => {
 
 
   // Check if mappedSurveyResponses is not empty before making API call
-  console.log("final Responses", finalResponses)
   if (finalResponses.length !== 0) {
     try {
       // Send the mapped responses to the backend
