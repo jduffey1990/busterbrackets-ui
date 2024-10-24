@@ -1013,6 +1013,7 @@ const sendEmail = async () => {
 };
 
 const getElims = async () => {
+  console.log("getElims has been called")
   // Initialize mappedSurveyResponses as an empty array
   let mappedSurveyResponses = [];
 
@@ -1032,17 +1033,20 @@ const getElims = async () => {
   //false but present values are mucking the data up
   let filteredSurveyResponses = mappedSurveyResponses.filter((q) => q.default_value !== "false")
   // Filter out duplicate questions in previousResponses (based on question id)
-  const filteredPreviousResponses = previousResponses.filter(prevResp => {
-    return !surveyResponses.some(surveyResp => surveyResp.question.id === prevResp.id);
-  });
 
-  // Check if there are previous responses and concatenate them
-  let finalResponses
-  if (previousResponses.length > 0) {
-    finalResponses = filteredSurveyResponses.concat(filteredPreviousResponses);
+  let filteredPreviousResponses = []
+  if (previousResponses.length) {
+    filteredPreviousResponses = previousResponses.filter(prevResp => {
+      return !surveyResponses.some(surveyResp => surveyResp.question.id === prevResp.id);
+    });
   }
 
+  // Check if there are previous responses and concatenate them
+  let finalResponses = filteredSurveyResponses.concat(filteredPreviousResponses);
+
+
   // Check if mappedSurveyResponses is not empty before making API call
+  console.log("final Responses", finalResponses)
   if (finalResponses.length !== 0) {
     try {
       // Send the mapped responses to the backend
