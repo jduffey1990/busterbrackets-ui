@@ -169,7 +169,7 @@
 
           <hr/>
 
-          <div class="my-8 canvas-item" v-if="eliminatedCount">
+          <div class="my-8 canvas-item" v-if="Object.keys(eliminatedCount).length">
             <div class="text-h4">Total Excluded Companies (Value Based)</div>
             <div class="pie_section">
 
@@ -205,7 +205,7 @@
             </div>
           </div>
           <hr/>
-          <v-row>
+          <v-row v-if="Object.keys(worstCompanies).length">
             <v-col cols="12" md="6">
               <div class="my-8 table-content">
                 <div class="d-flex justify-start flex-row">
@@ -687,7 +687,14 @@ const getPortfolios = async () => {
 
     const {
       allocations: {pomarium},
-      portfolio_data: {pomarium_names, values_fit, investment_fit, worst_values, worst_values_names, eliminations}
+      portfolio_data: {
+        pomarium_names,
+        values_fit,
+        investment_fit,
+        worst_values = {}, // Provide default empty objects if missing
+        worst_values_names = {},
+        eliminations = {},
+      }
     } = data[0];
 
     for (let i in pomarium) {
@@ -708,21 +715,31 @@ const getPortfolios = async () => {
         }))
         .sort((a, b) => b.value - a.value);
 
-    worstCompanies.value = Object.keys(worst_values)
-        .map(ticker => ({
-          image: getImagePathFromTicker(ticker),
-          ticker: ticker,
-          name: worst_values_names[ticker],
-          worst_value: `${(Math.round(worst_values[ticker]))}%`
-        }))
-        .sort((a, b) => parseFloat(a.worst_value) - parseFloat(b.worst_value));
+    // Conditionally handle worstCompanies if worst_values and worst_values_names exist
+    if (Object.keys(worst_values).length && Object.keys(worst_values_names).length) {
+      worstCompanies.value = Object.keys(worst_values)
+          .map((ticker) => ({
+            image: getImagePathFromTicker(ticker),
+            ticker: ticker,
+            name: worst_values_names[ticker],
+            worst_value: `${Math.round(worst_values[ticker])}%`,
+          }))
+          .sort((a, b) => parseFloat(a.worst_value) - parseFloat(b.worst_value));
+    } else {
+      worstCompanies.value = []; // Handle case when no worst values exist
+    }
 
-    eliminatedCount.value = Object.keys(eliminations)
-        .map(industry => ({
-          title: industry,
-          value: eliminations[industry],
-        }))
-        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
+    // Conditionally handle eliminatedCount if eliminations exist
+    if (Object.keys(eliminations).length) {
+      eliminatedCount.value = Object.keys(eliminations)
+          .map((industry) => ({
+            title: industry,
+            value: eliminations[industry],
+          }))
+          .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
+    } else {
+      eliminatedCount.value = []; // Handle case when no eliminations exist
+    }
 
 
     portfoliosLoading.value = false;
