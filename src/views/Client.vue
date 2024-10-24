@@ -372,7 +372,7 @@
                 <v-btn @click="saveClient()" color="primary"> Save</v-btn>
               </div>
             </v-alert>
-        
+
         <div class="d-flex justify-end mb-4">
           <router-link
               :to="{ name: 'Accounts', params: { user_id } }"
@@ -1236,6 +1236,11 @@ const barOptionsSmall = {
   },
 };
 
+}, {
+  title: "LPL Financial",
+  value: 'lpl_financial'
+}
+];
 </script>
 
 <style scoped>
