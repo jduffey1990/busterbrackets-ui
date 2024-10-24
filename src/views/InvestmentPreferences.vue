@@ -389,6 +389,9 @@ const getTickers = async () => {
         `(${s.symbol}) ${s.company_name}`
     ));
 
+    allTickerValues.value.push(`(POMARIUM) Personalized US Stocks`);
+    allTickerValues.value.push(`($CASH) Cash`);
+
   } catch (error) {
     console.error("Error fetching allocations", error);
   }
