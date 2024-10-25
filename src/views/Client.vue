@@ -38,12 +38,13 @@
               v-slot="{ navigate }"
           >
             <v-btn
+                class="btn"
                 color="primary"
                 :text="`${hasValuesProfile ? 'Edit' : 'Start'} Values Profile`"
                 @click="navigate"
             >
             </v-btn>
-            <PDFBuilder pdfElementId="values-profile" class="mx-4"></PDFBuilder>
+            <PDFBuilder  v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
           </router-link>
         </div>
 
@@ -90,7 +91,7 @@
         <div v-else>
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
-            <div class="d-flex justify-end mx-7">
+            <div  v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
               <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders"/>
             </div>
 
@@ -101,14 +102,7 @@
               <v-col class="bar_graph">
                 <BarChart
                     :data="getBarChart(portfolioValues)"
-                    :options="{
-                      responsive: true,
-                      plugins: {
-                        legend: {
-                          display: false,
-                        },
-                      },
-                    }"
+                    :options="screenWidth < 700 ? barOptionsSmall : barOptions"
                 />
               </v-col>
               <v-col class="bar_graph_table">
@@ -349,10 +343,7 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
-        <v-row class="py-2 pt-6">
-          <v-col cols="6">
-
-            <v-alert style="background-color: white;">
+            <v-alert style="background-color: white;" class="profile">
               <div class="pb-6">
                 <p>Profile</p>
               </div>
@@ -381,9 +372,7 @@
                 <v-btn @click="saveClient()" color="primary"> Save</v-btn>
               </div>
             </v-alert>
-          </v-col>
-        </v-row>
-
+        
         <div class="d-flex justify-end mb-4">
           <router-link
               :to="{ name: 'Accounts', params: { user_id } }"
@@ -496,6 +485,8 @@ import {parseError} from '@/utils/error';
 import Analytics from "@/views/Analytics.vue";
 import LazyImage from '@/components/LazyImage.vue';
 import PDFBuilder from '@/components/PDFBuilder.vue';
+
+const screenWidth = window.innerWidth;
 
 const excludedHeaders = ['Delete', ''];
 
@@ -1170,6 +1161,28 @@ const templateItems = [{
   title: 'Standard',
   value: 'standard'
 }];
+
+const barOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+};
+// bar options for small screens
+const barOptionsSmall = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  x: {
+    ticks: false,
+  },
+};
+
 </script>
 
 <style scoped>
@@ -1230,6 +1243,9 @@ const templateItems = [{
   transform: translateY(10px) !important;
 }
 
+.profile {
+  width: 50%;
+}
 
 /* Responsive adjustments for bar and pie sections */
 @media only screen and (max-width: 1275px) {
@@ -1261,6 +1277,18 @@ const templateItems = [{
   .bar_graph_table,
   .pie_table {
     grid-column: span 12;
+  }
+
+  .profile {
+    width: 90vw;
+    margin-bottom: 20px;
+  }
+
+}
+
+@media only screen and (max-width: 400px) {
+  .btn {
+    font-size: 11px;
   }
 }
 

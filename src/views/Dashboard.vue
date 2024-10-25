@@ -68,12 +68,11 @@
               @click:append-inner="findClient(searchInput)"
               @keydown.enter="findClient(searchInput)"
               @click:append="searchInput = ''"
-              style="width: 400px; font-family: halyard-text;"
-              class="mb-4 "
+              class="mb-4 search"
           ></v-text-field>
 
           <!-- Data table for clients -->
-          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown">
+          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown" :mobile-breakpoint="700">
             <template v-slot:item.actions="{ item }">
               <!-- Button to archive a client -->
               <v-icon
@@ -130,12 +129,11 @@
               @click:append-inner="findProspect(searchInputP)"
               @keydown.enter="findProspect(searchInputP)"
               @click:append="searchInputP = ''"
-              style="width: 400px; font-family: halyard-text;"
-              class="mb-4"
+              class="mb-4 search"
           ></v-text-field>
 
           <!-- Data table for prospects -->
-          <v-data-table v-if="displayState.showProspects" :headers="headers" :items="prospectsShown">
+          <v-data-table v-if="displayState.showProspects" :headers="headers" :items="prospectsShown" :mobile-breakpoint="700">
             <template v-slot:item.actions="{ item }">
               <!-- Button to accept a prospect -->
               <v-btn
@@ -172,10 +170,9 @@
               @click:append-inner="findAdvisor(advisorSearchInput)"
               @keydown.enter="findAdvisor(advisorSearchInput)"
               @click:append="advisorSearchInput = '', findAdvisor(advisorSearchInput)"
-              style="width: 400px; font-family: halyard-text;"
-              class="mb-4 "
+              class="mb-4 search"
           ></v-text-field>
-          <v-data-table :items="advisorsShown" :headers="advisorHeaders">
+          <v-data-table :items="advisorsShown" :headers="advisorHeaders" :mobile-breakpoint="700">
             <template v-slot:item.actions="{ item }">
               <v-btn
                   color="primary"
@@ -188,21 +185,21 @@
               </v-btn>
             </template>
           </v-data-table>
-          <v-text-field v-if="displayState.showOtherClients"
-                        v-model="otherSearchInput"
-                        append-inner-icon="mdi-magnify"
-                        append-icon="mdi-close"
-                        density="compact"
-                        label="Search for a client"
-                        variant="solo"
-                        hide-details
-                        single-line
-                        @click:append-inner="findOtherClient(otherSearchInput)"
-                        @click:append="otherSearchInput = ''"
-                        style="width: 400px; font-family: halyard-text;"
-                        class="my-4 "
+          <v-text-field 
+            v-if="displayState.showOtherClients"
+            v-model="otherSearchInput"
+            append-inner-icon="mdi-magnify"
+            append-icon="mdi-close"
+            density="compact"
+            label="Search for a client"
+            variant="solo"
+            hide-details
+            single-line
+            @click:append-inner="findOtherClient(otherSearchInput)"
+            @click:append="otherSearchInput = ''"
+            class="mb-4 search"
           ></v-text-field>
-          <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers">
+          <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers" :mobile-breakpoint="700">
             <template v-slot:item.full_name="{ item }">
               <v-btn variant="text" @click="goToClient(item)">
                 {{ item.full_name }}
@@ -413,7 +410,7 @@ const acceptProspect = async ({id}) => {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {role: 'client'});
       await $axios.post(`/api/advisors/${advisor_id}/clients/${id}/portfolio/`);
-      getClients();
+      getClients(advisor_id);
       getProspects();
       show({message: 'Client created!'});
     } catch (error) {
@@ -454,7 +451,7 @@ const surveyLink = `/survey?advisor=${advisor_id}`;
 const copyText = () => {
   navigator.clipboard.writeText(`${location.origin}${surveyLink}`);
   show({
-    message: `<div>Link copied to clipboard!</div><br/><div>NOTE: Not mobile friendly yet but will be shortly</div>`,
+    message: `<div>Link copied to clipboard!</div>`,
   });
 };
 
@@ -588,6 +585,11 @@ const resetDisplayState = () => {
   margin-bottom: 30px;
 }
 
+.search {
+  width: 400px; 
+  font-family: halyard-text;
+}
+
 @media only screen and (max-width: 700px) {
 
   .top_line_dash {
@@ -605,5 +607,10 @@ const resetDisplayState = () => {
     justify-content: center;
     align-items: center;
   }
+
+  .search {
+    width: 75%;
+  }
+
 }
 </style>

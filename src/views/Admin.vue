@@ -3,13 +3,13 @@
   <div v-if="user.firm">
     <!-- Header section with the firm name and button to create a new advisor -->
     <div class="admin-header">
-      <div class="text-h4">{{ user.firm?.name }} Admin Dashboard</div>
+      <div class="text-h4 mobile-margin">{{ user.firm?.name }} Admin Dashboard</div>
       <v-spacer></v-spacer>
       <v-btn
           @click="openCreateNewAdvisorModal = true"
           color="primary"
           text="Create New Advisor"
-          class="ml-2"
+          class="ml-2 mobile-margin"
       ></v-btn>
     </div>
 
@@ -30,7 +30,7 @@
         <ImageUpload/>
         <div>
           <h4 class="pt-6">Background Color</h4>
-          <v-radio-group row class="my-4" style="font-family: halyard-text;" v-model="theme">
+          <v-radio-group row class="my-4 radios" style="font-family: halyard-text;" v-model="theme">
             <v-radio value="1" label="Pomarium Theme"></v-radio>
             <v-radio value="2" label="White"></v-radio>
           </v-radio-group>
@@ -229,6 +229,14 @@ const saveWhiteLabelSettings = async () => {
 
   .v-main {
     padding-top: 50px;
+  }
+
+  .mobile-margin {
+    margin-bottom: 20px;
+  }
+
+  .radios {
+    transform: translateY(-1px);
   }
 
 }

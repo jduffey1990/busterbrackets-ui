@@ -21,7 +21,7 @@ export default {
     },
     tableClass: {
       type: String,
-      required: true,
+      required: false,
       default: 'table-content'
     },
     excludeColumns: {

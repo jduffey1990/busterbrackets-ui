@@ -122,13 +122,14 @@
     <v-btn v-if="editing" @click="submitChanges" color="secondary>">Submit Changes</v-btn>
 
     <!-- Data table for displaying asset allocations -->
-    <v-data-table v-if="!editing" :items="allocations" :items-per-page="-1" :headers="headers">
+    <v-data-table v-if="!editing" :items="allocations" :items-per-page="-1" :headers="headers" :mobile="false">
       <template #bottom></template>
     </v-data-table>
 
 
     <v-data-table
         v-else
+        :mobile="false"
         v-model:page="page"
         :items="backupAllocations"
         :items-per-page="itemsPerPage"

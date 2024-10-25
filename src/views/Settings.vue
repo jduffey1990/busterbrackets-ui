@@ -1,8 +1,8 @@
 <template>
   <v-layout class="justify-center pa-4">
-    <v-card min-width="600px">
-      <v-toolbar>
-        <v-toolbar-title>Settings</v-toolbar-title>
+    <v-card class="main-card">
+      <v-toolbar class="title-holder">
+        <v-toolbar-title class="title">Settings</v-toolbar-title>
 
         <v-toolbar-items>
           <v-btn color="primary" variant="elevated" @click="saveProfile()">
@@ -139,5 +139,25 @@ onBeforeUnmount(() => {
 .toggle {
   transform: translateY(-10px);
 }
+
+main-card {
+  min-width: 600px;
+}
+
+@media (max-width: 700px) {
+  .main-card {
+    min-width: 90vw;
+  }
+
+  .title-holder {
+    max-height: 64px !important;
+    
+  }
+
+  .title {
+    margin-bottom: 80px;
+  }
+}
+
 </style>
 

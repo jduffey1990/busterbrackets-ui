@@ -116,7 +116,7 @@
                         class="autocomplete"
                     >
                       <template v-slot:label>
-                        <span v-html="formatLabel(q.question.text)"></span>
+                        <span class="auto-complete" v-html="formatLabel(q.question.text)" v-if="!q.question.default_value"></span>
                       </template>
 
                       <template v-slot:chip="{ props, item }">
@@ -214,7 +214,7 @@
                                     :indeterminate="isIndeterminate(group)"
                                     @change="toggleAllCheckboxes(group)"
                                     label=""
-                                    class="ml-3"
+                                    class="mr-3"
                                 ></v-checkbox>
                                 <h5 class="text-h5 subtitle">{{ group.name }}</h5>
                                 <v-tooltip
@@ -260,7 +260,7 @@
                                     v-model="q.question.default_value"
                                     @input="updateResponse(q, section.tag)"
                                     :label="q.question.text"
-
+                                    class="mr-3"
                                 ></v-checkbox>
                                 <v-tooltip
                                     v-if="q.question.tooltip && hoveredQuestion === q.question.id"
@@ -310,7 +310,7 @@
                                     :indeterminate="isIndeterminate(group)"
                                     @change="toggleAllCheckboxes(group)"
                                     label=""
-                                    class="ml-3"
+                                    class="mr-3"
                                 ></v-checkbox>
                                 <h5 class="text-h5 subtitle">{{ group.name }}</h5>
                                 <v-tooltip
@@ -355,6 +355,7 @@
                                     v-model="q.question.default_value"
                                     @input="updateResponse(q, section.tag)"
                                     :label="q.question.text"
+                                    class="mr-3"
                                 ></v-checkbox>
                                 <v-tooltip
                                     v-if="q.question.tooltip && hoveredQuestion === q.question.id"
@@ -400,7 +401,7 @@
                                     v-model="group.survey_questions[0].question.default_value"
                                     @input="updateResponse(group.survey_questions[0], section.tag)"
                                     label=""
-                                    class="ml-3"
+                                    class="mr-3"
                                 ></v-checkbox>
                                 <h5 class="text-h5 subtitle">{{ group.name }}</h5>
                                 <v-tooltip
@@ -456,7 +457,7 @@
                                     :indeterminate="isIndeterminate(group)"
                                     @change="toggleAllCheckboxes(group)"
                                     label=""
-                                    class="ml-3"
+                                    class="mr-3"
                                 ></v-checkbox>
                                 <h5 class="text-h5 subtitle">{{ group.name }}</h5>
                                 <v-tooltip
@@ -504,7 +505,7 @@
                                     v-model="q.question.default_value"
                                     @input="updateResponse(q, section.tag)"
                                     :label="q.question.text"
-
+                                    class="mr-3"
                                 ></v-checkbox>
                                 <v-tooltip
                                     v-if="q.question.tooltip && hoveredQuestion === q.question.id"
@@ -573,6 +574,7 @@
                                 show-ticks="always"
                                 color="primary"
                                 max-width="1000px"
+                                class="slider"
                             ></v-slider>
                           </div>
 
@@ -589,6 +591,7 @@
                                     :key="index"
                                     :label="option"
                                     :value="option"
+                                    class="my-2"
                                 ></v-radio>
                               </v-radio-group>
                             </div>
@@ -1688,7 +1691,19 @@ window.addEventListener('beforeunload', (event) => {
     width: 120%;
     transform: translatex(-40px);
   }
+  .auto-complete {
+    text-wrap: wrap;
+    font-size: 14px;
+  }
 
+}
+
+@media only screen and (max-width: 400px) {
+  .slider{
+    max-width: 100%;
+    width: 110%;
+    transform: translatex(-7.5%);
+  }
 }
 
 </style>

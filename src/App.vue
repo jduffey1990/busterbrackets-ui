@@ -1,6 +1,7 @@
 <template>
   <v-app :class="[ onSurvey ? (theme === 1 ? appBackground : whiteBackground) : appBackground ]">
-    <Header/>
+    <Header v-if="screenWidth < 700" style="transform: translateY(-30px);"/>
+    <Header v-else/>
 
     <UiToast>
       <v-main class="padding-add">
@@ -27,7 +28,7 @@
 import Header from './components/Header.vue';
 import Footer from './components/Footer.vue';
 import UiToast from '@/components/ui/Toast.vue';
-
+import {useRouter} from 'vue-router';
 // Import the Overlay component
 import Overlay from './components/Overlay.vue';
 
@@ -44,7 +45,9 @@ import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
 
 const {user} = storeToRefs(useUserStore());
+const router = useRouter();
 
+const screenWidth = window.innerWidth;
 
 const theme = ref(null);
 const getTheme = async () => {
@@ -82,6 +85,39 @@ onMounted(() => {
 watch(route, () => {
   checkSurvey();
 });
+
+let timeout;
+let debounceTimeout;
+
+const startTimer = () => {
+  timeout = setTimeout(() => {
+    useUserStore().logout();
+    router.push('/login');
+  }, 600000); // 10 minutes
+};
+
+const resetTimer = () => {
+  clearTimeout(timeout);
+  startTimer();
+};
+
+const debounce = (func, delay) => {
+  return (...args) => {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+};
+
+const debouncedResetTimer = debounce(resetTimer, 1000);
+
+onMounted(() => {
+  startTimer();
+});
+
+document.addEventListener('click', debouncedResetTimer);
+document.addEventListener('keydown', debouncedResetTimer);
 </script>
 
 <style>
@@ -100,13 +136,5 @@ watch(route, () => {
 
 .trans-background {
   background-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-@media only screen and (max-width: 700px) {
-
-  .v-main {
-    padding-top: 150px !important;
-  }
-
 }
 </style>

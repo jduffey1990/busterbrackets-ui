@@ -1,8 +1,8 @@
 <template>
   <v-layout class="justify-center pa-4">
     <v-card width="400px">
-      <v-toolbar>
-        <v-toolbar-title>Login</v-toolbar-title>
+      <v-toolbar class="title-holder">
+        <v-toolbar-title class="title">Login</v-toolbar-title>
       </v-toolbar>
 
       <v-form @submit.prevent="loginUser()">
@@ -81,3 +81,18 @@ const resetPassword = async () => {
   }
 };
 </script>
+
+<style>
+
+@media (max-width: 700px) {
+  .title-holder {
+    max-height: 64px !important;
+    
+  }
+
+  .title {
+    margin-bottom: 80px;
+  }
+}
+
+</style>

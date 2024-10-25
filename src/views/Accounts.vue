@@ -1,96 +1,91 @@
 <template>
   <!-- Form for creating a new account -->
-  <v-form @submit.prevent="save">
+  <v-form @submit.prevent="save" class="account-form">
     <div class="d-flex my-4 align-center">
       <div class="text-h4 my-4">Account Details</div>
     </div>
+      <!-- Account Name Input -->
+      <v-text-field
+          v-model="account.name"
+          label="Account Name"
+          class="mb-4"
+      ></v-text-field>
 
-    <v-row>
-      <v-col cols="6">
-        <!-- Account Name Input -->
-        <v-text-field
-            v-model="account.name"
-            label="Account Name"
-            class="mb-4"
-        ></v-text-field>
+      <!-- Account Type Select -->
+      <v-select
+          v-if="accountTypes"
+          label="Account Type"
+          class="mb-4"
+          v-model="account.account_type"
+          :items="accountTypes"
+          item-title="title"
+          item-value="value"
+      ></v-select>
 
-        <!-- Account Type Select -->
-        <v-select
-            v-if="accountTypes"
-            label="Account Type"
-            class="mb-4"
-            v-model="account.account_type"
-            :items="accountTypes"
-            item-title="title"
-            item-value="value"
-        ></v-select>
+      <!-- Custodian Select -->
+      <v-select
+          label="Custodian"
+          class="mb-4"
+          v-model="account.custodian"
+          :items="custodians"
+          item-title="title"
+          item-value="value"
+      ></v-select>
 
-        <!-- Custodian Select -->
-        <v-select
-            label="Custodian"
-            class="mb-4"
-            v-model="account.custodian"
-            :items="custodians"
-            item-title="title"
-            item-value="value"
-        ></v-select>
+      <!-- Account Market Value Input -->
+      <v-text-field
+          class="mb-4"
+          v-model="valueShown"
+          label="Account Market Value"
+          type="text"
+          @input="validateInput"
+      ></v-text-field>
 
-        <!-- Account Market Value Input -->
-        <v-text-field
-            class="mb-4"
-            v-model="valueShown"
-            label="Account Market Value"
-            type="text"
-            @input="validateInput"
-        ></v-text-field>
+      <!-- Live Account Select -->
+      <v-select
+          label="Share Type"
+          class="mb-4"
+          v-model="account.fractional"
+          :items="fractionalVsWhole"
+          item-title="title"
+          item-value="value"
+      ></v-select>
 
-        <!-- Live Account Select -->
-        <v-select
-            label="Share Type"
-            class="mb-4"
-            v-model="account.fractional"
-            :items="fractionalVsWhole"
-            item-title="title"
-            item-value="value"
-        ></v-select>
+      <!-- Risk Tolerance Select -->
+      <v-select
+          label="Risk Tolerance"
+          class="mb-4"
+          v-model="account.risk_tolerance"
+          :items="riskTolerances"
+          item-title="title"
+          item-value="value"
+      ></v-select>
 
-        <!-- Risk Tolerance Select -->
-        <v-select
-            label="Risk Tolerance"
-            class="mb-4"
-            v-model="account.risk_tolerance"
-            :items="riskTolerances"
-            item-title="title"
-            item-value="value"
-        ></v-select>
+      <!-- Last 4 of Account Number Input -->
+      <v-text-field
+          label="Last 4 of Account Number"
+          class="mb-4"
+          v-model="account.last_four"
+          type="text"
+          maxlength="4"
+          @keyup="account.last_four = account.last_four.toUpperCase()"
+      ></v-text-field>
 
-        <!-- Last 4 of Account Number Input -->
-        <v-text-field
-            label="Last 4 of Account Number"
-            class="mb-4"
-            v-model="account.last_four"
-            type="text"
-            maxlength="4"
-            @keyup="account.last_four = account.last_four.toUpperCase()"
-        ></v-text-field>
+      <!-- Live Account Select -->
+      <v-select
+          label="Live Account"
+          class="mb-4"
+          v-model="account.active"
+          :items="yesNoBooleans"
+          item-title="title"
+          item-value="value"
+      ></v-select>
 
-        <!-- Live Account Select -->
-        <v-select
-            label="Live Account"
-            class="mb-4"
-            v-model="account.active"
-            :items="yesNoBooleans"
-            item-title="title"
-            item-value="value"
-        ></v-select>
-
-        <!-- Buttons for navigating back and saving -->
-        <div class="d-flex justify-end mb-4">
-          <v-btn class="ml-2" text @click="goBack">Back</v-btn>
-          <v-btn class="ml-2" color="primary" text type="submit">Save</v-btn>
-        </div>
-      </v-col>
-    </v-row>
+      <!-- Buttons for navigating back and saving -->
+      <div class="d-flex justify-end mb-4">
+        <v-btn class="ml-2" text @click="goBack">Back</v-btn>
+        <v-btn class="ml-2" color="primary" text type="submit">Save</v-btn>
+      </div>
   </v-form>
 </template>
 
@@ -257,3 +252,17 @@ const validateInput = () => {
   }
 };
 </script>
+
+<style scoped>
+.account-form {
+  width: 50%;
+}
+
+/* meida 700px */
+@media only screen and (max-width: 700px) {
+  .account-form {
+    margin: auto;
+    width: 80%;
+  }
+}
+</style>

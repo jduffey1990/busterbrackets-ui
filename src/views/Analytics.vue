@@ -26,32 +26,7 @@
         <div class="d-flex justify-center align-center h-100">
           <ScatterChart
               :data="getScatterChartData(wholeTableData)"
-              :options="{
-            responsive: true,
-            plugins: {
-              legend: {
-                display: true,
-                labels: {
-                  usePointStyle: true
-                }
-              },
-            },
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: 'Volatility (%)'
-                }
-              },
-              y: {
-                title: {
-                  display: true,
-                  text: '3 Year Return (%)'
-                }
-              }
-            }
-
-          }"
+              :options="screenWidth > 700 ? bigOptions : littleOptions"
           />
         </div>
       </v-col>
@@ -64,8 +39,8 @@
         class="elevation-1 mt-10"
     >
       <template v-slot:top>
-        <v-toolbar flat color="secondary">
-          <v-toolbar-title>Whole Portfolio Analysis</v-toolbar-title>
+        <v-toolbar flat color="secondary" class="bars">
+          <v-toolbar-title class="bar-title">Whole Portfolio Analysis</v-toolbar-title>
         </v-toolbar>
       </template>
       <template #bottom></template>
@@ -98,8 +73,8 @@
         </v-tooltip>
       </template>
       <template v-slot:top>
-        <v-toolbar flat color="secondary">
-          <v-toolbar-title>US Large Mid cap stock comparison (5 year)</v-toolbar-title>
+        <v-toolbar flat color="secondary" class="bars">
+          <v-toolbar-title class="bar-title">U.S. Large & Mid Cap Stock Comparison</v-toolbar-title>
         </v-toolbar>
       </template>
       <template #bottom></template>
@@ -136,6 +111,8 @@
 import {computed, ref, watch} from "vue";
 
 import ScatterChart from '../components/ScatterChart.vue';
+
+const screenWidth = window.innerWidth;
 
 // Props
 const props = defineProps({
@@ -478,6 +455,60 @@ function formatDate(dateString) {
 function toPercentage(value) {
   return `${(value * 100).toFixed(1)}%`;
 }
+
+const bigOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        usePointStyle: true
+      }
+    },
+  },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Volatility (%)'
+      }
+    },
+    y: {
+      title: {
+        display: true,
+        text: '3 Year Return (%)'
+      }
+    }
+  }
+};
+
+const littleOptions = {
+  responsive: true,
+  aspectRatio: 1,
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        usePointStyle: true
+      }
+    },
+  },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Volatility (%)'
+      }
+    },
+    y: {
+      title: {
+        display: true,
+        text: '3 Year Return (%)'
+      }
+    }
+  }
+};
+
 </script>
 
 <style>
@@ -504,6 +535,7 @@ function toPercentage(value) {
   color: rgba(7, 21, 42, 0.6);
   line-height: 1.3;
   margin-top: 20px;
+}
 
   @media only screen and (max-width: 1275px) {
     .scatter_graph {
@@ -515,6 +547,12 @@ function toPercentage(value) {
     .scatter_graph {
       max-width: 100%;
     }
+    .bars {
+      height: 40px;
+    }
+    .bar-title {
+      transform: translateY(-55px);
+    }
   }
-}
+
 </style>
