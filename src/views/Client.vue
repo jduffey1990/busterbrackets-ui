@@ -44,7 +44,7 @@
                 @click="navigate"
             >
             </v-btn>
-            <PDFBuilder  v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
+            <PDFBuilder v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
           </router-link>
         </div>
 
@@ -91,7 +91,7 @@
         <div v-else>
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
-            <div  v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
+            <div v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
               <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders"/>
             </div>
 
@@ -343,35 +343,35 @@
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
-            <v-alert style="background-color: white;" class="profile">
-              <div class="pb-6">
-                <p>Profile</p>
-              </div>
+        <v-alert style="background-color: white;" class="profile">
+          <div class="pb-6">
+            <p>Profile</p>
+          </div>
 
-              <v-text-field
-                  label="First Name"
-                  type="text"
-                  v-model="client.first_name"
-                  class="mb-4"
-              ></v-text-field>
+          <v-text-field
+              label="First Name"
+              type="text"
+              v-model="client.first_name"
+              class="mb-4"
+          ></v-text-field>
 
-              <v-text-field
-                  label="Last Name"
-                  type="text"
-                  v-model="client.last_name"
-                  class="mb-4"
-              ></v-text-field>
+          <v-text-field
+              label="Last Name"
+              type="text"
+              v-model="client.last_name"
+              class="mb-4"
+          ></v-text-field>
 
-              <v-text-field
-                  label="Email"
-                  type="email"
-                  v-model="client.email"
-                  class="mb-4"
-              ></v-text-field>
-              <div class="d-flex justify-end">
-                <v-btn @click="saveClient()" color="primary"> Save</v-btn>
-              </div>
-            </v-alert>
+          <v-text-field
+              label="Email"
+              type="email"
+              v-model="client.email"
+              class="mb-4"
+          ></v-text-field>
+          <div class="d-flex justify-end">
+            <v-btn @click="saveClient()" color="primary"> Save</v-btn>
+          </div>
+        </v-alert>
 
         <div class="d-flex justify-end mb-4">
           <router-link
@@ -1213,7 +1213,12 @@ const templateItems = [{
 }, {
   title: 'Standard',
   value: 'standard'
-}];
+},
+  {
+    title: "LPL Financial",
+    value: 'lpl_financial'
+  }
+];
 
 const barOptions = {
   responsive: true,
@@ -1236,11 +1241,6 @@ const barOptionsSmall = {
   },
 };
 
-}, {
-  title: "LPL Financial",
-  value: 'lpl_financial'
-}
-];
 </script>
 
 <style scoped>
