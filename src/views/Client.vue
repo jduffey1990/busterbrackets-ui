@@ -909,6 +909,14 @@ const getAccounts = async () => {
   }
 };
 const downloadAccountCSV = async (account, template) => {
+  if (template === "lpl_financial") {
+    const confirmMessage = "You are requesting trade instructions.  Our algorithm handles this as though you are " +
+        "starting from 100% cash value.  Continue?"
+
+    if (!confirm(confirmMessage)) {
+      return; // Stop execution if the user does not confirm
+    }
+  }
   window.open(
       `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/${template}/`,
   );
