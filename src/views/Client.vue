@@ -721,10 +721,66 @@ const getPortfolios = async () => {
     }
 
     // Conditionally handle eliminatedCount if eliminations exist
+    const categoriesMap = {
+      "telecommunications": "Telecommunications",
+      "mediaAndEntertainment": "Media and Entertainment",
+      "consumerDiscretionary": "Consumer Discretionary",
+      "automobilesAndParts": "Automobiles and Parts",
+      "consumerDurablesAndApparel": "Consumer Durables and Apparel",
+      "consumerServices": "Consumer Services",
+      "consumerStaples": "Consumer Staples",
+      "foodBeverageTobacco": "Food, Beverage, Tobacco",
+      "householdAndPersonalProducts": "Household and Personal Products",
+      "banks": "Banks",
+      "commercialAndProfessionalServices": "Commercial and Professional Services",
+      "insurance": "Insurance",
+      "healthcareEquipmentServices": "Health Care Equipment & Services",
+      "pharmaceuticalsBiotechnologyAndLifeSciences": "Pharmaceuticals, Biotechnology, Life Sciences",
+      "transportation": "Transportation",
+      "captialGoods": "Capital Goods",
+      "technologyHardware": "Technology Hardware",
+      "softwareAndServices": "Software and Services",
+      "semiconductorsAndEquipment": "Semiconductors and Equipment",
+      "equityRealEstateInvestmentTrustsReits": "Equity Real Estate Investment Trusts (REITs)",
+      "realEstateManagementAndDevelopment": "Real Estate Management and Development",
+      "energy": "Energy",
+      "materials": "Materials",
+      "utilities": "Utilities",
+      "gmoCrops": "Genetically Modified Plants and Seeds (GMO)",
+      "palmOil": "Palm Oil",
+      "pesticides": "Pesticides",
+      "animalTesting": "Animal Testing",
+      "furAndSpecialtyLeather": "Fur and Leather",
+      "porkProducts": "Pork Products",
+      "whaleMeat": "Whale Meat",
+      "alcoholicBeverages": "Alcohol",
+      "tobaccoProducts": "Tobacco",
+      "cannabis": "Cannabis",
+      "gambling": "Gambling",
+      "arcticOilAndGasExploration": "Arctic Oil and Gas",
+      "coalPower": "Thermal Coal",
+      "nuclearPower": "Nuclear Power",
+      "oilAndGasProduction": "Oil and Gas",
+      "oilSands": "Oil Sands",
+      "shaleEnergy": "Shale Energy",
+      "controversialWeapons": "Weapons",
+      "smallArms": "Personal Arms",
+      "militaryContracting": "Military Contracting",
+      "privatePrisons": "Private Prisons",
+      "riotControl": "Riot Control",
+      "humanEmbryonicAndFetalStemCellUse": "Embryonic and Fetal Stem Cell Use",
+      "abortion": "Abortion",
+      "contraceptives": "Contraceptives",
+      "predatoryLending": "Predatory Lending",
+      "socialMediaPlatforms": "Social Media",
+      "adultEntertainment": "Adult Entertainment",
+      "areThereAnySpecificCompaniesYouWouldAvoidInvestingIn": "Are there any specific companies you would avoid investing in?"
+    };
+
     if (Object.keys(eliminations).length) {
       eliminatedCount.value = Object.keys(eliminations)
           .map((industry) => ({
-            title: industry,
+            title: categoriesMap[industry] || industry,
             value: eliminations[industry],
           }))
           .sort((a, b) => parseFloat(b.value) - parseFloat(a.value));
