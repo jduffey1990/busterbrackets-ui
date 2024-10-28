@@ -144,7 +144,7 @@ const getFirmLogo = async () => {
   try {
     const response = await $axios.get(`/api/firms/${user.value.firm.id}/logo/`);
     logos.value = response.data;
-    logos.value['firm_logo'].includes('media') ? goodLogo.value = true : goodLogo.value = false;
+    logos.value['firm_logo'].includes('media') || logos.value['firm_logo'].includes('storage') ? goodLogo.value = true : goodLogo.value = false;
   } catch (error) {
     console.error('Error fetching firm logo:', error);
   }
