@@ -349,7 +349,6 @@ const getClients = async (a) => {
       ...d,
       last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
     }));
-    clientsShown.value = clients.value;
     await getAccountsForAllClients(clients, accounts);
   } else {
     otherClients.value = data.map((d) => ({
@@ -438,7 +437,8 @@ const archiveClient = async ({id}) => {
   if (confirm('Are you sure you want to archive this client?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {is_archived: true});
-      getClients(advisor_id);
+      await getClients(advisor_id);
+      clientsShown.value = clients.value;
       getProspects();
       show({message: 'Client archived!'});
     } catch (error) {
