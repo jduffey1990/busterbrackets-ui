@@ -349,6 +349,7 @@ const getClients = async (a) => {
       ...d,
       last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
     }));
+    clientsShown.value = clients.value;
     await getAccountsForAllClients(clients, accounts);
   } else {
     otherClients.value = data.map((d) => ({
