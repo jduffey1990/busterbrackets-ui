@@ -423,7 +423,7 @@ const archiveProspect = async ({id}) => {
   if (confirm('Are you sure you want to archive this prospect?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {is_archived: true});
-      getClients();
+      getClients(advisor_id);
       getProspects();
       show({message: 'Prospect archived!'});
     } catch (error) {
@@ -437,7 +437,7 @@ const archiveClient = async ({id}) => {
   if (confirm('Are you sure you want to archive this client?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {is_archived: true});
-      getClients();
+      getClients(advisor_id);
       getProspects();
       show({message: 'Client archived!'});
     } catch (error) {

@@ -118,6 +118,8 @@ onMounted(() => {
 
 document.addEventListener('click', debouncedResetTimer);
 document.addEventListener('keydown', debouncedResetTimer);
+document.addEventListener('mousemove', debouncedResetTimer);
+document.addEventListener('scroll', debouncedResetTimer);
 </script>
 
 <style>
