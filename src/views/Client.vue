@@ -946,9 +946,6 @@ const tabs = ref([
 
 
 const getValue = (response) => {
-  if (!response.value) {
-    return
-  }
   let color;
   let icon;
   const qArray = ["annualIncome", "ageRange", "gender"]
