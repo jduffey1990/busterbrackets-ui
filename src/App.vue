@@ -89,37 +89,35 @@ watch(route, () => {
 let timeout;
 let debounceTimeout;
 
-const startTimer = () => {
-  timeout = setTimeout(() => {
-    useUserStore().logout();
-    router.push('/login');
-  }, 600000); // 10 minutes
-};
-
-const resetTimer = () => {
-  clearTimeout(timeout);
-  startTimer();
-};
-
-const debounce = (func, delay) => {
-  return (...args) => {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-};
-
-const debouncedResetTimer = debounce(resetTimer, 1000);
-
-onMounted(() => {
-  startTimer();
-});
-
-document.addEventListener('click', debouncedResetTimer);
-document.addEventListener('keydown', debouncedResetTimer);
-document.addEventListener('mousemove', debouncedResetTimer);
-document.addEventListener('scroll', debouncedResetTimer);
+// const startTimer = () => {
+//   timeout = setTimeout(() => {
+//     useUserStore().logout();
+//     router.push('/login');
+//   }, 600000); // 10 minutes
+// };
+//
+// const resetTimer = () => {
+//   clearTimeout(timeout);
+//   startTimer();
+// };
+//
+// const debounce = (func, delay) => {
+//   return (...args) => {
+//     clearTimeout(debounceTimeout);
+//     debounceTimeout = setTimeout(() => {
+//       func.apply(this, args);
+//     }, delay);
+//   };
+// };
+//
+// const debouncedResetTimer = debounce(resetTimer, 1000);
+//
+// onMounted(() => {
+//   startTimer();
+// });
+//
+// document.addEventListener('click', debouncedResetTimer);
+// document.addEventListener('keydown', debouncedResetTimer);
 </script>
 
 <style>

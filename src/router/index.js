@@ -9,7 +9,7 @@ import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import {useUserStore} from '@/store/user';
 import Admin from '@/views/Admin.vue';
-import Billing from '@/views/Billing.vue';
+import Billing from '@/views/AdminAccounts.vue';
 import Settings from '@/views/Settings.vue';
 import Accounts from '@/views/Accounts.vue';
 import Advisors from '@/views/Advisors.vue';

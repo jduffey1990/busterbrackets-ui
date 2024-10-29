@@ -36,7 +36,7 @@
       </v-data-table>
     </v-tabs-window-item>
     <v-tabs-window-item>
-      <Billing/>
+      <AdminAccounts/>
     </v-tabs-window-item>
   </v-tabs-window>
 </template>
@@ -46,7 +46,8 @@ import {ref} from 'vue'; // Importing ref for reactive variables
 import {inject} from 'vue'; // Importing inject for dependency injection
 import {useRouter} from 'vue-router';
 import {parseError} from "@/utils/error"; // Importing useRouter for navigation
-import Billing from './Billing.vue';
+import Billing from './AdminAccounts.vue';
+import AdminAccounts from "@/views/AdminAccounts.vue";
 
 // Injecting axios and toast services
 const $axios = inject('$axios');
