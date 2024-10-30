@@ -13,6 +13,9 @@ import Billing from '@/views/AdminAccounts.vue';
 import Settings from '@/views/Settings.vue';
 import Accounts from '@/views/Accounts.vue';
 import Advisors from '@/views/Advisors.vue';
+import Failure from "@/components/Failure.vue";
+import Success from "@/components/Success.vue";
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -156,6 +159,16 @@ const router = createRouter({
 
                 next('/');
             },
+        },
+        {
+            path: "/success",
+            name: "Success",
+            component: Success
+        },
+        {
+            path: "/failure",
+            name: "Failure",
+            component: Failure
         },
         {
             path: '/:pathMatch(.*)*',
