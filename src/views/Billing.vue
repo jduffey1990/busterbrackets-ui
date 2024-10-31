@@ -39,9 +39,9 @@
       </v-card>
 
     </v-row>
-    <div class="advisor-select-group">
+    <h4 class="mb-3">Please make a selection to view associated accounts.</h4>
+    <div v-if="isSuper === true" class="advisor-select-group">
       <v-select
-          v-if="isSuper"
           v-model="chosenFirm"
           :items="allFirms"
           item-title="name"
@@ -127,6 +127,7 @@ const {show} = inject('toast');
 
 const {user} = storeToRefs(useUserStore());
 const firmId = computed(() => chosenFirm.value ? chosenFirm.value.id : user.value.firm.id);
+const {isSuper} = useUserStore();
 
 
 const accountsData = ref({});
@@ -185,7 +186,19 @@ const flattenAccountsData = (accountsData) => {
   return Object.values(accountsData).flat();
 };
 
+
 const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
+  try {
+    const clientResponse = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
+    // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
+    clientResponse.data.forEach((client) => {
+      if (!clientsSet.has(client.email)) {
+        clientsSet.add(client.email)
+      }
+    });
+  } catch {
+
+  }
   try {
     const response = await $axios.get(`/api/billing/${advisor_id}/account-data/`);
 
@@ -202,9 +215,6 @@ const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
 
     // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
     response.data.forEach((account) => {
-      if (!clientsSet.has(account.user_name)) {
-        clientsSet.add(account.user_name);
-      }
       accountsArray.push(account);  // Add account to the total accountsArray
     });
 
@@ -214,14 +224,6 @@ const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
     show({type: 'error', message: parsedError.message});
   }
 };
-
-const isSuper = ref(false);
-
-// Check if the user is a super user
-if (user.value.role === 'super') {
-  isSuper.value = true;
-}
-
 
 //fetch firms
 const fetchFirms = async () => {
@@ -252,7 +254,7 @@ const deleteInActive = (data) => {
 
 // Fetch billing data based on the user role
 onMounted(() => {
-  if (isSuper.value) {
+  if (isSuper) {
     fetchFirms();
   } else {
     fetchAdminData();
