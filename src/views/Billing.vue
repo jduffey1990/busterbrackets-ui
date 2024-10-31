@@ -181,11 +181,6 @@ const fetchAdminData = async () => {
   }
 };
 
-const flattenAccountsData = (accountsData) => {
-  // Flatten the accountsData object into a single array of accounts
-  return Object.values(accountsData).flat();
-};
-
 
 const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
   try {
@@ -209,11 +204,8 @@ const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
       data.created_at = formatDate(data.created_at);
       data.value = addCommas(data.value, true);
       data.deleted_at = data.deleted_at === "Invalid date" ? "Active Account" : formatDate(data.deleted_at);
-
       allData.value.push(data)
     });
-
-
     // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
     accountResponse.data.forEach((account) => {
       accountsArray.push(account);  // Add account to the total accountsArray
@@ -237,20 +229,6 @@ const fetchFirms = async () => {
     const parsedError = parseError(error);
     show({type: 'error', message: parsedError.message});
   }
-};
-
-//get billing data for all firms for super users
-
-const totalCalc = (value, fee_rate) => {
-  return (value * fee_rate).toFixed(2);
-};
-
-const deleteArchived = (data) => {
-  data.value = data.value.filter((item) => !item.is_archived);
-};
-
-const deleteInActive = (data) => {
-  data.value = data.value.filter((item) => item.is_active);
 };
 
 // Fetch billing data based on the user role
