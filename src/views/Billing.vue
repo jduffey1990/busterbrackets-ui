@@ -39,8 +39,8 @@
       </v-card>
 
     </v-row>
-    <h4 class="mb-3">Please make a selection to view associated accounts.</h4>
-    <div v-if="isSuper === true" class="advisor-select-group">
+    <h4 class="mb-3">Please make a selection to view associated accounts:</h4>
+    <div v-if="isSuper" class="advisor-select-group">
       <v-select
           v-model="chosenFirm"
           :items="allFirms"
@@ -190,21 +190,22 @@ const flattenAccountsData = (accountsData) => {
 const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
   try {
     const clientResponse = await $axios.get(`/api/advisors/${advisor_id}/clients/`);
-    // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
     clientResponse.data.forEach((client) => {
       if (!clientsSet.has(client.email)) {
         clientsSet.add(client.email)
       }
     });
   } catch {
-
+    console.error('Error fetching clients data:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
   }
   try {
-    const response = await $axios.get(`/api/billing/${advisor_id}/account-data/`);
+    const accountResponse = await $axios.get(`/api/billing/${advisor_id}/account-data/`);
 
     // Store accounts in accountsData by advisor ID
-    accountsData.value[advisor_id] = response.data;
-    response.data.forEach((data) => {
+    accountsData.value[advisor_id] = accountResponse.data;
+    accountResponse.data.forEach((data) => {
       data.created_at = formatDate(data.created_at);
       data.value = addCommas(data.value, true);
       data.deleted_at = data.deleted_at === "Invalid date" ? "Active Account" : formatDate(data.deleted_at);
@@ -214,7 +215,7 @@ const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
 
 
     // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
-    response.data.forEach((account) => {
+    accountResponse.data.forEach((account) => {
       accountsArray.push(account);  // Add account to the total accountsArray
     });
 
