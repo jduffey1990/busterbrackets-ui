@@ -6,7 +6,7 @@
     <div class="pay-here">
       <h1>Payment</h1>
 
-      <p>
+      <p v-if="isSuper">
         Enable more payment method types
         <a
             href="https://dashboard.stripe.com/settings/payment_methods"
@@ -23,6 +23,7 @@
         <button
             id="submit"
             :disabled="isLoading"
+            class="primary-btn"
         >
           Pay now
         </button>
@@ -51,6 +52,7 @@ import SrMessages from "@/components/SrMessages.vue";
 // Variable declarations outside of export default
 const $axios = inject('$axios');
 const {user} = storeToRefs(useUserStore());
+const {isSuper} = useUserStore()
 const router = useRouter();
 let stripe;
 let elements;
@@ -60,10 +62,10 @@ const isLoading = ref(false);
 const messages = ref([]);
 let email = ref(user.email);
 let fullName = ref(user.full_name)
-let loading = ref(true);
 let cost = ref(250)
 let total = ref(0)
 const advisorsLength = ref(0)
+let clientSecret = ref('')
 
 const setValues = async () => {
   try {
@@ -81,13 +83,15 @@ const setValues = async () => {
 };
 
 async function handleSubmit(event) {
-  if (loading.value) return;
-  loading.value = true;
+  console.log("handleSubmit is called correctly (if there is another log after this)")
+  if (isLoading.value) return;
+  console.log("handleSubmit is called correctly");
+  isLoading.value = true;
 
   const {error} = await stripe.confirmPayment({
     elements,
     confirmParams: {
-      return_url: `${window.location.origin}/return`
+      return_url: `${window.location.origin}/success`
     }
   });
 
@@ -118,34 +122,41 @@ function redirectToStripeCheckout() {
 onMounted(async () => {
   await setValues();
 
-  const publishableKey = import.meta.env.VITE_STRIPE_KEY; // Access directly
-  console.log(publishableKey, typeof publishableKey); // Confirm it's loaded correctly
-
-  // Check if publishableKey is available
+  // Load Stripe publishable key
+  const publishableKey = import.meta.env.VITE_STRIPE_KEY;
   if (!publishableKey) {
-    console.error("Stripe publishable key is missing. Please check your .env file.");
+    console.error("Stripe publishable key is missing.");
     return;
   }
 
   stripe = await loadStripe(publishableKey);
+  // Fetch client secret from backend
+  try {
+    // Fetch client secret from backend using axios
+    const response = await $axios.get("/api/billing/create-payment-intent");
 
-  const {clientSecret, error: backendError} = await fetch("/api/create-payment-intent")
-      .then((res) => res.json());
+    console.log("Response from backend:", response); // Log full response
+    if (response.data.error) {
+      messages.value.push(response.data.error.message);
+      return;
+    }
 
-  if (backendError) {
-    messages.value.push(backendError.message);
-  } else {
-    messages.value.push(`Client secret returned.`);
+    clientSecret.value = response.data.clientSecret;
+    console.log("Client Secret:", clientSecret.value); // Log the client secret
+
+    elements = stripe.elements({clientSecret: clientSecret.value});
+    const paymentElement = elements.create("payment");
+    paymentElement.mount("#payment-element");
+
+    const linkAuthenticationElement = elements.create("linkAuthentication");
+    linkAuthenticationElement.mount("#link-authentication-element");
+
+  } catch (error) {
+    console.error("Error fetching client secret:", error);
+    messages.value.push("An error occurred while fetching the payment intent.");
+  } finally {
+    isLoading.value = false;
   }
-
-  elements = stripe.elements({clientSecret});
-  const paymentElement = elements.create('payment');
-  paymentElement.mount("#payment-element");
-
-  const linkAuthenticationElement = elements.create("linkAuthentication");
-  linkAuthenticationElement.mount("#link-authentication-element");
-
-  isLoading.value = false;
 });
 
 </script>

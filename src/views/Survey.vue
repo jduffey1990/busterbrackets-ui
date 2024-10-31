@@ -567,8 +567,8 @@
                             <div class="text-h5" style="margin-left: 10px;">
                               {{ q.question.text }}
                             </div>
-                            <v-radio-group 
-                              v-model="q.question.default_value" 
+                            <v-radio-group
+                              v-model="q.question.default_value"
                               v-for="(option, index) in q.question.slider_ticks"
                             >
                               <v-radio
@@ -1420,9 +1420,9 @@ const radioDescriprions = ["Prioritize investments in companies that align with 
 }
 
 .autocomplete-div {
-  width: 100%; 
-  display: flex; 
-  align-items: center; 
+  width: 100%;
+  display: flex;
+  align-items: center;
   flex-direction: column;
 }
 
