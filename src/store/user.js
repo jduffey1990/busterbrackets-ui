@@ -23,6 +23,12 @@ export const useUserStore = defineStore('user', {
         isLoggedIn(state) {
             return !!state.user.email;
         },
+        stripeAccountAssociated(state) {
+            return !!state.user.firm.stripe_subscription_id
+        },
+        stripeIsCurrent(state) {
+            return !!state.user.firm.subscription_end_date
+        }
     },
     actions: {
         async getValuesProfile({advisor_id, user_id}) {
