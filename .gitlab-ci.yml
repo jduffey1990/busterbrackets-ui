@@ -37,92 +37,101 @@ stages:
   - deploy-beta
   - deploy-demo
 
-# ---- Cloud Run Pre-Dev ----
+# ---- Job Templates ----
 
-build-predev:
-  stage: build-predev
-  except:
-    - development
-    - main
-  when: manual
+.build:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
     - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
     - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $UI_PREDEV_IMAGE:$CI_COMMIT_SHORT_SHA
+    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $IMAGE:$CI_COMMIT_SHORT_SHA
 
-deploy-predev:
-  stage: deploy-dev
-  needs:
-    - build-predev
-  except:
-    - development
-    - main
-  image: google/cloud-sdk:467.0.0-alpine
+.deploy:
+  image: google/cloud-sdk
   script:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
     - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
-    - gcloud config set project $GOOGLE_CLOUD_DEV_PROJECT
-    - gcloud run deploy ui-predev --image $UI_PREDEV_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
+    - gcloud config set project $PROJECT
+    - gcloud run deploy $CLOUD_RUN_SERVICE --image $IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated  
+
+# ---- Cloud Run Pre-Dev ----
+
+build-predev:
+  extends: .build
+  stage: build-predev
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
+      when: never
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+      when: never
+    - when: manual
+  variables:
+    IMAGE: $UI_PREDEV_IMAGE
+
+deploy-predev:
+  extends: .deploy
+  stage: deploy-predev
+  needs:
+    - build-predev
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
+      when: never
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+      when: never
+    - when: always
+  variables:
+    PROJECT_ID: $GOOGLE_CLOUD_DEV_PROJECT
+    IMAGE: $UI_PREDEV_IMAGE
+    CLOUD_RUN_SERVICE: "ui-predev"
 
 # ---- Cloud Run Dev ----
 
 build-dev:
+  extends: .build
   stage: build-dev
   only:
     - development
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-  script:
-    - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
-    - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $UI_IMAGE:$CI_COMMIT_SHORT_SHA
+  variables:
+    IMAGE: $UI_IMAGE
 
 deploy-dev:
+  extends: .deploy
   stage: deploy-dev
   needs:
     - build-dev
   only:
     - development
-  image: google/cloud-sdk:467.0.0-alpine
-  script:
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
-    - gcloud config set project $GOOGLE_CLOUD_DEV_PROJECT
-    - gcloud run deploy ui --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
+  variables:
+    PROJECT_ID: $GOOGLE_CLOUD_DEV_PROJECT
+    IMAGE: $UI_IMAGE
+    CLOUD_RUN_SERVICE: "ui"
 
 # ---- Cloud Run Beta ----
 
 deploy-beta:
+  extends: .deploy
   stage: deploy-beta
   only:
     - main
   when: manual
-  image: google/cloud-sdk:467.0.0-alpine
-  script:
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - cat .secure_files/beta-google-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    - gcloud auth activate-service-account --key-file .secure_files/beta-google-service-account.json
-    - gcloud config set project $GOOGLE_CLOUD_BETA_PROJECT
-    - gcloud run deploy ui --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
+  variables:
+    PROJECT_ID: $GOOGLE_CLOUD_BETA_PROJECT
+    IMAGE: $UI_IMAGE
+    CLOUD_RUN_SERVICE: "ui"
 
 # ---- Cloud Run Demo ----
 
 deploy-demo:
+  extends: .deploy
   stage: deploy-demo
-  needs:
-    - deploy-beta
   only:
     - main
-  image: google/cloud-sdk:467.0.0-alpine
-  script:
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - cat .secure_files/beta-google-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    - gcloud auth activate-service-account --key-file .secure_files/beta-google-service-account.json
-    - gcloud config set project $GOOGLE_CLOUD_BETA_PROJECT
-    - gcloud run deploy ui-demo --image $UI_IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated 
+  needs:
+    - deploy-beta
+  variables:
+    PROJECT_ID: $GOOGLE_CLOUD_BETA_PROJECT
+    IMAGE: $UI_IMAGE
+    CLOUD_RUN_SERVICE: "ui-demo"
