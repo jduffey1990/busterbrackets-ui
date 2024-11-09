@@ -30,12 +30,11 @@ variables:
 # ---- stages ----
 
 stages:
-  - build-predev
-  - deploy-predev
-  - build-dev
-  - deploy-dev
-  - deploy-beta
-  - deploy-demo
+  - predev
+  # - build-dev
+  # - deploy-dev
+  # - deploy-beta
+  # - deploy-demo
 
 # ---- Job Templates ----
 
@@ -61,77 +60,78 @@ stages:
 
 build-predev:
   extends: .build
-  stage: build-predev
+  stage: predev
   rules:
     - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
       when: never
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: never
-    - when: manual
+    - if: $EPHEMERAL_ENV == true
+      when: always
   variables:
     IMAGE: $UI_PREDEV_IMAGE
 
-deploy-predev:
-  extends: .deploy
-  stage: deploy-predev
-  needs:
-    - build-predev
-  rules:
-    - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
-      when: never
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-      when: never
-    - when: always
-  variables:
-    PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
-    IMAGE: $UI_PREDEV_IMAGE
-    CLOUD_RUN_SERVICE: "ui-predev"
+# deploy-predev:
+#   extends: .deploy
+#   stage: deploy-predev
+#   needs:
+#     - build-predev
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
+#       when: never
+#     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+#       when: never
+#     - when: always
+#   variables:
+#     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
+#     IMAGE: $UI_PREDEV_IMAGE
+#     CLOUD_RUN_SERVICE: "ui-predev"
 
 # ---- Cloud Run Dev ----
 
-build-dev:
-  extends: .build
-  stage: build-dev
-  only:
-    - development
-  variables:
-    IMAGE: $UI_IMAGE
+# build-dev:
+#   extends: .build
+#   stage: build-dev
+#   only:
+#     - development
+#   variables:
+#     IMAGE: $UI_IMAGE
 
-deploy-dev:
-  extends: .deploy
-  stage: deploy-dev
-  needs:
-    - build-dev
-  only:
-    - development
-  variables:
-    PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
-    IMAGE: $UI_IMAGE
-    CLOUD_RUN_SERVICE: "ui"
+# deploy-dev:
+#   extends: .deploy
+#   stage: deploy-dev
+#   needs:
+#     - build-dev
+#   only:
+#     - development
+#   variables:
+#     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
+#     IMAGE: $UI_IMAGE
+#     CLOUD_RUN_SERVICE: "ui"
 
-# ---- Cloud Run Beta ----
+# # ---- Cloud Run Beta ----
 
-deploy-beta:
-  extends: .deploy
-  stage: deploy-beta
-  only:
-    - main
-  when: manual
-  variables:
-    PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
-    IMAGE: $UI_IMAGE
-    CLOUD_RUN_SERVICE: "ui"
+# deploy-beta:
+#   extends: .deploy
+#   stage: deploy-beta
+#   only:
+#     - main
+#   when: manual
+#   variables:
+#     PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
+#     IMAGE: $UI_IMAGE
+#     CLOUD_RUN_SERVICE: "ui"
 
-# ---- Cloud Run Demo ----
+# # ---- Cloud Run Demo ----
 
-deploy-demo:
-  extends: .deploy
-  stage: deploy-demo
-  only:
-    - main
-  needs:
-    - deploy-beta
-  variables:
-    PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
-    IMAGE: $UI_IMAGE
-    CLOUD_RUN_SERVICE: "ui-demo"
+# deploy-demo:
+#   extends: .deploy
+#   stage: deploy-demo
+#   only:
+#     - main
+#   needs:
+#     - deploy-beta
+#   variables:
+#     PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
+#     IMAGE: $UI_IMAGE
+#     CLOUD_RUN_SERVICE: "ui-demo"
