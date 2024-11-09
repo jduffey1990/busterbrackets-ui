@@ -69,7 +69,7 @@ build-predev:
     - if: $EPHEMERAL_ENV == "true"
       when: always
   variables:
-    IMAGE: $CI_COMMIT_BRANCH_ui
+    IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_BRANCH"
 
 # deploy-predev:
 #   extends: .deploy
