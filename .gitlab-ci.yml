@@ -83,7 +83,7 @@ deploy-predev:
       when: never
     - when: always
   variables:
-    PROJECT_ID: $GOOGLE_CLOUD_DEV_PROJECT
+    PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: $UI_PREDEV_IMAGE
     CLOUD_RUN_SERVICE: "ui-predev"
 
@@ -105,7 +105,7 @@ deploy-dev:
   only:
     - development
   variables:
-    PROJECT_ID: $GOOGLE_CLOUD_DEV_PROJECT
+    PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: $UI_IMAGE
     CLOUD_RUN_SERVICE: "ui"
 
@@ -118,7 +118,7 @@ deploy-beta:
     - main
   when: manual
   variables:
-    PROJECT_ID: $GOOGLE_CLOUD_BETA_PROJECT
+    PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
     IMAGE: $UI_IMAGE
     CLOUD_RUN_SERVICE: "ui"
 
@@ -132,6 +132,6 @@ deploy-demo:
   needs:
     - deploy-beta
   variables:
-    PROJECT_ID: $GOOGLE_CLOUD_BETA_PROJECT
+    PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
     IMAGE: $UI_IMAGE
     CLOUD_RUN_SERVICE: "ui-demo"
