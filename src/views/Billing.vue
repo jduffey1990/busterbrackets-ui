@@ -16,7 +16,7 @@
                 v-bind="props"
                 small
                 color="grayblue"
-                class="ml-2">mdi-information
+                class="ml-2 icon-movement">mdi-information
             </v-icon>
           </template>
         </v-tooltip>
@@ -36,7 +36,7 @@
                 v-bind="props"
                 small
                 color="grayblue"
-                class="ml-2">mdi-information
+                class="ml-2 icon-movement">mdi-information
             </v-icon>
           </template>
         </v-tooltip>
@@ -71,8 +71,14 @@
       </template>
     </v-data-table>
 
-    <v-btn @click="changeEditButton" color="primary">{{ buttonText }}</v-btn>
-    <v-btn v-if="editingUser" @click="submitChangesCustomer" color="secondary>">Submit Changes</v-btn>
+    <v-btn @click="changeEditButton" color="secondary">{{ buttonText }}</v-btn>
+    <v-btn
+        v-if="editingUser"
+        @click="submitChangesCustomer"
+        color="primary"
+        :disabled="editSubmitDisabled">
+      Submit Changes
+    </v-btn>
   </template>
   <template v-if="!stripeAccountAssociated">
     <v-form @submit.prevent="submitSubscription" class="subscription-form">
@@ -145,7 +151,7 @@
 
       <!-- Submit Button -->
       <div class="d-flex justify-end mb-4">
-        <v-btn color="primary" text type="submit">Create Subscription</v-btn>
+        <v-btn color="primary" text type="submit" :disabled="createSubscriptionDisabled">Create Subscription</v-btn>
       </div>
     </v-form>
   </template>
@@ -163,7 +169,7 @@
                 v-bind="props"
                 small
                 color="grayblue"
-                class="ml-2">mdi-information
+                class="ml-2 icon-movement">mdi-information
             </v-icon>
           </template>
         </v-tooltip>
@@ -185,8 +191,8 @@
           <div id="payment-element"/>
           <button
               id="submit"
-              :disabled="isLoading  || isPaymentButtonDisabled"
-              class="primary-btn mt-4"
+              :disabled="isPaymentButtonDisabled || isLoading"
+              class="intent-button"
           >
             {{ intentButtonText }}
           </button>
@@ -203,7 +209,8 @@
               class="d-flex justify-space-between"
           >
             <span class="mr-3">Invoice Date: {{ invoice.created_at }}</span>
-            <span>Amount Due: ${{ invoice.amount.toFixed(2) }}</span>
+            <span class="mr-3">Amount Due: ${{ invoice.amount }}</span>
+            <a :href="invoice.invoice_url" target="_blank">Invoice Stripe Link</a>
           </v-list-item>
         </v-list>
       </div>
@@ -229,20 +236,24 @@ import {useUserStore} from '@/store/user';
 import {parseError} from "@/utils/error";
 import {storeToRefs} from "pinia";
 import SrMessages from "@/components/SrMessages.vue";
-import {submitChangesSubscription} from "@/utils/billing";
+import {useOverlayStore} from "@/store/overlay";
 
 // Variable declarations outside of export default
 const $axios = inject('$axios');
+const {show} = inject('toast');
 const {user} = storeToRefs(useUserStore());
 const {isSuper, stripeAccountAssociated, isFirmAdminOrGreater} = useUserStore()
+const overlayStore = useOverlayStore();
 const router = useRouter();
 let stripe;
 let elements;
 
 let editingUser = ref(false)
 const canEdit = ref(isFirmAdminOrGreater)
+const createSubscriptionDisabled = ref(false)
 const isLoading = ref(false);
 const isPaymentButtonDisabled = ref(false)
+const editSubmitDisabled = ref(false)
 const messages = ref([]);
 let email = ref('');
 let fullName = ref('')
@@ -341,17 +352,26 @@ const getCustomer = async () => {
 };
 
 async function handleSubmit(event) {
+  isPaymentButtonDisabled.value = true
   console.log("handleSubmit is called correctly (if there is another log after this)")
   if (isLoading.value) return;
   console.log("handleSubmit is called correctly");
   isLoading.value = true;
 
-  const {error} = await stripe.confirmPayment({
+  await stripe.confirmPayment({
     elements,
     confirmParams: {
-      return_url: `${window.location.origin}/success`
+      return_url: `${window.location.origin}/success`,
+      payment_method_data: {invoice_info: unpaidInvoices[0]},
     }
-  });
+  })
+      .then(function (result) {
+        if (result.error) {
+          messages.value.push(result.error.message);
+        }
+      });
+
+  console.log("Here is the return", error)
 
   if (error.type === "card_error" || error.type === "validation_error") {
     messages.value.push(error.message);
@@ -359,12 +379,12 @@ async function handleSubmit(event) {
     messages.value.push("An unexpected error occured.");
   }
 
-  loading.value = false;
+  isPaymentButtonDisabled.value = false
 }
 
 const submitSubscription = async () => {
   try {
-    isLoading.value = true;  // Set loading state
+    createSubscriptionDisabled.value = true
 
     // Validate the address fields
     if (!address.value.city || !address.value.country || !address.value.line1 || !address.value.postal_code
@@ -385,24 +405,23 @@ const submitSubscription = async () => {
       state: address.value.state,
     });
 
-    if (response.status === 200) {
-      console.log("Subscription created successfully!");
-    } else {
-      console.error("Unexpected response status:", response.status);
-    }
+    overlayStore.openOverlay(
+        `You have successfully created ${user.value.firm.name}'s customer profile and subscription with Stripe`,
+        "This subscription comes with the 30 day trial. The subscription officially begins at the rate of $250 per Firm " +
+        "Admin and advisor seats",
+        '/UI-IMGs/Values-ss.png'
+    );
   } catch (error) {
     console.error("Error creating subscription:", error);
 
     // Optionally, show an error message in the UI
     show({type: "error", message: "There was an error creating the subscription."});
-  } finally {
-    isLoading.value = false;  // Reset loading state
   }
 };
 
 const submitChangesCustomer = async () => {
   try {
-    isLoading.value = true;  // Set loading state
+    editSubmitDisabled.value = true;  // Set loading state
     console.log("Here is the copy", combinedTable.value)
 
     let objectified_combinedTable = {
@@ -423,38 +442,42 @@ const submitChangesCustomer = async () => {
       alert("All fields excepting line 2 are required. Please complete the form before proceeding.");
       return;
     }
-    //
-    // // Post data to the subscription endpoint
-    // const response = await $axios.post("/api/billing/customer-stripe-update/", {
-    //   name: fullName.value,
-    //   email: email.value,
-    //   city: address.value.city,
-    //   country: address.value.country,
-    //   line1: address.value.line1,
-    //   line2: address.value.line2,
-    //   postal_code: address.value.postal_code,
-    //   state: address.value.state,
-    // });
-    //
-    // if (response.status === 200) {
-    //   console.log("Subscription updated successfully!");
-    // } else {
-    //   console.error("Unexpected response status:", response.status);
-    // }
+
+    // Post data to the subscription endpoint
+    const response = await $axios.post("/api/billing/customer-stripe-update/", {
+      name: objectified_combinedTable.name,
+      email: objectified_combinedTable.email,
+      city: objectified_combinedTable.city,
+      country: objectified_combinedTable.country,
+      line1: objectified_combinedTable.line1,
+      line2: objectified_combinedTable.line2,
+      postal_code: objectified_combinedTable.postal_code,
+      state: objectified_combinedTable.state,
+    });
+
+    if (response.status === 200) {
+      console.log("Subscription updated successfully!");
+    } else {
+      console.error("Unexpected response status:", response.status);
+    }
+    editingUser.value = false
+    editSubmitDisabled.value = false
+
+    overlayStore.openOverlay(
+        'Success!',
+        `You have successfully updated ${user.value.firm.name}'s contact information`,
+        '/UI-IMGs/Values-ss.png'
+    );
+
+    await getCustomer()
 
   } catch (error) {
     console.error("Error updating subscription:", error);
 
     // Optionally, show an error message in the UI
     show({type: "error", message: "There was an error updating the subscription."});
+
   }
-  // finally {
-  //   const result = await submitChangesSubscription($axios);
-  //   if (result && result.type === "error") {
-  //     showSnackbar(result.message); // Or your actual error-handling function
-  //   }
-  // }
-  isLoading.value = false;  // Reset loading state
 }
 
 const getPaymentIntent = async () => {
@@ -470,9 +493,10 @@ const getPaymentIntent = async () => {
 
     // Load the oldest intent (the first in the list) for payment
     let newestFirst = response.data.intents.reverse()
+    console.log("newestFirst", newestFirst)
     const oldestIntent = newestFirst[0];
     clientSecret.value = oldestIntent.client_secret;
-    total.value = oldestIntent.amount / 100; // Convert cents to dollars
+    total.value = (parseInt(oldestIntent.amount) / 100).toFixed(2); // Convert cents to dollars
 
     // Initialize Stripe elements for the oldest intent
     elements = stripe.elements({clientSecret: clientSecret.value});
@@ -484,8 +508,9 @@ const getPaymentIntent = async () => {
 
     // Optional: Show list of unpaid invoices to the user
     unpaidInvoices.value = response.data.intents.map(intent => ({
-      amount: intent.amount / 100,
+      amount: (parseInt(intent.amount) / 100).toFixed(2),
       created_at: new Date(intent.invoice_created_at * 1000).toLocaleDateString(),
+      invoice_url: intent.invoice_url
     }));
 
   } catch (error) {
@@ -612,40 +637,46 @@ const showSnackbar = (message) => {
   box-sizing: border-box;
 }
 
+.secondary-btn {
+  background-color: #ffffff;
+  border: 2px solid #07152A;
+  color: #07152A; /* To set the text color to match the stroke */
+}
+
 /* Button styling */
-.primary-btn {
+.primary-btn.button-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.intent-button {
   background-color: #07152A;
   color: #ffffff;
   font-family: "halyard-text" !important;
-  font-size: 14px;
   font-weight: 500;
   padding: 10px 20px;
   border: none;
   border-radius: 50px;
   cursor: pointer;
   text-transform: uppercase;
+  font-size: 12px;
 }
 
-.primary-btn.button-disabled {
+.intent-button:disabled {
   opacity: 0.5;
   pointer-events: none;
 }
 
-.secondary-btn {
-  background-color: #ffffff;
-  border: 2px solid #07152A;
-  color: #07152A;
-  font-family: "halyard-text" !important;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 10px 20px;
-  border-radius: 50px;
-  cursor: pointer;
-  text-transform: uppercase;
+.intent-button:hover {
+  box-shadow: none !important;
 }
 
 .button-group {
   margin-top: 20px;
   text-align: center;
+}
+
+.icon-movement {
+
 }
 </style>

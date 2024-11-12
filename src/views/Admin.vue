@@ -169,7 +169,8 @@ const createNewAdvisor = async () => {
 
     await $axios.post(`/api/firms/${firm}/advisors/`, newAdvisor);
     openCreateNewAdvisorModal.value = false;
-    getAdvisors();
+    await $axios.post(`/api/billing/subscription-quantity-update/`);
+    await getAdvisors();
     show({message: 'Advisor created!'});
 
     // Set a timeout before reloading the page
