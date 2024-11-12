@@ -116,7 +116,8 @@
                         class="autocomplete"
                     >
                       <template v-slot:label>
-                        <span class="auto-complete" v-html="formatLabel(q.question.text)" v-if="!q.question.default_value"></span>
+                        <span class="auto-complete" v-html="formatLabel(q.question.text)"
+                              v-if="!q.question.default_value"></span>
                       </template>
 
                       <template v-slot:chip="{ props, item }">
@@ -744,6 +745,7 @@ const numberChanging = ref(false)
 
 //Non-composition API global variables
 const previousResponses = [];
+const allWeeds = [];
 let newProspectId = null;
 
 
@@ -1032,10 +1034,8 @@ const getElims = async () => {
       return response
     });
   }
-  //false but present values are mucking the data up
-  let filteredSurveyResponses = mappedSurveyResponses.filter((q) => q.default_value !== "false")
-  // Filter out duplicate questions in previousResponses (based on question id)
 
+  // Filter out duplicate questions in previousResponses (based on question id)
   let filteredPreviousResponses = []
   if (previousResponses.length) {
     filteredPreviousResponses = previousResponses.filter(prevResp => {
@@ -1044,16 +1044,27 @@ const getElims = async () => {
   }
 
   // Check if there are previous responses and concatenate them
-  let finalResponses = filteredSurveyResponses.concat(filteredPreviousResponses);
+  let finalResponses = mappedSurveyResponses.concat(filteredPreviousResponses);
 
 
   // Check if mappedSurveyResponses is not empty before making API call
   if (finalResponses.length !== 0) {
+
+    finalResponses.forEach(answeredQuestion => {
+      let foundQuestion = allWeeds.find(q => q.tag === answeredQuestion.tag);
+      if (foundQuestion) {
+        foundQuestion.default_value = answeredQuestion.default_value;
+      }
+    });
+
+    // console.log(finalResponses);
+    // console.log(allWeeds);
+
     try {
       // Send the mapped responses to the backend
       const result = await $axios.post(
           `/api/advisors/${advisor_id}/clients/${user_id}/eliminations/`,
-          finalResponses
+          allWeeds //finalResponses
       );
 
       // Assuming the response contains eliminations count, update it
@@ -1213,6 +1224,24 @@ const submitSurvey = () => {
 onMounted(async () => {
   const {data: surveyData} = await $axios.get('/api/surveys/');
   let valuesProfile = [];
+
+  for (let section of surveyData.survey_sections) {
+    for (let group of section.survey_groups) {
+      //count is for survey mounting so the selectAll logic works upon load
+      let count = 0
+      for (let q of group.survey_questions) {
+        if (section.tag === "pullYourWeeds") {
+          allWeeds.push({
+            default_value: JSON.stringify(false),
+            response_type: q.question.response_type,
+            tag: q.question.tag,
+            text: q.question.text,
+            slider_ticks: q.question.slider_ticks,
+          });
+        }
+      }
+    }
+  }
 
   //mounting previous results to valuesProfile if they are present
   if (isLoggedIn && !isAdvisorSurvey.value) {
@@ -1691,6 +1720,7 @@ window.addEventListener('beforeunload', (event) => {
     width: 120%;
     transform: translatex(-40px);
   }
+
   .auto-complete {
     text-wrap: wrap;
     font-size: 14px;
@@ -1699,7 +1729,7 @@ window.addEventListener('beforeunload', (event) => {
 }
 
 @media only screen and (max-width: 400px) {
-  .slider{
+  .slider {
     max-width: 100%;
     width: 110%;
     transform: translatex(-7.5%);
