@@ -214,6 +214,19 @@
           </v-list-item>
         </v-list>
       </div>
+      <div v-if="futureInvoices.length" class="my-5">
+        <h5>Upcoming Invoices</h5>
+        <v-list class="bg-transparent">
+          <v-list-item
+              v-for="(invoice, index) in futureInvoices"
+              :key="index"
+              class="d-flex justify-space-between"
+          >
+            <span class="mr-3">Invoice Date: {{ invoice.created_at }}</span>
+            <span class="mr-3">Amount Due: ${{ invoice.amount }}</span>
+          </v-list-item>
+        </v-list>
+      </div>
     </section>
   </template>
   <template v-else>
@@ -265,6 +278,7 @@ let clientSecret = ref('')
 const buttonText = ref('Edit Stripe User Profile');
 const intentButtonText = ref('$0 due (button disabled)');
 let unpaidInvoices = ref([])
+let futureInvoices = ref({})
 const customerTable = ref([
   {title: "Firm Billing User", value: ""},
   {title: "Firm Billing Email", value: ""}
@@ -320,12 +334,10 @@ const changeEditButton = () => {
 //apis
 const getCustomer = async () => {
   try {
-    console.log(user)
     const response = await $axios.get("/api/billing/retrieve-customer/");
 
     if (response.status === 200 && response.data.customer) {
       customerData.value = response.data.customer;
-      console.log("Customer data fetched successfully:", customerData.value);
 
       // Set customer data
       customerTable.value[0].value = customerData.value.name;
@@ -351,18 +363,36 @@ const getCustomer = async () => {
   }
 };
 
+const getNextInvoice = async () => {
+  try {
+    let response = await $axios.get("/api/billing/retrieve-next-invoice/");
+    console.log("Futuristic:", response);
+
+    if (response.status === 200 && response.data.amount_due) {
+      futureInvoices.value = [{
+        amount: (parseInt(response.data.amount_due) / 100).toFixed(2),
+        created_at: new Date(response.data.created_at * 1000).toLocaleDateString(),
+        invoice_url: response.data.invoice_url
+      }];
+    } else {
+      throw new Error("Invoice data not found");
+    }
+  } catch (error) {
+    console.error("Error fetching upcoming invoice:", error);
+    errorMessage.value = "An error occurred while fetching upcoming invoice data.";
+  }
+};
+
+
 async function handleSubmit(event) {
   isPaymentButtonDisabled.value = true
-  console.log("handleSubmit is called correctly (if there is another log after this)")
   if (isLoading.value) return;
-  console.log("handleSubmit is called correctly");
   isLoading.value = true;
 
   await stripe.confirmPayment({
     elements,
     confirmParams: {
       return_url: `${window.location.origin}/success`,
-      payment_method_data: {invoice_info: unpaidInvoices[0]},
     }
   })
       .then(function (result) {
@@ -370,14 +400,6 @@ async function handleSubmit(event) {
           messages.value.push(result.error.message);
         }
       });
-
-  console.log("Here is the return", error)
-
-  if (error.type === "card_error" || error.type === "validation_error") {
-    messages.value.push(error.message);
-  } else {
-    messages.value.push("An unexpected error occured.");
-  }
 
   isPaymentButtonDisabled.value = false
 }
@@ -411,6 +433,9 @@ const submitSubscription = async () => {
         "Admin and advisor seats",
         '/UI-IMGs/Values-ss.png'
     );
+
+    router.push('/success')
+
   } catch (error) {
     console.error("Error creating subscription:", error);
 
@@ -422,7 +447,6 @@ const submitSubscription = async () => {
 const submitChangesCustomer = async () => {
   try {
     editSubmitDisabled.value = true;  // Set loading state
-    console.log("Here is the copy", combinedTable.value)
 
     let objectified_combinedTable = {
       name: combinedTable.value[0].value,
@@ -434,8 +458,6 @@ const submitChangesCustomer = async () => {
       postal_code: combinedTable.value[6].value,
       country: combinedTable.value[7].value,
     }
-
-    console.log("Here is your object", objectified_combinedTable)
 
     if (!objectified_combinedTable.city || !objectified_combinedTable.country ||
         !objectified_combinedTable.line1 || !objectified_combinedTable.postal_code || !objectified_combinedTable.state) {
@@ -513,6 +535,7 @@ const getPaymentIntent = async () => {
       invoice_url: intent.invoice_url
     }));
 
+
   } catch (error) {
     console.error("Error fetching payment intents:", error);
     messages.value.push("An error occurred while fetching payment intents.");
@@ -540,6 +563,7 @@ onMounted(async () => {
   // Fetch client secret from backend
 
   await getPaymentIntent()
+  await getNextInvoice()
 });
 
 watch(total, (newTotal) => {

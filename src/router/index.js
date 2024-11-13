@@ -9,11 +9,12 @@ import Home from '@/views/Home.vue';
 import ResetPassword from '@/views/ResetPassword.vue';
 import {useUserStore} from '@/store/user';
 import Admin from '@/views/Admin.vue';
-import Billing from '@/views/AdminAccounts.vue';
+import Billing from '@/views/Billing.vue';
 import Settings from '@/views/Settings.vue';
 import Accounts from '@/views/Accounts.vue';
 import Advisors from '@/views/Advisors.vue';
 import Failure from "@/components/Failure.vue";
+import AdvisorBlocked from "@/components/AdvisorBlocked.vue";
 import Success from "@/components/Success.vue";
 
 
@@ -171,10 +172,16 @@ const router = createRouter({
             component: Failure
         },
         {
+            path: '/advisor-notice',
+            name: 'AdvisorBlockedNotice',
+            component: AdvisorBlocked, // Create this view
+        },
+        {
             path: '/:pathMatch(.*)*',
             redirect: '/',
         },
     ],
 });
+
 
 export default router;

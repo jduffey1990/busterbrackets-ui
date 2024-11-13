@@ -2,6 +2,7 @@ import {defineStore} from 'pinia';
 
 import {useCookies} from 'vue3-cookies';
 import {Role} from '@/enums/user';
+import {formatDate} from "@/utils/string";
 
 const firmAdminPermissions = [Role.FIRM_ADMIN, Role.SUPER];
 const advisorPermissions = [...firmAdminPermissions, Role.ADVISOR];
@@ -24,10 +25,15 @@ export const useUserStore = defineStore('user', {
             return !!state.user.email;
         },
         stripeAccountAssociated(state) {
-            return !!state.user.firm.stripe_subscription_id
+            return !!state.user.firm.stripe_subscription_id;
         },
         stripeIsCurrent(state) {
-            return !!state.user.firm.subscription_end_date
+            if (state.user.firm.subscription_end_date > 0) {
+                const currentUnixTime = Math.floor(Date.now() / 1000); // Convert current time to Unix timestamp
+                return state.user.firm.subscription_end_date >= currentUnixTime;
+            } else {
+                return false;
+            }
         }
     },
     actions: {
@@ -101,6 +107,7 @@ export const useUserStore = defineStore('user', {
             cookies.remove('csrftoken');
 
             this.user = {};
+            window.location.href = '/login';
         },
         initializePendo() {
             if (this.user && Object.keys(this.user).length !== 0 && !this.isSuper) {
@@ -118,6 +125,6 @@ export const useUserStore = defineStore('user', {
                     }
                 });
             }
-        }
+        },
     },
 });

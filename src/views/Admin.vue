@@ -17,7 +17,6 @@
     <v-tabs v-model="currentTab">
       <v-tab>Admin</v-tab>
       <v-tab>White Label Settings</v-tab>
-      <v-tab>Billing</v-tab>
     </v-tabs>
 
     <!-- Content of the selected tab -->
@@ -39,9 +38,9 @@
           <v-btn @click="saveWhiteLabelSettings">Save</v-btn>
         </div>
       </v-tabs-window-item>
-      <v-tabs-window-item>
-        <Billing/>
-      </v-tabs-window-item>
+      <!--      <v-tabs-window-item>-->
+      <!--        <Billing/>-->
+      <!--      </v-tabs-window-item>-->
     </v-tabs-window>
 
 
