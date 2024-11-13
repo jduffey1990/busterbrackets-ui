@@ -100,34 +100,36 @@
                       cols="12" md="8"
                   >
                     <!-- Loop through each question in the group -->
-                    <v-autocomplete
-                        v-for="q in group.survey_questions"
-                        :key="q.question.id"
-                        v-model="q.question.default_value"
-                        :items="companies"
-                        item-title="name"
-                        item-value="ticker"
-                        :label="q.question.text"
-                        chips
-                        closable-chips
-                        multiple
-                        clear-on-select
-                        @update:model-value="updateResponse(q, section.tag)"
-                        class="autocomplete"
-                    >
-                      <template v-slot:label>
-                        <span class="auto-complete" v-html="formatLabel(q.question.text)"
-                              v-if="!q.question.default_value"></span>
-                      </template>
+                    <div class="autocomplete-div">
+                      <span class="my-2 text-h5" v-for="q in group.survey_questions" v-html="formatLabel(q.question.text)"></span>
+                      <v-autocomplete
+                          v-for="q in group.survey_questions"
+                          :key="q.question.id"
+                          v-model="q.question.default_value"
+                          :items="companies"
+                          item-title="name"
+                          item-value="ticker"
+                          :label="q.question.text"
+                          chips
+                          closable-chips
+                          multiple
+                          clear-on-select
+                          @update:model-value="updateResponse(q, section.tag)"
+                          class="autocomplete"
+                      >
+                        <template v-slot:label>
+                          <span class="auto-complete" v-html="'Start typing the names of companies or tickers here'"></span>
+                        </template>
 
-                      <template v-slot:chip="{ props, item }">
-                        <v-chip v-bind="props" :text="item.raw.name"></v-chip>
-                      </template>
+                        <template v-slot:chip="{ props, item }">
+                          <v-chip v-bind="props" :text="item.raw.name"></v-chip>
+                        </template>
 
-                      <template v-slot:item="{ props, item }">
-                        <v-list-item v-bind="props" :title="item.raw.name"></v-list-item>
-                      </template>
-                    </v-autocomplete>
+                        <template v-slot:item="{ props, item }">
+                          <v-list-item v-bind="props" :title="item.raw.name"></v-list-item>
+                        </template>
+                      </v-autocomplete>
+                    </div>
                   </v-col>
                 </v-row>
               </v-container>
@@ -562,21 +564,23 @@
                         <div v-for="q in group.survey_questions" :key="q.question.id" class="investments-container">
                           <!-- SLIDER type question -->
                           <div v-if="q.question.response_type === 'slider'">
-                            <div class="text-h5">
+                            <div class="text-h5" style="margin-left: 10px;">
                               {{ q.question.text }}
                             </div>
-                            <v-slider
-                                v-model="q.question.default_value"
-                                :min="0"
-                                :max="q.question.slider_ticks.length - 1"
-                                :step="1.0"
-                                :ticks="getTicks(q.question.slider_ticks)"
-                                @end="updateResponse(q, section.tag)"
-                                show-ticks="always"
-                                color="primary"
-                                max-width="1000px"
-                                class="slider"
-                            ></v-slider>
+                            <v-radio-group 
+                              v-model="q.question.default_value" 
+                              v-for="(option, index) in q.question.slider_ticks"
+                            >
+                              <v-radio
+                                :label="newRadioLabels[index]"
+                                :value="index"
+                                @change="updateResponse(q, section.tag)"
+                                class="my-2"
+                                style="margin-left: 10px;"
+                              ></v-radio>
+                              <p style="font-size: 14px;" class="ml-12">{{ radioDescriprions[index] }}</p>
+                            </v-radio-group>
+
                           </div>
 
                           <v-col v-else-if="q.question.response_type === 'radio'" lass="radio-box">
@@ -775,7 +779,8 @@ const groupsWithMultiSelect = (section) => {
 
 const formatLabel = (text) => {
   // Check if 'want' or 'avoid' is present and wrap them in bold tags
-  return text.replace(/(want|avoid)/gi, '<b>$1</b>');
+  // return text.replace(/(want|avoid)/gi, '<b>$1</b>');
+  return text.includes('want') ? 'Which companies (if any) do you want to invest in?' : text.includes('avoid') ? 'Which companies (if any) do you want to avoid in your investments?' : text;
 };
 
 const toggleAllCheckboxes = (group) => {
@@ -1322,6 +1327,11 @@ window.addEventListener('beforeunload', (event) => {
     }
   }
 });
+
+const radioValue = [0,1,2]
+
+const newRadioLabels = ["Personal Values", 'Balance', "Market Focus"]
+const radioDescriprions = ["Prioritize investments in companies that align with your values", "Find a middle ground between your values and traditional investment scores", "Prioritize investments based on traditional investment scores"]
 </script>
 
 
@@ -1406,7 +1416,14 @@ window.addEventListener('beforeunload', (event) => {
 .autocomplete {
   text-align: center;
   align-items: center;
-  max-width: 80%;
+  width: 80%;
+}
+
+.autocomplete-div {
+  width: 100%; 
+  display: flex; 
+  align-items: center; 
+  flex-direction: column;
 }
 
 .autocomplete .v-input__control {
@@ -1629,8 +1646,8 @@ window.addEventListener('beforeunload', (event) => {
 
 .investments-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: left;
+  align-items: left;
 }
 
 .about-container {
@@ -1720,7 +1737,6 @@ window.addEventListener('beforeunload', (event) => {
     width: 120%;
     transform: translatex(-40px);
   }
-
   .auto-complete {
     text-wrap: wrap;
     font-size: 14px;
@@ -1729,10 +1745,13 @@ window.addEventListener('beforeunload', (event) => {
 }
 
 @media only screen and (max-width: 400px) {
-  .slider {
+  .slider{
     max-width: 100%;
     width: 110%;
     transform: translatex(-7.5%);
+  }
+  .autocomplete-div {
+    transform: translateX(10%);
   }
 }
 

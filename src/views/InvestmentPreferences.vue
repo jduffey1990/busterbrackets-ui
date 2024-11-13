@@ -10,11 +10,19 @@
       <v-spacer></v-spacer>
 
       <!-- Buttons for navigation and saving preferences, shown only if canEdit (super admin) is true -->
-      <template v-if="canEdit">
+       <template v-if="!editLevers">
+        <v-btn
+          @click="editLevers = true"
+          color="primary"
+          text="Edit Factor Levers"
+        >
+        </v-btn>
+       </template>
+      <template v-if="canEdit && editLevers">
         <!-- Button to navigate back to advisors list -->
         <v-btn
-            @click="router.push('/advisors')"
-            text="Back"
+            @click="cancelEdit()"
+            text="Cancel"
             class="ml-2"
         ></v-btn>
 
@@ -30,37 +38,152 @@
 
     <!-- Section for factor levers -->
     <div class="text-h6 mb-3">Factor Levers</div>
-    <!-- Checkbox for Momentum factor -->
-    <v-checkbox
-        :readonly="!canEdit"
-        v-model="factorLevers.momentum"
-        label="Momentum"
-        :disabled="!canEdit"
-    ></v-checkbox>
+    <p v-on:mouseover="hovering[1] = true" v-on:mouseleave="hovering[1] = false">Dividend + Quality 
+      <v-tooltip 
+        v-if="hovering[1]"
+        text="Focuses on companies that pay dividends, have higher quality financials and positive price momentum" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.dividend_quality"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+    ></v-slider>
 
-    <!-- Checkbox for Quality factor -->
-    <v-checkbox
-        :readonly="!canEdit"
-        v-model="factorLevers.quality"
-        label="Quality"
-        :disabled="!canEdit"
-    ></v-checkbox>
+    <p v-on:mouseover="hovering[2] = true" v-on:mouseleave="hovering[2] = false">GARP
+      <v-tooltip 
+        v-if="hovering[2]"
+        text="Growth At a Reasonable Price: Focuses on companies that are growing and are reasonably priced based on relative valuations" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.garp"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+    ></v-slider>
 
-    <!-- Checkbox for Value factor -->
-    <v-checkbox
-        :readonly="!canEdit"
-        v-model="factorLevers.value"
-        label="Value"
-        :disabled="!canEdit"
-    ></v-checkbox>
+    <p v-on:mouseover="hovering[3] = true" v-on:mouseleave="hovering[3] = false">Low Volatility
+      <v-tooltip 
+        v-if="hovering[3]"
+        text="Prioritizes investments in companies with lower price fluctuations to reduce portfolio volatility. Ideal for a conservative approach focused on stability, especially in uncertain markets" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.low_volatility"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+    ></v-slider>
 
-    <!-- Checkbox for Low Volatility factor -->
-    <v-checkbox
-        :readonly="!canEdit"
-        v-model="factorLevers.low_volatility"
-        label="Low Volatility"
-        :disabled="!canEdit"
-    ></v-checkbox>
+    <p v-on:mouseover="hovering[4] = true" v-on:mouseleave="hovering[4] = false">Momentum
+      <v-tooltip 
+        v-if="hovering[4]"
+        text="Allocates toward stocks with recent positive performance trends. Helps capture potential gains by following stocks with upward momentum, though it can be more sensitive to market shifts" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider 
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.momentum"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+    ></v-slider>
+
+    <p v-on:mouseover="hovering[5] = true" v-on:mouseleave="hovering[5] = false">Quality
+      <v-tooltip 
+        v-if="hovering[5]"
+        text="Invests in companies with strong fundamentals, including healthy balance sheets, stable earnings, and good management. Reduces risk by selecting high-quality companies that tend to perform well over the long term" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider 
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.quality"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+    ></v-slider>
+
+    <p v-on:mouseover="hovering[6] = true" v-on:mouseleave="hovering[6] = false">Shareholder Yield
+      <v-tooltip 
+        v-if="hovering[6]"
+        text="Focuses on companies that return capital to investors in the form of dividends, stock buybacks and paying down debt" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.shareholder_yield"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+    ></v-slider>
+
+    <p v-on:mouseover="hovering[7] = true" v-on:mouseleave="hovering[7] = false">Value
+      <v-tooltip 
+        v-if="hovering[7]"
+        text="Seeks undervalued companies trading below their intrinsic value. Focuses on buying strong companies at a discount, aiming for long-term appreciation as market prices correct" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.value"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+    ></v-slider>
 
     <div class="d-flex my-4 align-center">
       <div class="text-h6 my-4">Advisor Fee %</div>
@@ -227,9 +350,11 @@ const {
 
 //state management
 const factorLevers = ref({});
+const factorLeversAggregate = ref({});
 const allocations = ref([]);
 const backupAllocations = ref([]);
 const canEdit = computed(() => isAdvisorOrGreater);
+const editLevers = ref(false);
 const currentAdvisor = ref();
 const editing = ref(false);
 const buttonText = ref('Edit Allocations');
@@ -243,6 +368,7 @@ const page = ref(1);
 const itemsPerPage = ref(15);
 const holdings = ref();
 const allTickerValues = ref([])
+const hovering = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false });
 
 
 //Router parameter
@@ -333,6 +459,16 @@ const getFactorLevers = async () => {
     );
 
     factorLevers.value = data;
+  } catch (error) {
+  }
+};
+
+const getAggregateFactorLevers = async () => {
+  try {
+    const {data} = await $axios.get(
+        `/api/advisors/${user_id || advisor_id}/aggregate/`
+    );
+    factorLeversAggregate.value = JSON.parse(data.aggregate);
   } catch (error) {
   }
 };
@@ -535,6 +671,7 @@ const submitChanges = async () => {
 onMounted(async () => {
   await getTickers()
   await getAllocations();
+  await getAggregateFactorLevers();
   await getFactorLevers()
   if (isSuper) {
     const {data} = await $axios.get(`/api/users/${user_id || advisor_id}/`);
@@ -546,6 +683,7 @@ onMounted(async () => {
 });
 
 const saveFactorLevers = async () => {
+  factorLevers.value = { ...factorLevers.value, ...factorLeversAggregate.value };
   try {
     await $axios.patch(
         `/api/advisors/${user_id || advisor_id}/factor-levers/`,
@@ -553,6 +691,13 @@ const saveFactorLevers = async () => {
           ...factorLevers.value,
         }
     );
+
+    await $axios.put(
+        `/api/advisors/${user_id || advisor_id}/aggregate/`,
+        {aggregate: JSON.stringify(factorLeversAggregate.value)}
+    );
+
+    editLevers.value = false;
 
     show({message: 'Factor levers saved!'});
   } catch (error) {
@@ -562,6 +707,37 @@ const saveFactorLevers = async () => {
     });
   }
 };
+
+
+
+const continuousAggregateUpload = debounce(async () => {
+  try {
+    await new Promise(resolve => setTimeout(resolve, 500)); // Add a 0.5 second timeout
+    await $axios.put(
+        `/api/advisors/${user_id || advisor_id}/aggregate/`,
+        {aggregate: JSON.stringify(factorLeversAggregate.value)}
+    );
+    getAggregateFactorLevers();
+    // Send the mapped responses to the backend
+    const result = await $axios.post(
+          `/api/advisors/${user_id || advisor_id}/factor-summary/`,
+          {aggregate: factorLeversAggregate.value}
+      );
+  } catch (error) {
+    show({
+      message: `Couldn't save Factor Levers`,
+      error: true,
+    });
+  }
+}, 2000); // Add a 2 second debounce
+
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
 
 const rates = Array.from({length: 301}, (_, i) => ({
   value: (i / 100),
@@ -598,6 +774,23 @@ const saveHoldings = async () => {
     show({message: 'Error saving Number of Holdings', error: true});
   }
 };
+
+const cancelEdit = () => {
+  editLevers.value = false;
+  factorLeversAggregate.value.garp = factorLevers.value.garp;
+  factorLeversAggregate.value.low_volatility = factorLevers.value.low_volatility;
+  factorLeversAggregate.value.momentum = factorLevers.value.momentum;
+  factorLeversAggregate.value.dividend_quality = factorLevers.value.dividend_quality;
+  factorLeversAggregate.value.quality = factorLevers.value.quality;
+  factorLeversAggregate.value.shareholder_yield = factorLevers.value.shareholder_yield;
+  factorLeversAggregate.value.value = factorLevers.value.value;
+  $axios.put(
+        `/api/advisors/${user_id || advisor_id}/aggregate/`,
+        {aggregate: JSON.stringify(factorLeversAggregate.value)}
+  );
+
+};
+
 </script>
 
 
@@ -616,5 +809,16 @@ const saveHoldings = async () => {
 #file-upload-button {
   height: 90px;
   cursor: pointer;
+}
+
+.v-slider__container {
+  margin-left: 10px;
+  max-width: 50%;
+}
+/* 700px breakpoint */
+@media only screen and (max-width: 700px) {
+  .v-slider__container {
+    max-width: 90%;
+  }
 }
 </style>

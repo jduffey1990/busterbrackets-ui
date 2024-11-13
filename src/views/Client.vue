@@ -92,7 +92,7 @@
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
             <div v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
-              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders"/>
+              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders" :tableHeaders="pdfTableHeaders"/>
             </div>
 
             <div class="text-h4">Portfolio vs. Market</div>
@@ -165,6 +165,7 @@
 
           <div class="my-8 canvas-item" v-if="Object.keys(eliminatedCount).length">
             <div class="text-h4">Total Excluded Companies (Value Based)</div>
+            <CsvBuilder :content="companies" :headers="csvHeaders" :fileName="'Eliminations'" class="my-2"/>
             <div class="pie_section">
 
               <v-col class="pie_table">
@@ -181,7 +182,7 @@
                 </v-table>
               </v-col>
 
-              <v-col class="pie_graph">
+              <v-col class="pie_graph" style="align-self: start;">
                 <div class="d-flex justify-center align-center h-100">
                   <PieChart
                       :data="getPieChart(eliminatedCount, 'elim')"
@@ -485,10 +486,12 @@ import {parseError} from '@/utils/error';
 import Analytics from "@/views/Analytics.vue";
 import LazyImage from '@/components/LazyImage.vue';
 import PDFBuilder from '@/components/PDFBuilder.vue';
+import CsvBuilder from '@/components/CsvBuilder.vue';
 
 const screenWidth = window.innerWidth;
 
 const excludedHeaders = ['Delete', ''];
+const pdfTableHeaders = ['Lowest Value Scores', 'Pomarium Allocations']
 
 const {
   user: {id: advisor_id},
@@ -1017,6 +1020,8 @@ const fetchValuesProfile = async () => {
 
 onMounted(async () => {
   await fetchValuesProfile()
+  await getEliminatedCompanies();
+  await getCompanies();
 });
 
 watch(currentTab, (newVal) => {
@@ -1030,15 +1035,30 @@ watch(currentTab, (newVal) => {
 
 const brandColors = [
   '#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#636970',
-  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#F2E7D2', '#6F4C45'
+  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#F2E7D2', '#6F4C45',
+  'rgba(7, 21, 42, 0.9)', 'rgba(249, 187, 169, 0.9)', 'rgba(255, 230, 182, 0.9)', 'rgba(207, 98, 50, 0.9)', 'rgba(205, 208, 212, 0.9)', 'rgba(99, 105, 112, 0.9)',
+  'rgba(144, 63, 48, 0.9)', 'rgba(14, 47, 95, 0.9)', 'rgba(252, 195, 91, 0.9)', 'rgba(254, 252, 247, 0.9)', 'rgba(156, 161, 170, 0.9)', 'rgba(242, 231, 210, 0.9)', 'rgba(111, 76, 69, 0.9)'
 ];
+
+const generateRandomColor = () => {
+  const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+  return `#${randomColor.padStart(6, '0')}`;
+};
 
 const getUniqueRandomColor = (colors, usedColors) => {
   let color;
-  do {
-    const index = Math.floor(Math.random() * colors.length);
-    color = colors[index];
-  } while (usedColors.has(color));
+  if (usedColors.size >= colors.length) {
+    // All brand colors have been used, generate a new random color
+    do {
+      color = generateRandomColor();
+    } while (usedColors.has(color));
+  } else {
+    // Select a color from brandColors
+    do {
+      const index = Math.floor(Math.random() * colors.length);
+      color = colors[index];
+    } while (usedColors.has(color));
+  }
   usedColors.add(color);
   return color;
 };
@@ -1249,6 +1269,36 @@ const barOptionsSmall = {
   },
 };
 
+const eliminatedCompanies = ref([]);
+
+const getEliminatedCompanies = async () => {
+  try {
+    const {data} = await $axios.get(`/api/advisors/${user_id}/eliminations/`);
+    eliminatedCompanies.value = data;
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+};
+
+const companies = ref([]);
+
+const getCompanies = async () => {
+  try {
+    const {data} = await $axios.get('/api/companies/');
+    companies.value = data.filter((company) => eliminatedCompanies.value.includes(company.ticker));
+    companies.value.sort((a, b) => a.ticker.localeCompare(b.ticker));
+    //remove any commas from the company names
+    companies.value.forEach((company) => {
+      if (company.name) {
+        company.name = company.name.replace(/,/g, '');
+      }
+    });
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+};
+
+const csvHeaders = ['ticker', 'name']
 </script>
 
 <style scoped>

@@ -61,6 +61,7 @@ const headers = [
   {key: 'actions', sortable: false, width: 0, nowrap: true},
   {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
   {title: 'Email', key: 'email', width: 0, nowrap: true},
+  {title: 'Created At', key: 'created_at', width: 0, nowrap: true},
   {},
 ];
 
@@ -71,6 +72,10 @@ const advisors = ref([]);
 const getAdvisors = async () => {
   try {
     const {data} = await $axios.get(`/api/advisors/`);
+    // format date for created_at
+    data.forEach(advisor => {
+      advisor.created_at = new Date(advisor.created_at).toLocaleString();
+    });
     advisors.value = data;
   } catch (error) {
     show({message: parseError(error), error: true});

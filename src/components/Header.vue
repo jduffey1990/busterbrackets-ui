@@ -65,6 +65,7 @@
                   <v-list-item
                       link
                       href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
+                      target="_blank"
                   >
                     <v-list-item-title>Resources</v-list-item-title>
                   </v-list-item>
