@@ -70,23 +70,10 @@
                   <v-list-item-title>Settings</v-list-item-title>
                 </v-list-item>
 
-                  <v-list-item
-                      link
-                      href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
-                      target="_blank"
-                  >
-                    <v-list-item-title>Resources</v-list-item-title>
-                  </v-list-item>
-                  <hr/>
-                  <v-list-item @click="logout()">
-                    <v-list-item-title>Logout</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-          
                 <v-list-item
                     link
                     href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
+                    target="_blank"
                 >
                   <v-list-item-title>Resources</v-list-item-title>
                 </v-list-item>
@@ -96,7 +83,6 @@
                 </v-list-item>
               </v-list>
             </v-menu>
-
           </template>
 
 
