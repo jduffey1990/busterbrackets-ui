@@ -93,7 +93,7 @@ const startTimer = () => {
   timeout = setTimeout(() => {
     useUserStore().logout();
     router.push('/login');
-  }, 100000000000); // 10 minutes
+  }, 600000); // 10 minutes
 };
 
 const resetTimer = () => {
@@ -118,6 +118,8 @@ onMounted(() => {
 
 document.addEventListener('click', debouncedResetTimer);
 document.addEventListener('keydown', debouncedResetTimer);
+document.addEventListener('mousemove', debouncedResetTimer);
+document.addEventListener('scroll', debouncedResetTimer);
 </script>
 
 <style>
