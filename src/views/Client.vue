@@ -129,6 +129,30 @@
           <hr/>
           <div class="my-8 table-content">
             <div class="text-h4">Allocations</div>
+  
+            <div style="display: flex;" class="my-3">
+              <v-card
+                :title="allocations.length"
+                text="Included Companies"
+                width="200px"
+                style="text-align: center;"
+                class="mx-6"
+              ></v-card>
+              <v-card
+                :title="averageVFit"
+                text="Values Score"
+                width="200px"
+                style="text-align: center;"
+                class="mx-6"
+              ></v-card>
+              <v-card
+                :title="averageIFit"
+                text="Investment Score"
+                width="200px"
+                style="text-align: center;"
+                class="mx-6"
+              ></v-card>
+            </div>
             <div class="d-flex justify-end" v-if="!edditingAllocations">
               <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
               <v-btn color="primary" @click="refresh">Refresh</v-btn>
@@ -169,8 +193,11 @@
               <template v-slot:item="{ item }">
                 <tr>
                   <td>
-                    <v-checkbox-btn v-if="edditingAllocations"
-                                    @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
+                    <v-checkbox-btn 
+                      v-if="edditingAllocations"
+                      @input="addOrRemoveAllocationToDelete(item.ticker)"
+                    >
+                    </v-checkbox-btn>
                   </td>
                   <td style="padding: 0px;">
                     <LazyImage
@@ -547,6 +574,8 @@ const allocationsDelDisplay = ref([]);
 const hasRequestedPortfolios = ref(false);
 const portfolioValues = ref();
 const portfoliosLoading = ref(false);
+const averageVFit = ref('');
+const averageIFit = ref('');
 const allocationHeaders = [
   {
     title: 'Delete',
@@ -627,6 +656,27 @@ const worstHeaders = [
     tooltip: 'A percentage description of how well this company meets your values, as calculated by our algorithm.'
   },
 ];
+
+//calculate the average values_fit and investment_fit in the allocations
+const calculateAverage = () => {
+  let sumValuesFit = 0;
+  let sumInvestmentFit = 0;
+  let count = 0;
+
+  for (let i = 0; i < allocations.value.length; i++) {
+    if (allocations.value[i].values_fit !== "") {
+      sumValuesFit += parseFloat(allocations.value[i].values_fit.slice(0, -1));
+      count++;
+    }
+    if (allocations.value[i].investment_fit !== "") {
+      sumInvestmentFit += parseFloat(allocations.value[i].investment_fit.slice(0, -1));
+    }
+  }
+
+  averageVFit.value = count ? (sumValuesFit / count).toFixed(2) : '';
+  averageIFit.value = count ? (sumInvestmentFit / count).toFixed(2) : '';
+};
+
 
 const getPortfolios = async () => {
   portfoliosLoading.value = true;
@@ -785,6 +835,7 @@ const getPortfolios = async () => {
 
     portfoliosLoading.value = false;
     hasRequestedPortfolios.value = true;
+    calculateAverage();
   } catch (error) {
     console.error('Error in getPortfolios:', error);
   }
