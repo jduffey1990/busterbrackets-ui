@@ -1,8 +1,28 @@
 <template>
-  <v-snackbar v-model="snackbar.visible" :timeout="snackbar.timeout" top>
-    {{ snackbar.message }}
-    <v-btn color="red" text @click="snackbar.visible = false">Close</v-btn>
-  </v-snackbar>
+  <template v-if="stripeAccountAssociated && dateOfBlock.length !== 0 && stripeIsCurrent">
+    <div class="subscription-status">
+      <h2>Your Subscription Status</h2>
+      <p class="subscription-message">
+        Your Account is live until {{ dateOfBlock }}
+      </p>
+      <p>
+        Thank you for your continued partnership with Pomarium! For uninterrupted access to your account and all
+        features, please ensure your billing information remains up to date.
+      </p>
+    </div>
+
+  </template>
+  <template v-else-if="stripeAccountAssociated && !stripeIsCurrent">
+    <div class="subscription-status">
+      <h2>Your Subscription Status</h2>
+      <p class="subscription-message">
+        {{ user.firm.name }} has lapsed in access on {{ dateOfBlock }} due to late payment. Please remedy subscription
+        status below or at your stripe customer account.
+      </p>
+    </div>
+
+  </template>
+
   <template v-if="stripeAccountAssociated && canEdit">
     <div v-if="!editingUser" class="my-3">
       <div class="d-flex">
@@ -210,7 +230,9 @@
           >
             <span class="mr-3">Invoice Date: {{ invoice.created_at }}</span>
             <span class="mr-3">Amount Due: ${{ invoice.amount }}</span>
-            <a :href="invoice.invoice_url" target="_blank">Invoice Stripe Link</a>
+            <a :href="invoice.invoice_url" target="_blank" @click="isPaymentButtonDisabled = true">
+              Invoice Stripe Link (Will disable local payment button for payment integrity)
+            </a>
           </v-list-item>
         </v-list>
       </div>
@@ -255,7 +277,7 @@ import {useOverlayStore} from "@/store/overlay";
 const $axios = inject('$axios');
 const {show} = inject('toast');
 const {user} = storeToRefs(useUserStore());
-const {isSuper, stripeAccountAssociated, isFirmAdminOrGreater} = useUserStore()
+const {isSuper, stripeAccountAssociated, stripeIsCurrent, isFirmAdminOrGreater} = useUserStore()
 const overlayStore = useOverlayStore();
 const router = useRouter();
 let stripe;
@@ -279,6 +301,7 @@ const buttonText = ref('Edit Stripe User Profile');
 const intentButtonText = ref('$0 due (button disabled)');
 let unpaidInvoices = ref([])
 let futureInvoices = ref({})
+let dateOfBlock = ref("")
 const customerTable = ref([
   {title: "Firm Billing User", value: ""},
   {title: "Firm Billing Email", value: ""}
@@ -402,6 +425,7 @@ async function handleSubmit(event) {
       });
 
   isPaymentButtonDisabled.value = false
+  isLoading.value = false
 }
 
 const submitSubscription = async () => {
@@ -418,7 +442,7 @@ const submitSubscription = async () => {
     // Post data to the subscription endpoint
     const response = await $axios.post("/api/billing/subscription-stripe/", {
       name: fullName.value,
-      email: email.value,
+      email: email.value.toLowerCase(),
       city: address.value.city,
       country: address.value.country,
       line1: address.value.line1,
@@ -427,14 +451,7 @@ const submitSubscription = async () => {
       state: address.value.state,
     });
 
-    overlayStore.openOverlay(
-        `You have successfully created ${user.value.firm.name}'s customer profile and subscription with Stripe`,
-        "This subscription comes with the 30 day trial. The subscription officially begins at the rate of $250 per Firm " +
-        "Admin and advisor seats",
-        '/UI-IMGs/Values-ss.png'
-    );
-
-    router.push('/success')
+    router.push('/subscription-success')
 
   } catch (error) {
     console.error("Error creating subscription:", error);
@@ -447,10 +464,11 @@ const submitSubscription = async () => {
 const submitChangesCustomer = async () => {
   try {
     editSubmitDisabled.value = true;  // Set loading state
+    changeEditButton()
 
     let objectified_combinedTable = {
       name: combinedTable.value[0].value,
-      email: combinedTable.value[1].value,
+      email: combinedTable.value[1].value.toLowerCase(),
       line1: combinedTable.value[2].value,
       line2: combinedTable.value[3].value,
       city: combinedTable.value[4].value,
@@ -468,7 +486,7 @@ const submitChangesCustomer = async () => {
     // Post data to the subscription endpoint
     const response = await $axios.post("/api/billing/customer-stripe-update/", {
       name: objectified_combinedTable.name,
-      email: objectified_combinedTable.email,
+      email: objectified_combinedTable.email.toLowerCase(),
       city: objectified_combinedTable.city,
       country: objectified_combinedTable.country,
       line1: objectified_combinedTable.line1,
@@ -482,7 +500,6 @@ const submitChangesCustomer = async () => {
     } else {
       console.error("Unexpected response status:", response.status);
     }
-    editingUser.value = false
     editSubmitDisabled.value = false
 
     overlayStore.openOverlay(
@@ -502,8 +519,39 @@ const submitChangesCustomer = async () => {
   }
 }
 
+const formatDate = () => {
+  const unixDate = user.value.firm.subscription_end_date;
+  const date = new Date(unixDate * 1000); // Convert Unix timestamp to milliseconds
+
+  // Format the date with full weekday, day, month, and year
+  const weekday = new Intl.DateTimeFormat('en-US', {weekday: 'long'}).format(date);
+  const month = new Intl.DateTimeFormat('en-US', {month: 'long'}).format(date);
+  const year = date.getFullYear();
+
+  // Get the day and apply the ordinal suffix
+  const day = date.getDate();
+  const ordinalSuffix = (day) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  };
+  const dayWithOrdinal = `${day}${ordinalSuffix(day)}`;
+
+  // Construct the final formatted string
+  dateOfBlock.value = `${weekday}, the ${dayWithOrdinal} of ${month} ${year}`;
+};
+
 const getPaymentIntent = async () => {
   try {
+    isLoading.value = true
     // Fetch client secret from backend using axios
     const response = await $axios.get("/api/billing/create-payment-intent");
 
@@ -562,28 +610,55 @@ onMounted(async () => {
   stripe = await loadStripe(publishableKey);
   // Fetch client secret from backend
 
+  formatDate()
   await getPaymentIntent()
   await getNextInvoice()
+  console.log("current", stripeIsCurrent)
+  console.log("associated", stripeAccountAssociated)
 });
 
 watch(total, (newTotal) => {
   if (newTotal > 0) {
     intentButtonText.value = `Pay $${newTotal}`;
     isPaymentButtonDisabled.value = false;
+  } else if (isLoading.value) {
+    intentButtonText.value = "Loading..."
   } else {
     intentButtonText.value = '$0 due (button disabled)';
     isPaymentButtonDisabled.value = true;
   }
 });
 
-const showSnackbar = (message) => {
-  snackbar.value.message = message;
-  snackbar.value.visible = true;
-};
-
 </script>
 
 <style scoped>
+
+.subscription-status {
+  padding: 20px;
+  background-color: #f0f8ff;
+  border: 1px solid #d1e7fd;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.subscription-status h2 {
+  color: #07152A;
+  font-family: "halyard-display", sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.subscription-message {
+  font-size: 18px;
+  color: #333;
+  font-family: "halyard-text", sans-serif;
+  font-weight: 400;
+  margin-bottom: 15px;
+}
+
 /* Container for the entire section */
 .payment-section {
   padding: 20px;

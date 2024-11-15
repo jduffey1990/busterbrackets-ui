@@ -7,6 +7,7 @@ import {createPinia} from 'pinia';
 import router from './router';
 import vuetify from './plugins/vuetify';
 import {useUserStore} from './store/user';
+import SubSuccess from "@/components/SubSuccess.vue";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -27,7 +28,8 @@ app.use(axios).use(pinia).use(vuetify);
         const {isLoggedIn} = userStore;
 
         if (isLoggedIn) {
-            const unrestrictedRoutes = ['Login', 'ResetPassword', 'Billing', 'AdvisorBlockedNotice', 'Logout'];
+            const unrestrictedRoutes = ['Login', 'ResetPassword', 'Billing', 'AdvisorBlockedNotice', 'Logout',
+                "Success", "SubSuccess"];
 
             if (unrestrictedRoutes.includes(to.name)) {
                 next();

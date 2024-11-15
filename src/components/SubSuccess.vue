@@ -1,23 +1,21 @@
 <template>
   <div class="success-page">
     <div class="success-container">
-      <h1>Thank You for Your Continued Business!</h1>
+      <h1>Welcome to Pomarium!</h1>
       <p>
-        We truly appreciate your ongoing partnership with Pomarium. Your recent payment was successfully processed,
-        and we are thrilled to have you as a valued customer. Please know that your transaction was securely
-        processed through Stripe.
+        Thank you for choosing Pomarium! Your subscription is now active though it may take a couple of minutes for
+        Stripe to process, and we're excited to support you on this journey. Your account has been set up with all the
+        tools and resources you need to get started.
       </p>
 
       <h2>What Happens Next?</h2>
       <ul class="next-steps">
-        <li>Any updates to your subscription or billing in general will be seen on your
-          <strong><a href="/billing">Billing Page</a></strong>.
+        <li>Start by adding any advisors that need access in your <a href="/admin">firm admin page</a>.
         </li>
-        <li>If you need assistance or have questions about your transaction, please don’t hesitate to reach out
-          to our support team.
+        <li>Manage clients in your <a href="/dashboard">dashboard</a>.
         </li>
-        <li>For future transactions, please ensure your billing info and/or payment method is up-to-date for
-          uninterrupted service.
+        <li>Ensure that your account and payment information remain up-to-date to enjoy uninterrupted service on your
+          <a href="/billing">billing page</a>. Though it may take a minute or two for the subscription to be live.
         </li>
       </ul>
 
@@ -28,8 +26,8 @@
       </div>
 
       <div class="button-container">
-        <a href="/dashboard" class="primary-button">Return to Dashboard</a>
-        <a href="/admin" class="secondary-button">Return to Admin Page</a>
+        <a href="/dashboard" class="primary-button">Go to Dashboard</a>
+        <a href="/admin" class="secondary-button">Visit Admin Page</a>
       </div>
     </div>
   </div>
@@ -137,7 +135,7 @@ h3 {
 .secondary-button {
   background-color: #ffffff;
   border: 2px solid #07152A;
-  color: #07152A; /* To set the text color to match the stroke */
+  color: #07152A;
 }
 
 .secondary-button:hover {
