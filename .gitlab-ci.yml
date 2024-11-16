@@ -138,3 +138,4 @@ deploy-demo:
     PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
     IMAGE: $UI_IMAGE
     CLOUD_RUN_SERVICE: "ui-demo"
+    SERVICE_ACCOUNT: "beta-google-service-account"
