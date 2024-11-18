@@ -167,6 +167,7 @@
                 :items-per-page="-1"
                 hide-default-header
                 mobile-breakpoint="700"
+                height="575"
             >
               <!-- Custom Header Slot -->
               <template
