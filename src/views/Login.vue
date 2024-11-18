@@ -8,11 +8,11 @@
       <v-form @submit.prevent="loginUser()">
         <v-card-text>
           <v-text-field
-            label="Email"
-            type="text"
-            v-model="credentials.email"
+              label="Email"
+              type="text"
+              v-model="credentials.email"
           ></v-text-field>
-          <br />
+          <br/>
 
           <UiPassword v-model="credentials.password"></UiPassword>
         </v-card-text>
@@ -48,20 +48,44 @@ const credentials = reactive({
   password: undefined,
 });
 
+const timeUntilSubOver = (currentUnixTime, subscriptionEndDate) => {
+  // Calculate the number of days remaining
+  const daysRemaining = Math.floor((subscriptionEndDate - currentUnixTime) / (60 * 60 * 24)); // Convert seconds to days
+
+  // Check if a message should be shown (based on specific day thresholds)
+  const isShown = [15, 10, 5, 3, 2, 1].includes(daysRemaining);
+
+  return [isShown, daysRemaining];
+};
+
 const loginUser = async () => {
   try {
     await login(credentials);
 
+    const now = Math.floor(Date.now() / 1000); // Current Unix time in seconds
+    const subscriptionEndDate = user.value.firm.subscription_end_date;
+
+    const [bool, daysRemaining] = timeUntilSubOver(now, subscriptionEndDate);
+
+    if (bool) {
+      show({
+        message: `You have ${daysRemaining} day${daysRemaining > 1 ? 's' : ''} until your subscription lapses.
+        Go to <a href="/billing">Billing</a> to pay your outstanding invoice`,
+        html: true, // Add a custom property to indicate HTML content
+      });
+    }
+
     router.push('/dashboard');
   } catch (error) {
-    show({ message: 'Invalid credentials', error: true });
+    show({message: 'Invalid credentials', error: true});
   }
 };
+
 
 const resetPassword = async () => {
   if (!credentials.email) {
     show({
-      message: 'Please enter in email asssociated to account',
+      message: 'Please enter in email associated to account',
       error: true,
     });
   } else {
