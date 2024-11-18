@@ -1245,6 +1245,10 @@ const templateItems = [{
   {
     title: "LPL Financial",
     value: 'lpl_financial'
+  },
+  {
+    title: "iRebal",
+    value: 'irebal'
   }
 ];
 
