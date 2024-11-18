@@ -46,6 +46,15 @@
       <template #bottom></template>
     </v-data-table>
 
+    <div class="line_section mt-10">
+      <h5 class="graph_title">Historical Portfolio Performance</h5>
+      <v-col class="line_graph">
+        <div class="d-flex justify-center align-center h-100">
+          <LineChart :labels="lineLabels" :datasets="lineDatasets"/>
+        </div>
+      </v-col>
+    </div>
+
     <v-data-table
         :items="metricTableData"
         :headers="metricHeaders"
@@ -111,6 +120,7 @@
 import {computed, ref, watch} from "vue";
 
 import ScatterChart from '../components/ScatterChart.vue';
+import LineChart from '../components/LineChart.vue';
 
 const screenWidth = window.innerWidth;
 
@@ -127,6 +137,31 @@ const props = defineProps({
 // Use a computed property to safely access client
 const client = computed(() => props.client);
 const clientLoaded = ref(false);
+const lineLabels = computed(() =>
+    Object.keys(props.metrics.net_growth_of_10k.IWB)
+);
+
+// Compute all datasets dynamically
+const lineDatasets = computed(() => {
+  const dataSeries = props.metrics.net_growth_of_10k;
+  const datasets = Object.keys(dataSeries).map((key, index) => {
+    const color =
+        props.brandColors && props.brandColors[index]
+            ? props.brandColors[index]
+            : props.getUniqueRandomColor();
+    let keyEnd = key.slice(1, key.length)
+    let upperKey = key[0].toUpperCase() + keyEnd
+    return {
+      label: `${upperKey}`,
+      data: Object.values(dataSeries[key]),
+      borderColor: color,
+      backgroundColor: `${color}33`, // Add transparency to the color
+      fill: true,
+      tension: 0.4,
+    };
+  });
+  return datasets;
+});
 
 const getAdvisorFee = () => {
   clientLoaded.value = true
@@ -519,6 +554,13 @@ const littleOptions = {
   justify-content: center;
 }
 
+.line_section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .graph_title {
   background-color: transparent;
   padding: 20px;
@@ -530,6 +572,11 @@ const littleOptions = {
   padding-top: 0px;
 }
 
+.line_graph {
+  max-width: 80%;
+  padding-top: 0px;
+}
+
 .disclosure-analytics {
   font-size: 14px !important;
   color: rgba(7, 21, 42, 0.6);
@@ -537,22 +584,24 @@ const littleOptions = {
   margin-top: 20px;
 }
 
-  @media only screen and (max-width: 1275px) {
-    .scatter_graph {
-      max-width: 80%;
-    }
+@media only screen and (max-width: 1275px) {
+  .scatter_graph {
+    max-width: 80%;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .scatter_graph {
+    max-width: 100%;
   }
 
-  @media only screen and (max-width: 700px) {
-    .scatter_graph {
-      max-width: 100%;
-    }
-    .bars {
-      height: 40px;
-    }
-    .bar-title {
-      transform: translateY(-55px);
-    }
+  .bars {
+    height: 40px;
   }
+
+  .bar-title {
+    transform: translateY(-55px);
+  }
+}
 
 </style>
