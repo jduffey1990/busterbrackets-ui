@@ -509,7 +509,7 @@ import CsvBuilder from '@/components/CsvBuilder.vue';
 const screenWidth = window.innerWidth;
 
 const excludedHeaders = ['Delete', ''];
-const pdfTableHeaders = ['Lowest Value Scores', 'Pomarium Allocations']
+const pdfTableHeaders = ['Pomarium Allocations', 'Lowest Value Scores']
 
 const {
   user: {id: advisor_id},
