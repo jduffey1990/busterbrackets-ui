@@ -133,7 +133,7 @@
             <div style="display: flex;" class="my-3">
               <v-card
                 :title="allocations.length"
-                text="Included Companies"
+                text="Companies"
                 width="200px"
                 style="text-align: center;"
                 class="mx-6"
