@@ -47,7 +47,7 @@
     </v-data-table>
 
     <div class="line_section mt-10">
-      <h5 class="graph_title">Historical Portfolio Performance (10k standard)</h5>
+      <h5 class="graph_title">Hypothetical Growth of $10,000 (5 years)</h5>
       <v-col class="line_graph">
         <div class="d-flex justify-center align-center h-100">
           <LineChart :labels="lineLabels" :datasets="lineDatasets"/>
@@ -144,22 +144,32 @@ const lineLabels = computed(() =>
 // Compute all datasets dynamically
 const lineDatasets = computed(() => {
   const dataSeries = props.metrics.net_growth_of_10k;
-  const datasets = Object.keys(dataSeries).map((key, index) => {
-    const color =
-        props.brandColors && props.brandColors[index]
-            ? props.brandColors[index]
-            : props.getUniqueRandomColor();
-    let keyEnd = key.slice(1, key.length)
-    let upperKey = key[0].toUpperCase() + keyEnd
-    return {
-      label: `${upperKey}`,
-      data: Object.values(dataSeries[key]),
-      borderColor: color,
-      backgroundColor: `${color}33`, // Add transparency to the color
-      fill: true,
-      tension: 0.4,
-    };
-  });
+  console.log("data series", dataSeries);
+
+  // Define the keys you want to include in the datasets
+  const allowedKeys = ['pomarium', 'IWB', 'market'];
+
+  const datasets = Object.keys(dataSeries)
+      .filter(key => allowedKeys.includes(key)) // Only process allowed keys
+      .map((key, index) => {
+        const color =
+            props.brandColors && props.brandColors[index]
+                ? props.brandColors[index]
+                : props.getUniqueRandomColor();
+
+        let keyEnd = key.slice(1, key.length);
+        let upperKey = key[0].toUpperCase() + keyEnd;
+
+        return {
+          label: `${upperKey}`,
+          data: Object.values(dataSeries[key]),
+          borderColor: color,
+          backgroundColor: `${color}33`, // Add transparency to the color
+          fill: true,
+          tension: 0.4,
+        };
+      });
+
   return datasets;
 });
 
