@@ -174,6 +174,7 @@
         <v-btn color="primary" text type="submit" :disabled="createSubscriptionDisabled">Create Subscription</v-btn>
       </div>
     </v-form>
+
   </template>
   <template v-if="stripeAccountAssociated">
     <section class="payment-section my-7">
