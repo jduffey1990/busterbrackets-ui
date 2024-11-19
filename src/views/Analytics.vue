@@ -47,7 +47,7 @@
     </v-data-table>
 
     <div class="line_section mt-10">
-      <h5 class="graph_title">Historical Portfolio Performance</h5>
+      <h5 class="graph_title">Historical Portfolio Performance (10k standard)</h5>
       <v-col class="line_graph">
         <div class="d-flex justify-center align-center h-100">
           <LineChart :labels="lineLabels" :datasets="lineDatasets"/>
