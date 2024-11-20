@@ -127,7 +127,9 @@ export const useUserStore = defineStore('user', {
             }
         },
         async fetchUserData() {
+            console.log("we are fetching!")
             const {data} = await this.$axios('/api/users/me');
+            console.log("user data", data)
             this.user = data;
         },
     },
