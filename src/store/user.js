@@ -126,5 +126,9 @@ export const useUserStore = defineStore('user', {
                 });
             }
         },
+        async fetchUserData() {
+            const {data} = await this.$axios('/api/users/me');
+            this.user = data;
+        },
     },
 });

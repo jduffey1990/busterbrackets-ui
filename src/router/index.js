@@ -17,6 +17,7 @@ import Failure from "@/components/Failure.vue";
 import AdvisorBlocked from "@/components/AdvisorBlocked.vue";
 import Success from "@/components/Success.vue";
 import SubSuccess from "@/components/SubSuccess.vue";
+import PaymentInfo from "@/components/PaymentInfo.vue";
 
 
 const router = createRouter({
@@ -171,6 +172,11 @@ const router = createRouter({
             path: "/subscription-success",
             name: "SubSuccess",
             component: SubSuccess
+        },
+        {
+            path: "/payment-info",
+            name: "PaymentInfo",
+            component: PaymentInfo
         },
         {
             path: "/failure",
