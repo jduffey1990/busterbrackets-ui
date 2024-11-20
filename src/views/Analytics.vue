@@ -118,11 +118,14 @@
 
 <script setup>
 import {computed, ref, watch} from "vue";
+import {storeToRefs} from "pinia";
+import {useUserStore} from "@/store/user";
 
 import ScatterChart from '../components/ScatterChart.vue';
 import LineChart from '../components/LineChart.vue';
 
 const screenWidth = window.innerWidth;
+const {user} = storeToRefs(useUserStore());
 
 // Props
 const props = defineProps({
@@ -159,7 +162,10 @@ const lineDatasets = computed(() => {
         let keyEnd = key.slice(1, key.length);
         let upperKey
         if (key === 'pomarium') {
-          upperKey = "Recommendation"
+          let firstName = client.value.first_name
+          let firstEnd = firstName.slice(1, firstName.length)
+          let changedName = firstName[0].toUpperCase() + firstEnd
+          upperKey = `${changedName}'s Recommendation`
         } else {
           upperKey = key[0].toUpperCase() + keyEnd;
         }
