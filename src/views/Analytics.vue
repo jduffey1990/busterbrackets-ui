@@ -46,7 +46,7 @@
       <template #bottom></template>
     </v-data-table>
 
-    <div class="line_section mt-10">
+    <div v-if="lineDatasets.length !== 0" class="line_section mt-10">
       <h5 class="graph_title">Hypothetical Growth of $10,000 (5 years)</h5>
       <v-col class="line_graph">
         <div class="d-flex justify-center align-center h-100">
@@ -143,9 +143,8 @@ const lineLabels = computed(() =>
 
 // Compute all datasets dynamically
 const lineDatasets = computed(() => {
-  const dataSeries = props.metrics.net_growth_of_10k;
-  console.log("data series", dataSeries);
 
+  const dataSeries = props.metrics.net_growth_of_10k;
   // Define the keys you want to include in the datasets
   const allowedKeys = ['pomarium', 'IWB', 'market'];
 
@@ -158,7 +157,12 @@ const lineDatasets = computed(() => {
                 : props.getUniqueRandomColor();
 
         let keyEnd = key.slice(1, key.length);
-        let upperKey = key[0].toUpperCase() + keyEnd;
+        let upperKey
+        if (key === 'pomarium') {
+          upperKey = "Recommendation"
+        } else {
+          upperKey = key[0].toUpperCase() + keyEnd;
+        }
 
         return {
           label: `${upperKey}`,
