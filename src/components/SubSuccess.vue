@@ -5,8 +5,7 @@
       <p>Please add your payment info now to prevent access speedbumps later.</p>
       <form id="setup-form" @submit.prevent="handleSetupSubmit">
         <!-- Optional: Link Authentication Element -->
-        <div id="link-authentication-element"/>
-        <div id="payment-element"/>
+        <div id="card-element"></div>
         <button
             id="submit"
             :disabled="setupBtnDisabled"
@@ -71,15 +70,11 @@ const loadStripeElements = async (clientSecret) => {
 
     elements = stripe.elements();
 
-    // Create and mount payment element
-    const paymentElement = elements.create("payment", {
-      clientSecret, // Pass the clientSecret for setup intent
-    });
-    paymentElement.mount("#payment-element");
-
-    // Create and mount link authentication element (optional)
-    const linkAuthenticationElement = elements.create("linkAuthentication");
-    linkAuthenticationElement.mount("#link-authentication-element");
+    if (!elements) {
+      elements = stripe.elements();
+      const cardElement = elements.create('card');
+      cardElement.mount('#card-element');
+    }
   } catch (err) {
     console.error("Error initializing Stripe elements:", err);
     alert("An error occurred while setting up Stripe elements.");
@@ -131,7 +126,12 @@ onMounted(async () => {
       stateClient.value = {clientSecret};
 
       // Initialize Stripe elements
-      await loadStripeElements(clientSecret);
+
+      stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
+      elements = stripe.elements();
+      const cardElement = elements.create('card');
+      cardElement.mount('#card-element');
+      console.log('Stripe Elements initialized successfully');
     } catch (err) {
       console.error("Error fetching SetupIntent:", err);
       alert("An error occurred while fetching the SetupIntent.");
@@ -229,6 +229,19 @@ h3 {
   text-transform: uppercase;
   text-decoration: none;
   font-family: "halyard-text" !important;
+}
+
+.intent-button {
+  background-color: #07152A;
+  color: #ffffff;
+  font-family: "halyard-text" !important;
+  font-weight: 500;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-size: 16px;
 }
 
 .primary-button {
