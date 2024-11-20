@@ -52,10 +52,6 @@ const loginUser = async () => {
   try {
     await login(credentials);
 
-    show({
-      message: `Welcome back ${user.value.full_name || user.value.email}!`,
-    });
-
     router.push('/dashboard');
   } catch (error) {
     show({ message: 'Invalid credentials', error: true });
