@@ -29,7 +29,7 @@ app.use(axios).use(pinia).use(vuetify);
 
         if (isLoggedIn) {
             const unrestrictedRoutes = ['Login', 'ResetPassword', 'Billing', 'AdvisorBlockedNotice', 'Logout',
-                "Success", "SubSuccess"];
+                "Success", "SubSuccess", "PaySuccess"];
 
             if (unrestrictedRoutes.includes(to.name)) {
                 next();

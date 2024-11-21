@@ -409,7 +409,7 @@ async function handleSubmit(event) {
   await stripe.confirmPayment({
     elements,
     confirmParams: {
-      return_url: `${window.location.origin}/success`,
+      return_url: `${window.location.origin}/payment-processing`,
     }
   })
       .then(function (result) {

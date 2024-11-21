@@ -1,17 +1,17 @@
 <template>
   <div class="success-page">
     <div class="success-container">
-      <h1>Thank You for Your Continued Business!</h1>
+      <h1>Thank You for Your Business!</h1>
       <p>
-        We truly appreciate your ongoing partnership with Pomarium. Your recent payment was successfully processed,
-        and we are thrilled to have you as a valued customer. Please know that your transaction was securely
+        We truly appreciate your ongoing partnership with Pomarium. Your recent payment/payment setup was successfully
+        processed, and we are thrilled to have you as a valued customer. Please know that your transaction was securely
         processed through Stripe.
       </p>
 
       <h2>What Happens Next?</h2>
       <ul class="next-steps">
         <li>Any updates to your subscription or billing in general will be seen on your
-          <strong><a href="/billing">Billing Page</a></strong>.
+          <strong><a href="/billing" target="_blank">Billing Page</a></strong>.
         </li>
         <li>If you need assistance or have questions about your transaction, please don’t hesitate to reach out
           to our support team.
