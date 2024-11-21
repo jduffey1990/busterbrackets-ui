@@ -56,6 +56,42 @@
               :true-value="true"
               inset
           ></v-switch>
+          <hr>
+          <div class="client-move">
+            <p class="my-4">Move all clients to new manager</p>
+            <v-btn @click="openClientModal()" color="primary">Transfer All Clients</v-btn>
+            <v-dialog v-model="showClientModal" max-width="600">
+              <v-card>
+                <v-card-title>
+                  <span class="text-h5">Transfer Clients</span>
+                </v-card-title>
+
+                <v-card-text>
+                  <v-select
+                      label="Choose advisor to accept your clients"
+                      class="mb-4"
+                      v-model="selectedAdvisor"
+                      :items="advisors"
+                      item-title="title"
+                      item-value="value"
+                  ></v-select>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn @click="resetForm()">Cancel</v-btn>
+                  <v-btn
+                      :loading="isSubmitting"
+                      :disabled="!selectedAdvisor"
+                      @click="submitChanges()"
+                  >
+                    Submit Changes
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </div>
+
         </v-container>
       </v-card-text>
     </v-card>
@@ -64,9 +100,10 @@
 
 <script setup>
 import {useUserStore} from '@/store/user';
-import {reactive, onBeforeUnmount, onMounted} from 'vue';
+import {reactive, onBeforeUnmount, onMounted, ref} from 'vue';
 import {inject} from 'vue';
 import {parseError} from '@/utils/error';
+import {storeToRefs} from "pinia";
 
 // Inject dependencies
 const $axios = inject('$axios');
@@ -74,7 +111,12 @@ const {show} = inject('toast');
 
 // Get user data
 const {first_name, last_name, email, email_surveys, share_clients} = useUserStore().user;
+const {user} = storeToRefs(useUserStore())
 const {isAdvisorOrGreater} = useUserStore();
+const showClientModal = ref(false);
+const advisors = ref([])
+const selectedAdvisor = ref("")
+const isSubmitting = ref(false);
 
 // Reactive data for account and accountCopy
 const account = reactive({
@@ -86,6 +128,51 @@ const account = reactive({
 });
 
 const accountCopy = reactive({...account}); // Create a copy of the account
+
+
+const resetForm = () => {
+  selectedAdvisor.value = '';
+  showClientModal.value = false;
+};
+const openClientModal = async () => {
+  showClientModal.value = true;
+  try {
+    const firm_id = user.value.firm.id
+    console.log("user", firm_id)
+    const response = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
+    const fetchedAdvisors = response.data;
+
+    advisors.value = fetchedAdvisors.map(advisor => ({
+      title: advisor.full_name,
+      value: advisor.id,
+    }));
+  } catch (error) {
+    console.error('Error fetching advisors:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  }
+};
+
+const submitChanges = async () => {
+  isSubmitting.value = true;
+  try {
+    const payload = {
+      current_advisor_id: user.value.id,
+      new_advisor_id: selectedAdvisor.value,
+    };
+
+    await $axios.patch(`/api/users/transfer-clients/`, payload);
+
+    show({type: 'success', message: 'Clients successfully transferred!'});
+    resetForm();
+  } catch (error) {
+    console.error('Error transferring clients:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  } finally {
+    isSubmitting.value = false;
+  }
+};
 
 // Function to check if there are unsaved changes
 const hasUnsavedChanges = () => {
@@ -144,6 +231,13 @@ main-card {
   min-width: 600px;
 }
 
+.client-move {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (max-width: 700px) {
   .main-card {
     min-width: 90vw;
@@ -151,7 +245,7 @@ main-card {
 
   .title-holder {
     max-height: 64px !important;
-    
+
   }
 
   .title {
