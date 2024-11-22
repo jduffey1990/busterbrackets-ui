@@ -69,15 +69,27 @@ const loginUser = async () => {
 
     if (bool) {
       show({
-        message: `You have ${daysRemaining} day${daysRemaining > 1 ? 's' : ''} until your subscription lapses.
-        Go to <a href="/billing">Billing</a> to pay your outstanding invoice`,
-        html: true, // Add a custom property to indicate HTML content
+        message: `You have ${daysRemaining} day${daysRemaining > 1 ? 's' : ''} until your subscription lapses. ` +
+            `Go to <a href="/billing">Billing</a> to pay your outstanding invoice.`,
+        html: true, // Allows HTML in the message
       });
     }
 
     router.push('/dashboard');
   } catch (error) {
-    show({message: 'Invalid credentials', error: true});
+    // Check if the error response contains a message from the backend
+    if (error.response && error.response.data && error.response.data.detail) {
+      show({
+        message: error.response.data.detail,
+        error: true,
+      });
+    } else {
+      // Generic fallback for unexpected errors
+      show({
+        message: 'An unexpected error occurred. Please try again later.',
+        error: true,
+      });
+    }
   }
 };
 

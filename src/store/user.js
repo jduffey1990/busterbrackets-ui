@@ -88,15 +88,18 @@ export const useUserStore = defineStore('user', {
             await this.getSession();
         },
         async login(credentials) {
-            await this.$axios({
-                method: 'post',
-                url: '/api/users/login/',
-                data: credentials,
-            });
+            try {
+                await this.$axios({
+                    method: 'post',
+                    url: '/api/users/login/',
+                    data: credentials,
+                });
 
-            await this.getSession();
-
-
+                await this.getSession();
+            } catch (error) {
+                // Re-throw the error to be caught in `loginUser`
+                throw error;
+            }
         },
         async logout() {
             await this.$axios('/api/users/logout/');

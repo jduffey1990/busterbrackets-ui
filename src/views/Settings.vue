@@ -56,41 +56,51 @@
               :true-value="true"
               inset
           ></v-switch>
-          <hr>
-          <div class="client-move">
+          <hr class=my-4>
+
+
+          <div v-if="isAdvisorOrGreater" class="client-move">
             <p class="my-4">Move all clients to new manager</p>
             <v-btn @click="openClientModal()" color="primary">Transfer All Clients</v-btn>
-            <v-dialog v-model="showClientModal" max-width="600">
-              <v-card>
-                <v-card-title>
-                  <span class="text-h5">Transfer Clients</span>
-                </v-card-title>
-
-                <v-card-text>
-                  <v-select
-                      label="Choose advisor to accept your clients"
-                      class="mb-4"
-                      v-model="selectedAdvisor"
-                      :items="advisors"
-                      item-title="title"
-                      item-value="value"
-                  ></v-select>
-                </v-card-text>
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn @click="resetForm()">Cancel</v-btn>
-                  <v-btn
-                      :loading="isSubmitting"
-                      :disabled="!selectedAdvisor"
-                      @click="submitChanges()"
-                  >
-                    Submit Changes
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
           </div>
+          <hr class=my-4>
+
+          <div class="client-move">
+            <p class="my-4">ArchiveAccount</p>
+            <v-btn color="error" @click="archiveUser()">Archive</v-btn>
+          </div>
+
+
+          <v-dialog v-model="showClientModal" max-width="600">
+            <v-card>
+              <v-card-title>
+                <span class="text-h5">Transfer Clients</span>
+              </v-card-title>
+
+              <v-card-text>
+                <v-select
+                    label="Choose advisor to accept your clients"
+                    class="mb-4"
+                    v-model="selectedAdvisor"
+                    :items="advisors"
+                    item-title="title"
+                    item-value="value"
+                ></v-select>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn @click="resetForm()">Cancel</v-btn>
+                <v-btn
+                    :loading="isSubmitting"
+                    :disabled="!selectedAdvisor"
+                    @click="submitChanges()"
+                >
+                  Submit Changes
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
 
         </v-container>
       </v-card-text>
@@ -190,6 +200,39 @@ const saveProfile = async () => {
     show({message: parseError(error), error: true});
   }
 };
+
+const archiveUser = async () => {
+  const confirmation = confirm(
+      "Archiving a user does not delete them from the database. However, you will lose access to Pomarium. " +
+      "If you are an admin or advisor, all clients remaining to you will also be archived. Continue?"
+  );
+
+  if (confirmation) {
+    try {
+      const response = await $axios.patch('/api/users/archive-user');
+
+      if (response.status === 200) {
+        show({message: "You have been archived. You will now be logged out."});
+
+        //remove advisor from stripe subscription
+        await $axios.post(`/api/billing/subscription-quantity-update/`);
+
+        // Log the user out and redirect to the login page
+        setTimeout(async () => {
+          await useUserStore().logout();
+          router.push('/login');
+        }, 1000)
+      } else {
+        console.error("Unexpected response status:", response.status);
+        alert("An unexpected error occurred while archiving the user.");
+      }
+    } catch (error) {
+      console.error("Error archiving user:", error);
+      alert("Failed to archive the user. Please try again later.");
+    }
+  }
+};
+
 
 // Warn the user if they have unsaved changes when leaving the page
 const beforeUnloadHandler = (event) => {

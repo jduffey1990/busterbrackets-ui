@@ -26,7 +26,7 @@
   <template v-if="stripeAccountAssociated && canEdit">
     <div v-if="!editingUser" class="my-3">
       <div class="d-flex">
-        <h4>User on File for Stripe Payments</h4>
+        <h4>Firm Billing Administrator</h4>
         <v-tooltip
             :text="`${user.full_name} is responsible for receiving stripe correspondence and maintaining ${user.firm.name}'s active standing`"
             location="top"
@@ -46,7 +46,7 @@
         <template #bottom></template>
       </v-data-table>
       <div class="d-flex">
-        <h4>Business Address</h4>
+        <h4>Billing Address</h4>
         <v-tooltip
             :text="`${user.firm.name}'s billing address to match your payment billing`"
             location="top"
@@ -178,22 +178,25 @@
   </template>
   <template v-if="stripeAccountAssociated">
     <section class="payment-section my-7">
-      <div class="section-header d-flex">
-        <h4>Pomarium invoice payment hosted by Stripe</h4>
-        <v-tooltip
-            :text="`We present ${user.firm.name}'s oldest invoice first.  If there are multiple outstanding invoices you
+      <div>
+        <div class="d-flex">
+          <h4>Pomarium invoice</h4>
+          <v-tooltip
+              :text="`We present ${user.firm.name}'s oldest invoice first.  If there are multiple outstanding invoices you
             may have to submit another payment`"
-            location="top"
-        >
-          <template v-slot:activator="{ props }">
-            <v-icon
-                v-bind="props"
-                small
-                color="grayblue"
-                class="ml-2 icon-movement">mdi-information
-            </v-icon>
-          </template>
-        </v-tooltip>
+              location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon
+                  v-bind="props"
+                  small
+                  color="grayblue"
+                  class="ml-2 icon-movement">mdi-information
+              </v-icon>
+            </template>
+          </v-tooltip>
+        </div>
+        <p class="mb-4">Need to update your card on file? Click <a href="/payment-info">here</a></p>
       </div>
       <div class="pay-here">
         <p v-if="isSuper">
@@ -232,7 +235,7 @@
             <span class="mr-3">Invoice Date: {{ invoice.created_at }}</span>
             <span class="mr-3">Amount Due: ${{ invoice.amount }}</span>
             <a :href="invoice.invoice_url" target="_blank" @click="isPaymentButtonDisabled = true">
-              Invoice Stripe Link (Will disable local payment button for payment integrity)
+              Invoice Link (Will disable local payment button for payment integrity)
             </a>
           </v-list-item>
         </v-list>
@@ -552,7 +555,7 @@ const getPaymentIntent = async () => {
     const response = await $axios.get("/api/billing/create-payment-intent");
 
     if (!response.data.intents || response.data.intents.length === 0) {
-      messages.value.push("No outstanding balance to pay.");
+      messages.value.push("Outstanding Balance - $0 ");
       isPaymentButtonDisabled.value = true;
       return;
     }
@@ -660,11 +663,6 @@ watch(total, (newTotal) => {
   padding: 20px;
   background-color: rgba(255, 255, 255, 0.2) !important;
   border-radius: 8px;
-}
-
-/* Header styling */
-.section-header {
-  margin-bottom: 20px;
 }
 
 /* Headings */

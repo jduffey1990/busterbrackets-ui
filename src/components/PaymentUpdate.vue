@@ -1,7 +1,7 @@
 <template>
   <div class="success-page">
     <div class="success-container">
-      <h4>Please add your payment info now to prevent access speedbumps later</h4>
+      <h4>Update your card on file below</h4>
       <form id="setup-form" @submit.prevent="handleSetupSubmit">
         <!-- Optional: Link Authentication Element -->
         <div id="payment-element" class="mb-5"></div>
@@ -16,26 +16,6 @@
         <!-- Display messages -->
         <sr-messages :messages="messages"/>
       </form>
-      <hr>
-
-      <h2 class="mt-6">What Happens Next?</h2>
-      <ul class="next-steps">
-        <li>Start by adding any advisors that need access in your <a href="/admin" target="_blank">firm admin page</a>.
-        </li>
-        <li>Manage clients in your <a href="/dashboard" target="_blank">dashboard</a>.
-        </li>
-        <li>Ensure that your account and payment information remain up-to-date to enjoy uninterrupted service on your
-          <a href="/billing" target="_blank">billing page</a>. Though it may take a minute or two for the subscription
-          to be
-          live.
-        </li>
-      </ul>
-
-      <div class="contact-info">
-        <h2>Need Help?</h2>
-        <p>Our support team is here to assist you with any questions or concerns. You can reach us at:</p>
-        <p><a href="https://www.getpomarium.com/product/resources" target="_blank">Pomarium Support</a></p>
-      </div>
     </div>
   </div>
 </template>
@@ -116,7 +96,7 @@ const handleSetupSubmit = async () => {
     const {setupIntent, error} = await stripe.confirmSetup({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/success`,
+        return_url: `${window.location.origin}/billing`,
       },
     });
 
@@ -159,6 +139,8 @@ onMounted(async () => {
         clientSecret: clientSecret,
         appearance,
       });
+
+      console.log("here are elements", elements)
 
       const paymentElement = elements.create('payment', {
         layout: 'tabs', // Optional layout customization
@@ -204,55 +186,6 @@ onMounted(async () => {
   text-transform: uppercase;
   text-decoration: none;
   font-family: "halyard-text" !important;
-}
-
-p {
-  color: var(--Primary-Dark, #07152A);
-  font-family: "halyard-text" !important;
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 130%;
-  margin-bottom: 20px;
-}
-
-h2 {
-  color: var(--Primary-Dark, #07152A);
-  font-family: "halyard-display" !important;
-  font-size: 46px;
-  font-weight: 400;
-  line-height: 110%;
-  margin-top: 30px;
-  margin-bottom: 15px;
-}
-
-h3 {
-  color: var(--Primary-Dark, #07152A);
-  font-family: "halyard-display" !important;
-  font-size: 38px;
-  font-weight: 400;
-  line-height: 120%;
-  margin-top: 40px;
-  margin-bottom: 15px;
-}
-
-.next-steps {
-  text-align: left;
-  padding-left: 20px;
-  margin: 20px 0;
-  font-size: 20px;
-  font-family: "halyard-text" !important;
-  color: var(--Primary-Dark, #07152A);
-}
-
-.next-steps li {
-  line-height: 130%;
-  margin-bottom: 10px;
-}
-
-.contact-info p, .contact-info a {
-  font-size: 20px;
-  font-family: "halyard-text" !important;
-  color: var(--Primary-Dark, #07152A);
 }
 
 </style>
