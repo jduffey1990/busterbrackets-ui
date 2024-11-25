@@ -44,7 +44,7 @@
                 @click="navigate"
             >
             </v-btn>
-            <PDFBuilder  v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
+            <PDFBuilder v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
           </router-link>
         </div>
 
@@ -91,8 +91,8 @@
         <div v-else>
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
-            <div  v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
-              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders"/>
+            <div v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
+              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders" :tableHeaders="pdfTableHeaders"/>
             </div>
 
             <div class="text-h4">Portfolio vs. Market</div>
@@ -125,6 +125,102 @@
 
           </div>
           <hr/>
+
+          <hr/>
+          <div class="my-8 table-content">
+            <div class="text-h4">Allocations</div>
+  
+            <div style="display: flex;" class="my-3">
+              <v-card
+                :title="allocations.length"
+                text="Companies"
+                width="200px"
+                style="text-align: center;"
+                class="mx-6"
+              ></v-card>
+              <v-card
+                :title="averageVFit"
+                text="Values Score"
+                width="200px"
+                style="text-align: center;"
+                class="mx-6"
+              ></v-card>
+              <v-card
+                :title="averageIFit"
+                text="Investment Score"
+                width="200px"
+                style="text-align: center;"
+                class="mx-6"
+              ></v-card>
+            </div>
+            <div class="d-flex justify-end" v-if="!edditingAllocations">
+              <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
+              <v-btn color="primary" @click="refresh">Refresh</v-btn>
+            </div>
+            <div class="d-flex justify-end" v-else>
+              <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
+              <v-btn @click="switchEditAllocations">Cancel</v-btn>
+            </div>
+            <v-data-table
+                :items="allocations"
+                :headers="allocationHeaders"
+                :items-per-page="-1"
+                hide-default-header
+                mobile-breakpoint="700"
+                height="575"
+            >
+              <!-- Custom Header Slot -->
+              <template
+                  v-for="header in allocationHeaders"
+                  :key="header.key"
+                  v-slot:[`header.${header.key}`]="{ column }">
+                <span>{{ column.title }}</span>
+                <v-tooltip
+                    v-if="column.tooltip"
+                    :text="column.tooltip"
+                    location="top"
+                >
+                  <template v-slot:activator="{ props }">
+                    <v-icon
+                        v-bind="props"
+                        small
+                        color="grayblue"
+                        class="ml-2">mdi-information
+                    </v-icon>
+                  </template>
+                </v-tooltip>
+              </template>
+
+              <template v-slot:item="{ item }">
+                <tr>
+                  <td>
+                    <v-checkbox-btn 
+                      v-if="edditingAllocations"
+                      @input="addOrRemoveAllocationToDelete(item.ticker)"
+                    >
+                    </v-checkbox-btn>
+                  </td>
+                  <td style="padding: 0px;">
+                    <LazyImage
+                        :src="item.image"
+                        :alt="item.ticker"
+                        style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
+                  </td>
+                  <td style="white-space: nowrap;">{{ item.company }}</td>
+                  <td>{{ item.ticker }}</td>
+                  <td>{{ item.allocation }}</td>
+                  <td>{{ item.values_fit }}</td>
+                  <td>{{ item.investment_fit }}</td>
+                </tr>
+              </template>
+              <template #bottom></template>
+            </v-data-table>
+
+            <div class="d-flex justify-end" v-if="edditingAllocations">
+              <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
+              <v-btn @click="switchEditAllocations">Cancel</v-btn>
+            </div>
+          </div>
 
           <div class="my-8 canvas-item" v-if="portfolioSectors">
             <div class="text-h4">Sectors</div>
@@ -162,52 +258,13 @@
           </div>
 
           <hr/>
-
-          <div class="my-8 canvas-item" v-if="Object.keys(eliminatedCount).length">
-            <div class="text-h4">Total Excluded Companies (Value Based)</div>
-            <div class="pie_section">
-
-              <v-col class="pie_table">
-                <v-table>
-                  <tbody>
-                  <tr v-for="(e, index) in eliminatedCount" :key="index" class="pl-10">
-                    <td class="sector-dot">
-                      <v-icon :color="orderedColorsElim[index]">mdi-circle</v-icon>
-                    </td>
-                    <td class="text-no-wrap">{{ e.title }}</td>
-                    <td class="text-no-wrap" style="color: red">{{ e.value }}</td>
-                  </tr>
-                  </tbody>
-                </v-table>
-              </v-col>
-
-              <v-col class="pie_graph">
-                <div class="d-flex justify-center align-center h-100">
-                  <PieChart
-                      :data="getPieChart(eliminatedCount, 'elim')"
-                      :options="{
-                            responsive: true,
-                            plugins: {
-                              legend: {
-                                display: false,
-                              },
-                            },
-                          }"
-                  />
-                </div>
-              </v-col>
-            </div>
-          </div>
-          <hr/>
-          <v-row v-if="Object.keys(worstCompanies).length">
-            <v-col cols="12" md="6">
               <div class="my-8 table-content">
                 <div class="d-flex justify-start flex-row">
                   <v-tooltip
                       text="These companies were excluded from your portfolio, likely among others."
                       location="top">
                     <template v-slot:activator="{ props }">
-                      <div class="text-h4" v-bind="props">Lowest Value Scores</div>
+                      <div class="text-h4" v-bind="props">Excluded Companies (10 lowest Values Score)</div>
                       <v-icon
                           v-bind="props"
                           size="20"
@@ -224,6 +281,7 @@
                     :items-per-page="-1"
                     hide-default-header
                     mobile-breakpoint="700"
+                    class="worst-companies"
                 >
                   <!-- Custom Header Slot -->
                   <template
@@ -264,115 +322,77 @@
                   <template #bottom></template>
                 </v-data-table>
               </div>
-            </v-col>
-          </v-row>
 
+          <div class="my-8 canvas-item" v-if="Object.keys(eliminatedCount).length">
+            <div class="text-h4">All Excluded Companies</div>
+            <CsvBuilder :content="companies" :headers="csvHeaders" :fileName="'Eliminations'" class="my-2"/>
+            <div class="pie_section">
 
-        </div>
+              <v-col class="pie_table">
+                <v-table>
+                  <tbody>
+                  <tr v-for="(e, index) in eliminatedCount" :key="index" class="pl-10">
+                    <td class="sector-dot">
+                      <v-icon :color="orderedColorsElim[index]">mdi-circle</v-icon>
+                    </td>
+                    <td class="text-no-wrap">{{ e.title }}</td>
+                    <td class="text-no-wrap" style="color: red">{{ e.value }}</td>
+                  </tr>
+                  </tbody>
+                </v-table>
+              </v-col>
 
-        <hr/>
-
-        <div class="my-8 table-content">
-          <div class="text-h4">Pomarium Allocations</div>
-          <div class="d-flex justify-end" v-if="!edditingAllocations">
-            <v-btn class="mx-6" color="primary" @click="switchEditAllocations();">Edit</v-btn>
-            <v-btn color="primary" @click="refresh">Refresh</v-btn>
-          </div>
-          <div class="d-flex justify-end" v-else>
-            <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
-            <v-btn @click="switchEditAllocations">Cancel</v-btn>
-          </div>
-          <v-data-table
-              :items="allocations"
-              :headers="allocationHeaders"
-              :items-per-page="-1"
-              hide-default-header
-              mobile-breakpoint="700"
-          >
-            <!-- Custom Header Slot -->
-            <template
-                v-for="header in allocationHeaders"
-                :key="header.key"
-                v-slot:[`header.${header.key}`]="{ column }">
-              <span>{{ column.title }}</span>
-              <v-tooltip
-                  v-if="column.tooltip"
-                  :text="column.tooltip"
-                  location="top"
-              >
-                <template v-slot:activator="{ props }">
-                  <v-icon
-                      v-bind="props"
-                      small
-                      color="grayblue"
-                      class="ml-2">mdi-information
-                  </v-icon>
-                </template>
-              </v-tooltip>
-            </template>
-
-
-            <template v-slot:item="{ item }">
-              <tr>
-                <td>
-                  <v-checkbox-btn v-if="edditingAllocations"
-                                  @input="addOrRemoveAllocationToDelete(item.ticker)"></v-checkbox-btn>
-                </td>
-                <td style="padding: 0px;">
-                  <LazyImage
-                      :src="item.image"
-                      :alt="item.ticker"
-                      style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
-                </td>
-                <td style="white-space: nowrap;">{{ item.company }}</td>
-                <td>{{ item.ticker }}</td>
-                <td>{{ item.allocation }}</td>
-                <td>{{ item.values_fit }}</td>
-                <td>{{ item.investment_fit }}</td>
-              </tr>
-            </template>
-            <template #bottom></template>
-          </v-data-table>
-
-          <div class="d-flex justify-end" v-if="edditingAllocations">
-            <v-btn class="mx-6" @click="saveAllocationsToDelete">Save</v-btn>
-            <v-btn @click="switchEditAllocations">Cancel</v-btn>
+              <v-col class="pie_graph" style="align-self: start;">
+                <div class="d-flex justify-center align-center h-100">
+                  <PieChart
+                      :data="getPieChart(eliminatedCount, 'elim')"
+                      :options="{
+                            responsive: true,
+                            plugins: {
+                              legend: {
+                                display: false,
+                              },
+                            },
+                          }"
+                  />
+                </div>
+              </v-col>
+            </div>
           </div>
         </div>
-
       </v-tabs-window-item>
 
       <v-tabs-window-item class="py-2">
-            <v-alert style="background-color: white;" class="profile">
-              <div class="pb-6">
-                <p>Profile</p>
-              </div>
+        <v-alert style="background-color: white;" class="profile">
+          <div class="pb-6">
+            <p>Profile</p>
+          </div>
 
-              <v-text-field
-                  label="First Name"
-                  type="text"
-                  v-model="client.first_name"
-                  class="mb-4"
-              ></v-text-field>
+          <v-text-field
+              label="First Name"
+              type="text"
+              v-model="client.first_name"
+              class="mb-4"
+          ></v-text-field>
 
-              <v-text-field
-                  label="Last Name"
-                  type="text"
-                  v-model="client.last_name"
-                  class="mb-4"
-              ></v-text-field>
+          <v-text-field
+              label="Last Name"
+              type="text"
+              v-model="client.last_name"
+              class="mb-4"
+          ></v-text-field>
 
-              <v-text-field
-                  label="Email"
-                  type="email"
-                  v-model="client.email"
-                  class="mb-4"
-              ></v-text-field>
-              <div class="d-flex justify-end">
-                <v-btn @click="saveClient()" color="primary"> Save</v-btn>
-              </div>
-            </v-alert>
-        
+          <v-text-field
+              label="Email"
+              type="email"
+              v-model="client.email"
+              class="mb-4"
+          ></v-text-field>
+          <div class="d-flex justify-end">
+            <v-btn @click="saveClient()" color="primary"> Save</v-btn>
+          </div>
+        </v-alert>
+
         <div class="d-flex justify-end mb-4">
           <router-link
               :to="{ name: 'Accounts', params: { user_id } }"
@@ -485,10 +505,12 @@ import {parseError} from '@/utils/error';
 import Analytics from "@/views/Analytics.vue";
 import LazyImage from '@/components/LazyImage.vue';
 import PDFBuilder from '@/components/PDFBuilder.vue';
+import CsvBuilder from '@/components/CsvBuilder.vue';
 
 const screenWidth = window.innerWidth;
 
 const excludedHeaders = ['Delete', ''];
+const pdfTableHeaders = ['Pomarium Allocations', 'Lowest Value Scores']
 
 const {
   user: {id: advisor_id},
@@ -553,6 +575,8 @@ const allocationsDelDisplay = ref([]);
 const hasRequestedPortfolios = ref(false);
 const portfolioValues = ref();
 const portfoliosLoading = ref(false);
+const averageVFit = ref('');
+const averageIFit = ref('');
 const allocationHeaders = [
   {
     title: 'Delete',
@@ -633,6 +657,27 @@ const worstHeaders = [
     tooltip: 'A percentage description of how well this company meets your values, as calculated by our algorithm.'
   },
 ];
+
+//calculate the average values_fit and investment_fit in the allocations
+const calculateAverage = () => {
+  let sumValuesFit = 0;
+  let sumInvestmentFit = 0;
+  let count = 0;
+
+  for (let i = 0; i < allocations.value.length; i++) {
+    if (allocations.value[i].values_fit !== "") {
+      sumValuesFit += parseFloat(allocations.value[i].values_fit.slice(0, -1));
+      count++;
+    }
+    if (allocations.value[i].investment_fit !== "") {
+      sumInvestmentFit += parseFloat(allocations.value[i].investment_fit.slice(0, -1));
+    }
+  }
+
+  averageVFit.value = count ? (sumValuesFit / count).toFixed(2) : '';
+  averageIFit.value = count ? (sumInvestmentFit / count).toFixed(2) : '';
+};
+
 
 const getPortfolios = async () => {
   portfoliosLoading.value = true;
@@ -791,6 +836,7 @@ const getPortfolios = async () => {
 
     portfoliosLoading.value = false;
     hasRequestedPortfolios.value = true;
+    calculateAverage();
   } catch (error) {
     console.error('Error in getPortfolios:', error);
   }
@@ -909,6 +955,14 @@ const getAccounts = async () => {
   }
 };
 const downloadAccountCSV = async (account, template) => {
+  if (template === "lpl_financial") {
+    const confirmMessage = "You are requesting trade instructions.  Our algorithm handles this as though you are " +
+        "starting from 100% cash value.  Continue?"
+
+    if (!confirm(confirmMessage)) {
+      return; // Stop execution if the user does not confirm
+    }
+  }
   window.open(
       `${import.meta.env.VITE_BASE_URL}/api/accounts/${account.id}/download/${template}/`,
   );
@@ -1009,6 +1063,8 @@ const fetchValuesProfile = async () => {
 
 onMounted(async () => {
   await fetchValuesProfile()
+  await getEliminatedCompanies();
+  await getCompanies();
 });
 
 watch(currentTab, (newVal) => {
@@ -1022,15 +1078,30 @@ watch(currentTab, (newVal) => {
 
 const brandColors = [
   '#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#636970',
-  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#F2E7D2', '#6F4C45'
+  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#F2E7D2', '#6F4C45',
+  'rgba(7, 21, 42, 0.9)', 'rgba(249, 187, 169, 0.9)', 'rgba(255, 230, 182, 0.9)', 'rgba(207, 98, 50, 0.9)', 'rgba(205, 208, 212, 0.9)', 'rgba(99, 105, 112, 0.9)',
+  'rgba(144, 63, 48, 0.9)', 'rgba(14, 47, 95, 0.9)', 'rgba(252, 195, 91, 0.9)', 'rgba(254, 252, 247, 0.9)', 'rgba(156, 161, 170, 0.9)', 'rgba(242, 231, 210, 0.9)', 'rgba(111, 76, 69, 0.9)'
 ];
+
+const generateRandomColor = () => {
+  const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+  return `#${randomColor.padStart(6, '0')}`;
+};
 
 const getUniqueRandomColor = (colors, usedColors) => {
   let color;
-  do {
-    const index = Math.floor(Math.random() * colors.length);
-    color = colors[index];
-  } while (usedColors.has(color));
+  if (usedColors.size >= colors.length) {
+    // All brand colors have been used, generate a new random color
+    do {
+      color = generateRandomColor();
+    } while (usedColors.has(color));
+  } else {
+    // Select a color from brandColors
+    do {
+      const index = Math.floor(Math.random() * colors.length);
+      color = colors[index];
+    } while (usedColors.has(color));
+  }
   usedColors.add(color);
   return color;
 };
@@ -1213,7 +1284,16 @@ const templateItems = [{
 }, {
   title: 'Standard',
   value: 'standard'
-}];
+},
+  {
+    title: "LPL Financial",
+    value: 'lpl_financial'
+  },
+  {
+    title: "iRebal",
+    value: 'irebal'
+  }
+];
 
 const barOptions = {
   responsive: true,
@@ -1236,6 +1316,36 @@ const barOptionsSmall = {
   },
 };
 
+const eliminatedCompanies = ref([]);
+
+const getEliminatedCompanies = async () => {
+  try {
+    const {data} = await $axios.get(`/api/advisors/${user_id}/eliminations/`);
+    eliminatedCompanies.value = data;
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+};
+
+const companies = ref([]);
+
+const getCompanies = async () => {
+  try {
+    const {data} = await $axios.get('/api/companies/');
+    companies.value = data.filter((company) => eliminatedCompanies.value.includes(company.ticker));
+    companies.value.sort((a, b) => a.ticker.localeCompare(b.ticker));
+    //remove any commas from the company names
+    companies.value.forEach((company) => {
+      if (company.name) {
+        company.name = company.name.replace(/,/g, '');
+      }
+    });
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+};
+
+const csvHeaders = ['ticker', 'name']
 </script>
 
 <style scoped>
@@ -1300,6 +1410,10 @@ const barOptionsSmall = {
   width: 50%;
 }
 
+.worst-companies {
+  max-width: 50%;
+}
+
 /* Responsive adjustments for bar and pie sections */
 @media only screen and (max-width: 1275px) {
   .bar_section,
@@ -1335,6 +1449,10 @@ const barOptionsSmall = {
   .profile {
     width: 90vw;
     margin-bottom: 20px;
+  }
+
+  .worst-companies {
+    max-width: 100%;
   }
 
 }

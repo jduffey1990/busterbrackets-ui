@@ -52,7 +52,7 @@ stages:
   script:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
-    - gcloud auth activate-service-account --key-file .secure_files/google-ui-service-account.json
+    - gcloud auth activate-service-account --key-file .secure_files/$SERVICE_ACCOUNT.json
     - gcloud config set project $PROJECT
     - gcloud run deploy $CLOUD_RUN_SERVICE --image $IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated  
 
@@ -71,21 +71,22 @@ build-predev:
   variables:
     IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_BRANCH"
 
-# deploy-predev:
-#   extends: .deploy
-#   stage: deploy-predev
-#   needs:
-#     - build-predev
-#   rules:
-#     - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
-#       when: never
-#     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-#       when: never
-#     - when: always
-#   variables:
-#     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
-#     IMAGE: $UI_PREDEV_IMAGE
-#     CLOUD_RUN_SERVICE: "ui-predev"
+deploy-predev:
+  extends: .deploy
+  stage: deploy-predev
+  needs:
+    - build-predev
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
+      when: never
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+      when: never
+    - when: always
+  variables:
+    PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
+    IMAGE: $UI_PREDEV_IMAGE
+    CLOUD_RUN_SERVICE: "ui-predev"
+    SERVICE_ACCOUNT: "google-ui-service-account"
 
 # ---- Cloud Run Dev ----
 
@@ -97,41 +98,44 @@ build-predev:
 #   variables:
 #     IMAGE: $UI_IMAGE
 
-# deploy-dev:
-#   extends: .deploy
-#   stage: deploy-dev
-#   needs:
-#     - build-dev
-#   only:
-#     - development
-#   variables:
-#     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
-#     IMAGE: $UI_IMAGE
-#     CLOUD_RUN_SERVICE: "ui"
+deploy-dev:
+  extends: .deploy
+  stage: deploy-dev
+  needs:
+    - build-dev
+  only:
+    - development
+  variables:
+    PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
+    IMAGE: $UI_IMAGE
+    CLOUD_RUN_SERVICE: "ui"
+    SERVICE_ACCOUNT: "google-ui-service-account"
 
 # # ---- Cloud Run Beta ----
 
-# deploy-beta:
-#   extends: .deploy
-#   stage: deploy-beta
-#   only:
-#     - main
-#   when: manual
-#   variables:
-#     PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
-#     IMAGE: $UI_IMAGE
-#     CLOUD_RUN_SERVICE: "ui"
+deploy-beta:
+  extends: .deploy
+  stage: deploy-beta
+  only:
+    - main
+  when: manual
+  variables:
+    PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
+    IMAGE: $UI_IMAGE
+    CLOUD_RUN_SERVICE: "ui"
+    SERVICE_ACCOUNT: "beta-google-service-account"
 
 # # ---- Cloud Run Demo ----
 
-# deploy-demo:
-#   extends: .deploy
-#   stage: deploy-demo
-#   only:
-#     - main
-#   needs:
-#     - deploy-beta
-#   variables:
-#     PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
-#     IMAGE: $UI_IMAGE
-#     CLOUD_RUN_SERVICE: "ui-demo"
+deploy-demo:
+  extends: .deploy
+  stage: deploy-demo
+  only:
+    - main
+  needs:
+    - deploy-beta
+  variables:
+    PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
+    IMAGE: $UI_IMAGE
+    CLOUD_RUN_SERVICE: "ui-demo"
+    SERVICE_ACCOUNT: "beta-google-service-account"

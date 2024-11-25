@@ -28,6 +28,11 @@ export default {
       type: Array,
       required: false,
       default: () => []
+    },
+    tableHeaders: {
+      type: Array,
+      required: false,
+      default: () => []
     }
   },
   methods: {
@@ -78,7 +83,7 @@ export default {
 
       // Add table content as tables
       const tableElements = element.getElementsByClassName(this.tableClass)
-      Array.from(tableElements).forEach(tableElement => {
+      Array.from(tableElements).forEach((tableElement, index) => {
         const tableData = []
         const rows = tableElement.querySelectorAll('tr')
         let headers = []
@@ -87,13 +92,13 @@ export default {
           const rowData = []
           const cells = row.querySelectorAll('td, th')
           cells.forEach((cell, cellIndex) => {
-            const cellText = cell.innerText || cell.textContent
-            if (rowIndex === 0) {
-              headers.push(cellText)
-            }
-            if (!this.excludeColumns.includes(headers[cellIndex])) {
-              rowData.push(cellText)
-            }
+        const cellText = cell.innerText || cell.textContent
+        if (rowIndex === 0) {
+          headers.push(cellText)
+        }
+        if (!this.excludeColumns.includes(headers[cellIndex])) {
+          rowData.push(cellText)
+        }
           })
           tableData.push(rowData)
         })
@@ -102,6 +107,20 @@ export default {
           pdf.addPage()
           currentY = 0
         }
+
+        // Add table title
+        if (index === 0) {
+          pdf.addPage()
+          currentY = 20
+        }
+
+        if (index > 0) {
+          currentY += 20
+        }
+
+        const title = `${this.tableHeaders[index]}`
+        pdf.text(title, 10, currentY + 10)
+        currentY += 20
 
         pdf.autoTable({
           startY: currentY + 10,
