@@ -90,13 +90,13 @@ deploy-predev:
 
 # ---- Cloud Run Dev ----
 
-# build-dev:
-#   extends: .build
-#   stage: build-dev
-#   only:
-#     - development
-#   variables:
-#     IMAGE: $UI_IMAGE
+build-dev:
+  extends: .build
+  stage: build-dev
+  only:
+    - development
+  variables:
+    IMAGE: $UI_IMAGE
 
 deploy-dev:
   extends: .deploy
