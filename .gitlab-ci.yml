@@ -30,7 +30,8 @@ variables:
 # ---- stages ----
 
 stages:
-  - predev
+  - build-predev
+  - deploy-predev
   # - build-dev
   # - deploy-dev
   # - deploy-beta
@@ -60,14 +61,13 @@ stages:
 
 build-predev:
   extends: .build
-  stage: predev
+  stage: build-predev
   rules:
     - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
       when: never
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: never
-    - if: $EPHEMERAL_ENV == "true"
-      when: always
+    - when: manual
   variables:
     IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_BRANCH"
 
