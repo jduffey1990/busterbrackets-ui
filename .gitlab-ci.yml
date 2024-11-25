@@ -32,10 +32,10 @@ variables:
 stages:
   - build-predev
   - deploy-predev
-  # - build-dev
-  # - deploy-dev
-  # - deploy-beta
-  # - deploy-demo
+  - build-dev
+  - deploy-dev
+  - deploy-beta
+  - deploy-demo
 
 # ---- Job Templates ----
 
