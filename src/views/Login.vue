@@ -40,6 +40,8 @@ const $axios = inject('$axios');
 
 const { user } = storeToRefs(useUserStore());
 const { login } = useUserStore();
+const {user, stripeAccountAssociated, cardOnFile} = storeToRefs(useUserStore());
+const {login} = useUserStore();
 
 const router = useRouter();
 
@@ -75,7 +77,14 @@ const loginUser = async () => {
       });
     }
 
-    router.push('/dashboard');
+    console.log(stripeAccountAssociated.value)
+    console.log(cardOnFile.value)
+
+    if (stripeAccountAssociated.value && !cardOnFile.value) {
+      router.push('/payment-info')
+    } else {
+      router.push('/dashboard');
+    }
   } catch (error) {
     // Check if the error response contains a message from the backend
     if (error.response && error.response.data && error.response.data.detail) {
@@ -119,7 +128,7 @@ const resetPassword = async () => {
 @media (max-width: 700px) {
   .title-holder {
     max-height: 64px !important;
-    
+
   }
 
   .title {

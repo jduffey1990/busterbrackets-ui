@@ -34,6 +34,12 @@ export const useUserStore = defineStore('user', {
             } else {
                 return false;
             }
+        },
+        stripeIsPaused(state) {
+            return !!state.user.firm.paused_subscription;
+        },
+        cardOnFile(state) {
+            return !!state.user.firm.card_on_file;
         }
     },
     actions: {

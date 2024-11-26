@@ -120,6 +120,7 @@ const handleSetupSubmit = async () => {
       },
     });
 
+
     if (error) {
       console.error("SetupIntent error:", error.message);
       alert("Error setting up payment method: " + error.message);

@@ -36,9 +36,16 @@ app.use(axios).use(pinia).use(vuetify);
                 return;
             }
 
-            const {stripeAccountAssociated, stripeIsCurrent, isFirmAdminOrGreater} = userStore;
+            const {
+                stripeAccountAssociated, stripeIsCurrent, isFirmAdminOrGreater,
+                stripeIsPaused
+            } = userStore;
 
-            if (stripeAccountAssociated && stripeIsCurrent) {
+            if (to.name === "PaymentInfo" && isFirmAdminOrGreater && stripeAccountAssociated) {
+                next()
+            }
+
+            if (stripeAccountAssociated && stripeIsCurrent && !stripeIsPaused) {
                 next(); // Allow navigation if subscription is current
             } else {
                 if (isFirmAdminOrGreater) {

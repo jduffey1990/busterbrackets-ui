@@ -1,5 +1,15 @@
 <template>
-  <template v-if="stripeAccountAssociated && dateOfBlock.length !== 0 && stripeIsCurrent">
+  <template v-if="stripeIsPaused">
+    <div class="subscription-status">
+      <h2>Your Subscription Status</h2>
+      <p class="subscription-message">
+        {{ user.firm.name }} has a paused subscription. Click the button below to resume your subscription.
+      </p>
+      <v-btn color="primary" @click="renewSubscription()">Renew Subscription</v-btn>
+    </div>
+
+  </template>
+  <template v-else-if="stripeAccountAssociated && dateOfBlock.length !== 0 && stripeIsCurrent && !stripeIsPaused">
     <div class="subscription-status">
       <h2>Your Subscription Status</h2>
       <p class="subscription-message">
@@ -10,7 +20,6 @@
         features, please ensure your billing information remains up to date.
       </p>
     </div>
-
   </template>
   <template v-else-if="stripeAccountAssociated && !stripeIsCurrent">
     <div class="subscription-status">
@@ -22,6 +31,7 @@
     </div>
 
   </template>
+
 
   <template v-if="stripeAccountAssociated && canEdit">
     <div v-if="!editingUser" class="my-3">
@@ -264,6 +274,9 @@
       You currently have no outstanding invoices. Thank you for your business!
     </v-alert>
   </template>
+  <div v-if="!stripeIsPaused" class="end-sub">
+    <v-btn color="error" @click="pauseSubscription()">Pause Subscription</v-btn>
+  </div>
 </template>
 
 
@@ -281,7 +294,7 @@ import {useOverlayStore} from "@/store/overlay";
 const $axios = inject('$axios');
 const {show} = inject('toast');
 const {user} = storeToRefs(useUserStore());
-const {isSuper, stripeAccountAssociated, stripeIsCurrent, isFirmAdminOrGreater} = useUserStore()
+const {isSuper, stripeAccountAssociated, stripeIsCurrent, stripeIsPaused, isFirmAdminOrGreater} = useUserStore()
 const overlayStore = useOverlayStore();
 const router = useRouter();
 let stripe;
@@ -591,6 +604,79 @@ const getPaymentIntent = async () => {
   }
 };
 
+const pauseSubscription = async () => {
+  console.log()
+  if (unpaidInvoices.value.length !== 0) {
+    if (unpaidInvoices.value.length === 1) {
+      show({
+        type: "error", message: "You cannot pause your subscription with an unpaid invoice.  Please pay remaining " +
+            "invoice to pause your subscription"
+      });
+      return
+    } else {
+      show({
+        type: "error", message: "You cannot pause your subscription with unpaid invoices.  Please pay remaining" +
+            "invoices to pause your subscription"
+      });
+      return
+    }
+  }
+  const confirmation = confirm(
+      "While your firm data in Pomarium will not be removed, your subscription and all user access will end " +
+      "immediately.  Continue?"
+  );
+  if (confirmation) {
+    try {
+      const response = await $axios.post(`api/billing/cancel-subscription/`);
+
+      if (response.status === 200) {
+        show({message: "Your subscription has been paused. You will now be logged out."});
+
+        // Log the user out and redirect to the login page
+        setTimeout(async () => {
+          await useUserStore().logout();
+          router.push('/login');
+        }, 1000)
+      } else {
+        console.error("Unexpected response status:", response.status);
+        alert("An unexpected error occurred while archiving the user.");
+      }
+    } catch (error) {
+      console.error("Error closing account user:", error);
+      alert("Failed to archive the user. Please try again later.");
+    }
+  }
+
+}
+
+const renewSubscription = async () => {
+  const confirmation = confirm(
+      "Confirming your interest to renew your subscription will result in immediate billing/invoicing your account." +
+      "  Continue?"
+  );
+  if (confirmation) {
+    try {
+      const response = await $axios.post(`api/billing/renew-subscription/`);
+
+      if (response.status === 200) {
+        show({message: "Your subscription has been renewed."});
+
+        // Log the user out and redirect to the login page
+        setTimeout(async () => {
+          router.push('success/')
+        }, 2000)
+      } else {
+        console.error("Unexpected response status:", response.status);
+        alert("An unexpected error occurred while renewing the account.");
+      }
+    } catch (error) {
+      console.error("Error renewing account:", error);
+      alert("Failed to renew the account. Please try again later.");
+    }
+  }
+}
+
+
 onMounted(async () => {
 
   if (stripeAccountAssociated) {
@@ -771,5 +857,11 @@ watch(total, (newTotal) => {
 
 .icon-movement {
 
+}
+
+.end-sub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
