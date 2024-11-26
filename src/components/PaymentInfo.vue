@@ -120,14 +120,15 @@ const handleSetupSubmit = async () => {
       },
     });
 
-
     if (error) {
       console.error("SetupIntent error:", error.message);
       alert("Error setting up payment method: " + error.message);
-    } else {
-      console.log("SetupIntent successful:", setupIntent);
-      alert("Payment method added successfully!");
+      return; // Exit early if there's an error
     }
+
+    // Send a request to the back-end only if the setup was successful
+    await $axios.post('api/firms/card-on-file');
+    alert("Payment method added successfully!");
   } catch (err) {
     console.error("Error handling SetupIntent:", err);
     alert("An error occurred while setting up your payment method.");
@@ -135,6 +136,7 @@ const handleSetupSubmit = async () => {
     setupBtnDisabled.value = false;
   }
 };
+
 
 onMounted(async () => {
   if (!stripeAccountAssociated) {
