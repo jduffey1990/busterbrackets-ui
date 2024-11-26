@@ -793,7 +793,7 @@ const continuousAggregateUpload = debounce(async () => {
       error: true,
     });
   }
-}, 2000); // Add a 2 second debounce
+}, 500); // Add a 2 second debounce
 
 function debounce(func, wait) {
   let timeout;
