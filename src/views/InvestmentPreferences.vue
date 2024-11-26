@@ -57,6 +57,7 @@
         v-model="factorLeversAggregate.dividend_quality"
         :disabled="!canEdit || !editLevers"
         @end="continuousAggregateUpload"
+        thumb-label
     ></v-slider>
 
     <p v-on:mouseover="hovering[2] = true" v-on:mouseleave="hovering[2] = false">GARP
@@ -78,6 +79,7 @@
         v-model="factorLeversAggregate.garp"
         :disabled="!canEdit || !editLevers"
         @end="continuousAggregateUpload"
+        thumb-label
     ></v-slider>
 
     <p v-on:mouseover="hovering[3] = true" v-on:mouseleave="hovering[3] = false">Low Volatility
@@ -99,6 +101,29 @@
         v-model="factorLeversAggregate.low_volatility"
         :disabled="!canEdit || !editLevers"
         @end="continuousAggregateUpload"
+        thumb-label
+    ></v-slider>
+
+    <p v-on:mouseover="hovering[8] = true" v-on:mouseleave="hovering[8] = false">Market Cap
+      <v-tooltip 
+        v-if="hovering[8]"
+        text="Invests in companies based on their market capitalization. Allocates more to larger companies, which can be more stable and less volatile, while smaller companies may offer more growth potential" 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </p>
+    <v-slider 
+        :min="0"
+        :max="1"
+        :step="0.01"
+        :readonly="!canEdit || !editLevers"
+        v-model="factorLeversAggregate.market_cap"
+        :disabled="!canEdit || !editLevers"
+        @end="continuousAggregateUpload"
+        thumb-label
     ></v-slider>
 
     <p v-on:mouseover="hovering[4] = true" v-on:mouseleave="hovering[4] = false">Momentum
@@ -120,6 +145,7 @@
         v-model="factorLeversAggregate.momentum"
         :disabled="!canEdit || !editLevers"
         @end="continuousAggregateUpload"
+        thumb-label
     ></v-slider>
 
     <p v-on:mouseover="hovering[5] = true" v-on:mouseleave="hovering[5] = false">Quality
@@ -141,6 +167,7 @@
         v-model="factorLeversAggregate.quality"
         :disabled="!canEdit || !editLevers"
         @end="continuousAggregateUpload"
+        thumb-label
     ></v-slider>
 
     <p v-on:mouseover="hovering[6] = true" v-on:mouseleave="hovering[6] = false">Shareholder Yield
@@ -162,6 +189,7 @@
         v-model="factorLeversAggregate.shareholder_yield"
         :disabled="!canEdit || !editLevers"
         @end="continuousAggregateUpload"
+        thumb-label
     ></v-slider>
 
     <p v-on:mouseover="hovering[7] = true" v-on:mouseleave="hovering[7] = false">Value
@@ -183,8 +211,47 @@
         v-model="factorLeversAggregate.value"
         :disabled="!canEdit || !editLevers"
         @end="continuousAggregateUpload"
+        thumb-label
     ></v-slider>
 
+    <!-- bar graph for levers -->
+    <div v-if="loadBar" style="width: 50%;">
+      <BarChart
+        :data="getBarChart(barChartObject)"
+        :options="screenWidth < 700 ? barOptionsSmall : barOptions"
+      />
+      <div class="pie_section">
+        <v-col class="pie_graph">
+          <div class="d-flex justify-center align-center h-100">
+            <PieChart
+                :data="getPieChart(barChartObject, '')"
+                :options="{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                },
+              }"
+            />
+          </div>
+        </v-col>
+        <v-col class="pie_table">
+          <v-table>
+            <tbody>
+              <tr v-for="(p, index) in barChartObject" :key="index" class="pl-10">
+                <td class="sector-dot">
+                  <v-icon :color="orderedColorsSectors[index]">mdi-circle</v-icon>
+                </td>
+                <td class="text-no-wrap">{{ p.type }}</td>
+                <td class="text-no-wrap">{{ (p.value*100).toFixed(2) }}%</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-col>
+      </div>
+    </div>
+    
     <div class="d-flex my-4 align-center">
       <div class="text-h6 my-4">Advisor Fee %</div>
     </div>
@@ -336,6 +403,8 @@ import {onMounted} from 'vue';
 import {ref} from 'vue';
 import {inject} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
+import BarChart from '@/components/BarChart.vue';
+import PieChart from '../components/PieChart.vue';
 
 const router = useRouter();
 const {show} = inject('toast');
@@ -368,7 +437,8 @@ const page = ref(1);
 const itemsPerPage = ref(15);
 const holdings = ref();
 const allTickerValues = ref([])
-const hovering = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false });
+const hovering = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false });
+const loadBar = ref(false);
 
 
 //Router parameter
@@ -469,6 +539,13 @@ const getAggregateFactorLevers = async () => {
         `/api/advisors/${user_id || advisor_id}/aggregate/`
     );
     factorLeversAggregate.value = JSON.parse(data.aggregate);
+    const result = await $axios.post(
+          `/api/advisors/${user_id || advisor_id}/factor-summary/`,
+          {aggregate: factorLeversAggregate.value}
+      );
+    leverGraphItems.value = result.data.weights;
+    setBarChartValues();
+    // getBarChart(barChartObject);
   } catch (error) {
   }
 };
@@ -708,7 +785,7 @@ const saveFactorLevers = async () => {
   }
 };
 
-
+const leverGraphItems = ref([])
 
 const continuousAggregateUpload = debounce(async () => {
   try {
@@ -723,6 +800,7 @@ const continuousAggregateUpload = debounce(async () => {
           `/api/advisors/${user_id || advisor_id}/factor-summary/`,
           {aggregate: factorLeversAggregate.value}
       );
+    leverGraphItems.value = result.data.weights;
   } catch (error) {
     show({
       message: `Couldn't save Factor Levers`,
@@ -775,7 +853,7 @@ const saveHoldings = async () => {
   }
 };
 
-const cancelEdit = () => {
+const cancelEdit = async () => {
   editLevers.value = false;
   factorLeversAggregate.value.garp = factorLevers.value.garp;
   factorLeversAggregate.value.low_volatility = factorLevers.value.low_volatility;
@@ -784,13 +862,256 @@ const cancelEdit = () => {
   factorLeversAggregate.value.quality = factorLevers.value.quality;
   factorLeversAggregate.value.shareholder_yield = factorLevers.value.shareholder_yield;
   factorLeversAggregate.value.value = factorLevers.value.value;
-  $axios.put(
-        `/api/advisors/${user_id || advisor_id}/aggregate/`,
-        {aggregate: JSON.stringify(factorLeversAggregate.value)}
-  );
-
+  factorLeversAggregate.value.market_cap = factorLevers.value.market_cap;
+  
+  try {
+    await $axios.put(
+      `/api/advisors/${user_id || advisor_id}/aggregate/`,
+      {aggregate: JSON.stringify(factorLeversAggregate.value)}
+    );
+    const result = await $axios.post(
+      `/api/advisors/${user_id || advisor_id}/factor-summary/`,
+      {aggregate: factorLeversAggregate.value}
+    );
+  
+    leverGraphItems.value = result.data.weights;
+    setBarChartValues();
+  } catch (error) {
+    show({
+      message: `Couldn't save Factor Levers`,
+      error: true,
+    });
+  }
 };
 
+const barOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+    },
+  },
+  scales: {
+    x: {
+      stacked: true,
+      // barThickness: .5,
+    },
+    y: {
+      title: {
+        display: false,
+      },
+    }
+  }
+};
+// bar options for small screens
+const barOptionsSmall = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  x: {
+    ticks: false,
+  },
+};
+
+const barChartObject = ref();
+
+const setBarChartValues = () => {
+  barChartObject.value = [
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.dividend_quality,
+      type: 'Dividend + Quality',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.garp,
+      type: 'GARP',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.low_volatility,
+      type: 'Low Volatility',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.market_cap,
+      type: 'Market Cap',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.momentum,
+      type: 'Momentum',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.quality,
+      type: 'Quality',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.shareholder_yield,
+      type: 'Shareholder Yield',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.value,
+      type: 'Value',
+    },
+  ];
+  loadBar.value = true;
+}
+
+const getBarChart = (data) => {
+  let sortedData = data.sort((a, b) => a.value - b.value);
+  const lever0 = sortedData[0];
+  const lever1 = sortedData[1];
+  const lever2 = sortedData[2];
+  const lever3 = sortedData[3];
+  const lever4 = sortedData[4];
+  const lever5 = sortedData[5];
+  const lever6 = sortedData[6];
+  const lever7 = sortedData[7];
+
+  return {
+    labels: [lever0.title],
+    datasets: [
+      {
+        
+        barThickness: 150,barThickness: 150,
+        label: lever0.type,
+        data: [lever0.value*100],
+        backgroundColor: '#07152A',
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+      {
+        barThickness: 150,
+        label: lever1.type,
+        backgroundColor: '#F9BBA9',
+        data: [lever1.value*100],
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+      {
+        barThickness: 150,
+        label: lever2.type,
+        backgroundColor: '#FFE6B6',
+        data: [lever2.value*100],
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+      {
+        barThickness: 150,
+        label: lever3.type,
+        backgroundColor: '#CF6232',
+        data: [lever3.value*100],
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+      {
+        barThickness: 150,
+        label: lever4.type,
+        backgroundColor: '#CDD0D4',
+        data: [lever4.value*100],
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+      {
+        barThickness: 150,
+        label: lever5.type,
+        backgroundColor: '#636970',
+        data: [lever5.value*100],
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+      {
+        barThickness: 150,
+        label: lever6.type,
+        backgroundColor: '#903F30',
+        data: [lever6.value*100],
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+      {
+        barThickness: 150,
+        label: lever7.type,
+        backgroundColor: '#0E2F5F',
+        data: [lever7.value*100],
+        borderWidth: {top: 0, left: 0, right: 0, bottom: 0},
+        borderSkipped: false,
+      },
+    ],
+  };
+};
+
+const orderedColorsSectors = ref([])
+const orderedColorsElim = ref([])
+
+const brandColors = [
+  '#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#636970',
+  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#F2E7D2', '#6F4C45',
+  'rgba(7, 21, 42, 0.9)', 'rgba(249, 187, 169, 0.9)', 'rgba(255, 230, 182, 0.9)', 'rgba(207, 98, 50, 0.9)', 'rgba(205, 208, 212, 0.9)', 'rgba(99, 105, 112, 0.9)',
+  'rgba(144, 63, 48, 0.9)', 'rgba(14, 47, 95, 0.9)', 'rgba(252, 195, 91, 0.9)', 'rgba(254, 252, 247, 0.9)', 'rgba(156, 161, 170, 0.9)', 'rgba(242, 231, 210, 0.9)', 'rgba(111, 76, 69, 0.9)'
+];
+
+const generateRandomColor = () => {
+  const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+  return `#${randomColor.padStart(6, '0')}`;
+};
+
+const getUniqueRandomColor = (colors, usedColors) => {
+  let color;
+  if (usedColors.size >= colors.length) {
+    // All brand colors have been used, generate a new random color
+    do {
+      color = generateRandomColor();
+    } while (usedColors.has(color));
+  } else {
+    // Select a color from brandColors
+    do {
+      const index = Math.floor(Math.random() * colors.length);
+      color = colors[index];
+    } while (usedColors.has(color));
+  }
+  usedColors.add(color);
+  return color;
+};
+
+const getPieChart = (data, whichVariable) => {
+  const labels = data.map((d) => d.type);
+  const usedColors = new Set();
+
+  if (whichVariable === "elim") {
+    orderedColorsElim.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
+
+    return {
+      labels,
+      datasets: [
+        {
+          backgroundColor: orderedColorsElim.value,
+          data: data.map((d) => d.value),
+        },
+      ],
+    };
+  } else {
+    orderedColorsSectors.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
+
+    return {
+      labels,
+      datasets: [
+        {
+          backgroundColor: orderedColorsSectors.value,
+          data: data.map((d) => d.value),
+        },
+      ],
+    };
+  }
+};
+//get the screen width
+const screenWidth = window.innerWidth;
 </script>
 
 
