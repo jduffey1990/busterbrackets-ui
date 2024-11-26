@@ -28,18 +28,15 @@
 </template>
 
 <script setup>
-import { useUserStore } from '@/store/user';
-import { reactive } from 'vue';
+import {useUserStore} from '@/store/user';
+import {reactive} from 'vue';
 import UiPassword from '@/components/ui/Password.vue';
-import { useRouter } from 'vue-router';
-import { inject } from 'vue';
-import { storeToRefs } from 'pinia';
+import {useRouter} from 'vue-router';
+import {inject} from 'vue';
+import {storeToRefs} from 'pinia';
 
-const { show } = inject('toast');
+const {show} = inject('toast');
 const $axios = inject('$axios');
-
-const { user } = storeToRefs(useUserStore());
-const { login } = useUserStore();
 const {user, stripeAccountAssociated, cardOnFile} = storeToRefs(useUserStore());
 const {login} = useUserStore();
 
@@ -77,9 +74,6 @@ const loginUser = async () => {
       });
     }
 
-    console.log(stripeAccountAssociated.value)
-    console.log(cardOnFile.value)
-
     if (stripeAccountAssociated.value && !cardOnFile.value) {
       router.push('/payment-info')
     } else {
@@ -114,7 +108,8 @@ const resetPassword = async () => {
       await $axios.put('/api/users/reset-password/', {
         email: credentials.email,
       });
-    } catch (error) {}
+    } catch (error) {
+    }
 
     show({
       message: 'Password reset! Please check your email.',
