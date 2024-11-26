@@ -74,7 +74,7 @@ const loginUser = async () => {
       });
     }
 
-    if (stripeAccountAssociated.value && !cardOnFile.value) {
+    if (stripeAccountAssociated.value === true && !cardOnFile.value === false) {
       router.push('/payment-info')
     } else {
       router.push('/dashboard');
