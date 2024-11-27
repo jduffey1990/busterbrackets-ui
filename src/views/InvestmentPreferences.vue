@@ -38,158 +38,186 @@
 
     <!-- Section for factor levers -->
     <div class="text-h6 mb-3">Factor Levers</div>
-    <p v-on:mouseover="hovering[1] = true" v-on:mouseleave="hovering[1] = false">Dividend + Quality 
-      <v-tooltip 
-        v-if="hovering[1]"
-        text="Focuses on companies that pay dividends, have higher quality financials and positive price momentum" 
-        location="top"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
-        </template>
-      </v-tooltip>
-    </p>
-    <v-slider
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :readonly="!canEdit || !editLevers"
-        v-model="factorLeversAggregate.dividend_quality"
-        :disabled="!canEdit || !editLevers"
-        @end="continuousAggregateUpload"
-    ></v-slider>
+    <v-row no-gutters>
+      <v-col cols="6">
+        <p v-on:mouseover="hovering[1] = true" v-on:mouseleave="hovering[1] = false">Dividend + Quality 
+          <v-tooltip 
+            v-if="hovering[1]"
+            text="Focuses on companies that pay dividends, have higher quality financials and positive price momentum" 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.dividend_quality"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
 
-    <p v-on:mouseover="hovering[2] = true" v-on:mouseleave="hovering[2] = false">GARP
-      <v-tooltip 
-        v-if="hovering[2]"
-        text="Growth At a Reasonable Price: Focuses on companies that are growing and are reasonably priced based on relative valuations" 
-        location="top"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
-        </template>
-      </v-tooltip>
-    </p>
-    <v-slider
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :readonly="!canEdit || !editLevers"
-        v-model="factorLeversAggregate.garp"
-        :disabled="!canEdit || !editLevers"
-        @end="continuousAggregateUpload"
-    ></v-slider>
+        <p v-on:mouseover="hovering[2] = true" v-on:mouseleave="hovering[2] = false">GARP
+          <v-tooltip 
+            v-if="hovering[2]"
+            text="Growth At a Reasonable Price: Focuses on companies that are growing and are reasonably priced based on relative valuations" 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.garp"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
 
-    <p v-on:mouseover="hovering[3] = true" v-on:mouseleave="hovering[3] = false">Low Volatility
-      <v-tooltip 
-        v-if="hovering[3]"
-        text="Prioritizes investments in companies with lower price fluctuations to reduce portfolio volatility. Ideal for a conservative approach focused on stability, especially in uncertain markets" 
-        location="top"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
-        </template>
-      </v-tooltip>
-    </p>
-    <v-slider
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :readonly="!canEdit || !editLevers"
-        v-model="factorLeversAggregate.low_volatility"
-        :disabled="!canEdit || !editLevers"
-        @end="continuousAggregateUpload"
-    ></v-slider>
+        <p v-on:mouseover="hovering[3] = true" v-on:mouseleave="hovering[3] = false">Low Volatility
+          <v-tooltip 
+            v-if="hovering[3]"
+            text="Prioritizes investments in companies with lower price fluctuations to reduce portfolio volatility. Ideal for a conservative approach focused on stability, especially in uncertain markets" 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.low_volatility"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
 
-    <p v-on:mouseover="hovering[4] = true" v-on:mouseleave="hovering[4] = false">Momentum
-      <v-tooltip 
-        v-if="hovering[4]"
-        text="Allocates toward stocks with recent positive performance trends. Helps capture potential gains by following stocks with upward momentum, though it can be more sensitive to market shifts" 
-        location="top"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
-        </template>
-      </v-tooltip>
-    </p>
-    <v-slider 
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :readonly="!canEdit || !editLevers"
-        v-model="factorLeversAggregate.momentum"
-        :disabled="!canEdit || !editLevers"
-        @end="continuousAggregateUpload"
-    ></v-slider>
+        <p v-on:mouseover="hovering[8] = true" v-on:mouseleave="hovering[8] = false">Market Cap
+          <v-tooltip 
+            v-if="hovering[8]"
+            text="Invests in companies based on their market capitalization. Allocates more to larger companies, which can be more stable and less volatile." 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider 
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.market_cap"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
 
-    <p v-on:mouseover="hovering[5] = true" v-on:mouseleave="hovering[5] = false">Quality
-      <v-tooltip 
-        v-if="hovering[5]"
-        text="Invests in companies with strong fundamentals, including healthy balance sheets, stable earnings, and good management. Reduces risk by selecting high-quality companies that tend to perform well over the long term" 
-        location="top"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
-        </template>
-      </v-tooltip>
-    </p>
-    <v-slider 
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :readonly="!canEdit || !editLevers"
-        v-model="factorLeversAggregate.quality"
-        :disabled="!canEdit || !editLevers"
-        @end="continuousAggregateUpload"
-    ></v-slider>
+        <p v-on:mouseover="hovering[4] = true" v-on:mouseleave="hovering[4] = false">Momentum
+          <v-tooltip 
+            v-if="hovering[4]"
+            text="Allocates toward stocks with recent positive performance trends. Helps capture potential gains by following stocks with upward momentum, though it can be more sensitive to market shifts" 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider 
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.momentum"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
 
-    <p v-on:mouseover="hovering[6] = true" v-on:mouseleave="hovering[6] = false">Shareholder Yield
-      <v-tooltip 
-        v-if="hovering[6]"
-        text="Focuses on companies that return capital to investors in the form of dividends, stock buybacks and paying down debt" 
-        location="top"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
-        </template>
-      </v-tooltip>
-    </p>
-    <v-slider
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :readonly="!canEdit || !editLevers"
-        v-model="factorLeversAggregate.shareholder_yield"
-        :disabled="!canEdit || !editLevers"
-        @end="continuousAggregateUpload"
-    ></v-slider>
+        <p v-on:mouseover="hovering[5] = true" v-on:mouseleave="hovering[5] = false">Quality
+          <v-tooltip 
+            v-if="hovering[5]"
+            text="Invests in companies with strong fundamentals, including healthy balance sheets, stable earnings, and good management. Reduces risk by selecting high-quality companies that tend to perform well over the long term" 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider 
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.quality"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
 
-    <p v-on:mouseover="hovering[7] = true" v-on:mouseleave="hovering[7] = false">Value
-      <v-tooltip 
-        v-if="hovering[7]"
-        text="Seeks undervalued companies trading below their intrinsic value. Focuses on buying strong companies at a discount, aiming for long-term appreciation as market prices correct" 
-        location="top"
-      >
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
-        </template>
-      </v-tooltip>
-    </p>
-    <v-slider
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :readonly="!canEdit || !editLevers"
-        v-model="factorLeversAggregate.value"
-        :disabled="!canEdit || !editLevers"
-        @end="continuousAggregateUpload"
-    ></v-slider>
+        <p v-on:mouseover="hovering[6] = true" v-on:mouseleave="hovering[6] = false">Shareholder Yield
+          <v-tooltip 
+            v-if="hovering[6]"
+            text="Focuses on companies that return capital to investors in the form of dividends, stock buybacks and paying down debt" 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.shareholder_yield"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
 
-    <div class="d-flex my-4 align-center">
+        <p v-on:mouseover="hovering[7] = true" v-on:mouseleave="hovering[7] = false">Value
+          <v-tooltip 
+            v-if="hovering[7]"
+            text="Seeks undervalued companies trading below their intrinsic value. Focuses on buying strong companies at a discount, aiming for long-term appreciation as market prices correct" 
+            location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+        <v-slider
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :readonly="!canEdit || !editLevers"
+            v-model="factorLeversAggregate.value"
+            :disabled="!canEdit || !editLevers"
+            @end="continuousAggregateUpload"
+            thumb-label
+        ></v-slider>
+        <div class="d-flex my-4 align-center">
       <div class="text-h6 my-4">Advisor Fee %</div>
     </div>
-    <v-row>
-      <v-col cols="6">
         <v-select
             label="Advisor Fee"
             class="mb-4"
@@ -198,26 +226,51 @@
             item-title="title"
             item-value="value"
         ></v-select>
-      </v-col>
-    </v-row>
-    <div class="d-flex my-4 align-center">
-      <div class="text-h6 my-4">Number of Holdings</div>
-    </div>
-    <v-row>
-      <v-col cols="6">
-        <v-select
-            label="Number of Holdings"
-            class="mb-4"
-            v-model="holdings"
-            :items="holdingItems"
-            item-title="title"
-            item-value="value"
-        ></v-select>
-        <div class="d-flex justify-end mb-4">
-          <v-btn class="ml-2" color="primary" @click="saveHoldings">Save</v-btn>
+        <div class="d-flex my-4 align-center">
+          <div class="text-h6 my-4">Number of Holdings</div>
         </div>
+            <v-select
+                label="Number of Holdings"
+                class="mb-4"
+                v-model="holdings"
+                :items="holdingItems"
+                item-title="title"
+                item-value="value"
+            ></v-select>
+            <div class="d-flex justify-end mb-4">
+              <v-btn class="ml-2" color="primary" @click="saveHoldings">Save</v-btn>
+            </div>
+      </v-col>
+
+      <v-col cols="6" class="pie_graph" style="display: flex; flex-direction: column;">
+        <div style="height: 45%; align-self: center;" v-if="barChartObject">
+          <PieChart
+              :data="getPieChart(barChartObject)"
+              :options="{
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+            }"
+          />
+        </div>
+        <v-table style="width: 75%; align-self: center;">
+          <tbody>
+            <tr v-for="(p, index) in barChartObject" :key="index" class="pl-10">
+              <td class="sector-dot">
+                <v-icon :color="orderedColorsSectors[index]">mdi-circle</v-icon>
+              </td>
+              <td class="text-no-wrap">{{ p.type }}</td>
+              <td class="text-no-wrap">{{ (p.value*100).toFixed(2) }}%</td>
+            </tr>
+          </tbody>
+        </v-table>
       </v-col>
     </v-row>
+    
+    
 
 
     <hr class="my-10"/>
@@ -336,6 +389,8 @@ import {onMounted} from 'vue';
 import {ref} from 'vue';
 import {inject} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
+import BarChart from '@/components/BarChart.vue';
+import PieChart from '../components/PieChart.vue';
 
 const router = useRouter();
 const {show} = inject('toast');
@@ -368,7 +423,8 @@ const page = ref(1);
 const itemsPerPage = ref(15);
 const holdings = ref();
 const allTickerValues = ref([])
-const hovering = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false });
+const hovering = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false });
+const loadBar = ref(false);
 
 
 //Router parameter
@@ -469,6 +525,13 @@ const getAggregateFactorLevers = async () => {
         `/api/advisors/${user_id || advisor_id}/aggregate/`
     );
     factorLeversAggregate.value = JSON.parse(data.aggregate);
+    const result = await $axios.post(
+          `/api/advisors/${user_id || advisor_id}/factor-summary/`,
+          {aggregate: factorLeversAggregate.value}
+      );
+    leverGraphItems.value = result.data.weights;
+    setBarChartValues();
+    // getBarChart(barChartObject);
   } catch (error) {
   }
 };
@@ -708,7 +771,7 @@ const saveFactorLevers = async () => {
   }
 };
 
-
+const leverGraphItems = ref([])
 
 const continuousAggregateUpload = debounce(async () => {
   try {
@@ -723,13 +786,14 @@ const continuousAggregateUpload = debounce(async () => {
           `/api/advisors/${user_id || advisor_id}/factor-summary/`,
           {aggregate: factorLeversAggregate.value}
       );
+    leverGraphItems.value = result.data.weights;
   } catch (error) {
     show({
       message: `Couldn't save Factor Levers`,
       error: true,
     });
   }
-}, 2000); // Add a 2 second debounce
+}, 500); // Add a 2 second debounce
 
 function debounce(func, wait) {
   let timeout;
@@ -775,7 +839,7 @@ const saveHoldings = async () => {
   }
 };
 
-const cancelEdit = () => {
+const cancelEdit = async () => {
   editLevers.value = false;
   factorLeversAggregate.value.garp = factorLevers.value.garp;
   factorLeversAggregate.value.low_volatility = factorLevers.value.low_volatility;
@@ -784,13 +848,126 @@ const cancelEdit = () => {
   factorLeversAggregate.value.quality = factorLevers.value.quality;
   factorLeversAggregate.value.shareholder_yield = factorLevers.value.shareholder_yield;
   factorLeversAggregate.value.value = factorLevers.value.value;
-  $axios.put(
-        `/api/advisors/${user_id || advisor_id}/aggregate/`,
-        {aggregate: JSON.stringify(factorLeversAggregate.value)}
-  );
-
+  factorLeversAggregate.value.market_cap = factorLevers.value.market_cap;
+  
+  try {
+    await $axios.put(
+      `/api/advisors/${user_id || advisor_id}/aggregate/`,
+      {aggregate: JSON.stringify(factorLeversAggregate.value)}
+    );
+    const result = await $axios.post(
+      `/api/advisors/${user_id || advisor_id}/factor-summary/`,
+      {aggregate: factorLeversAggregate.value}
+    );
+  
+    leverGraphItems.value = result.data.weights;
+    setBarChartValues();
+  } catch (error) {
+    show({
+      message: `Couldn't save Factor Levers`,
+      error: true,
+    });
+  }
 };
 
+const barChartObject = ref();
+
+const setBarChartValues = () => {
+  barChartObject.value = [
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.dividend_quality,
+      type: 'Dividend + Quality',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.garp,
+      type: 'GARP',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.low_volatility,
+      type: 'Low Volatility',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.market_cap,
+      type: 'Market Cap',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.momentum,
+      type: 'Momentum',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.quality,
+      type: 'Quality',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.shareholder_yield,
+      type: 'Shareholder Yield',
+    },
+    {
+      title: 'Factor Levers',
+      value: leverGraphItems.value.value,
+      type: 'Value',
+    },
+  ];
+  loadBar.value = true;
+}
+
+const orderedColorsSectors = ref([])
+const orderedColorsElim = ref([])
+
+const brandColors = [
+  '#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#636970',
+  '#903F30', '#0E2F5F', '#FCC35B', '#FEFCF7', '#9CA1AA', '#F2E7D2', '#6F4C45',
+  'rgba(7, 21, 42, 0.9)', 'rgba(249, 187, 169, 0.9)', 'rgba(255, 230, 182, 0.9)', 'rgba(207, 98, 50, 0.9)', 'rgba(205, 208, 212, 0.9)', 'rgba(99, 105, 112, 0.9)',
+  'rgba(144, 63, 48, 0.9)', 'rgba(14, 47, 95, 0.9)', 'rgba(252, 195, 91, 0.9)', 'rgba(254, 252, 247, 0.9)', 'rgba(156, 161, 170, 0.9)', 'rgba(242, 231, 210, 0.9)', 'rgba(111, 76, 69, 0.9)'
+];
+
+const generateRandomColor = () => {
+  const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+  return `#${randomColor.padStart(6, '0')}`;
+};
+
+const getUniqueRandomColor = (colors, usedColors) => {
+  let color;
+  if (usedColors.size >= colors.length) {
+    // All brand colors have been used, generate a new random color
+    do {
+      color = generateRandomColor();
+    } while (usedColors.has(color));
+  } else {
+    // Select a color from brandColors
+    do {
+      const index = Math.floor(Math.random() * colors.length);
+      color = colors[index];
+    } while (usedColors.has(color));
+  }
+  usedColors.add(color);
+  return color;
+};
+
+const getPieChart = (data) => {
+  const labels = data.map((d) => d.type);
+  const usedColors = new Set();
+  orderedColorsSectors.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
+
+  return {
+    labels,
+    datasets: [
+      {
+        backgroundColor: orderedColorsSectors.value,
+        data: data.map((d) => d.value*100),
+      },
+    ],
+  };
+};
+//get the screen width
+const screenWidth = window.innerWidth;
 </script>
 
 
@@ -813,7 +990,7 @@ const cancelEdit = () => {
 
 .v-slider__container {
   margin-left: 10px;
-  max-width: 50%;
+  max-width: 100%;
 }
 /* 700px breakpoint */
 @media only screen and (max-width: 700px) {
