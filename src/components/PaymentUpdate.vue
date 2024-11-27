@@ -23,8 +23,10 @@
 import {loadStripe} from '@stripe/stripe-js';
 import {inject, onMounted, ref} from 'vue';
 import {useUserStore} from '@/store/user';
+import {storeToRefs} from "pinia";
 
 const {stripeAccountAssociated} = useUserStore();
+const {stripePublicKey} = storeToRefs(useUserStore())
 
 const $axios = inject('$axios');
 
@@ -134,13 +136,11 @@ onMounted(async () => {
       stateClient.value = {clientSecret};
 
       // Initialize Stripe elements
-      stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
+      stripe = await loadStripe(stripePublicKey.value);
       elements = stripe.elements({
         clientSecret: clientSecret,
         appearance,
       });
-
-      console.log("here are elements", elements)
 
       const paymentElement = elements.create('payment', {
         layout: 'tabs', // Optional layout customization

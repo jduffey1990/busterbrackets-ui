@@ -206,7 +206,7 @@
             </template>
           </v-tooltip>
         </div>
-        <p class="mb-4">Need to update your card on file? Click <a href="/payment-info">here</a></p>
+        <p class="mb-4">Need to update your card on file? Click <a href="/payment-update">here</a></p>
       </div>
       <div class="pay-here">
         <p v-if="isSuper">
@@ -293,7 +293,7 @@ import {useOverlayStore} from "@/store/overlay";
 // Variable declarations outside of export default
 const $axios = inject('$axios');
 const {show} = inject('toast');
-const {user} = storeToRefs(useUserStore());
+const {user, stripePublicKey} = storeToRefs(useUserStore());
 const {isSuper, stripeAccountAssociated, stripeIsCurrent, stripeIsPaused, isFirmAdminOrGreater} = useUserStore()
 const overlayStore = useOverlayStore();
 const router = useRouter();
@@ -685,21 +685,15 @@ onMounted(async () => {
   fullName.value = user.value.full_name
   email.value = user.value.email
 
-  // Load Stripe publishable key
-  const publishableKey = import.meta.env.VITE_STRIPE_KEY;
-  if (!publishableKey) {
-    console.error("Stripe publishable key is missing.");
-    return;
-  }
-
-  stripe = await loadStripe(publishableKey);
+  // Initialize Stripe elements
+  stripe = await loadStripe(stripePublicKey.value);
   // Fetch client secret from backend
 
   formatDate()
-  await getPaymentIntent()
-  await getNextInvoice()
-  console.log("current", stripeIsCurrent)
-  console.log("associated", stripeAccountAssociated)
+  if (stripeAccountAssociated) {
+    await getPaymentIntent()
+    await getNextInvoice()
+  }
 });
 
 watch(total, (newTotal) => {

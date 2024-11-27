@@ -43,8 +43,10 @@
 import {loadStripe} from '@stripe/stripe-js';
 import {inject, onMounted, ref} from 'vue';
 import {useUserStore} from '@/store/user';
+import {storeToRefs} from "pinia";
 
 const {stripeAccountAssociated} = useUserStore();
+const {stripePublicKey} = storeToRefs(useUserStore())
 
 const $axios = inject('$axios');
 
@@ -139,9 +141,8 @@ const handleSetupSubmit = async () => {
 onMounted(async () => {
   if (!stripeAccountAssociated) {
     setTimeout(() => {
-          window.location.reload()
-        }, 500
-    )
+      window.location.reload();
+    }, 500);
   } else {
     try {
       // Request a SetupIntent from the backend
@@ -155,23 +156,24 @@ onMounted(async () => {
       stateClient.value = {clientSecret};
 
       // Initialize Stripe elements
-      stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
+      stripe = await loadStripe(stripePublicKey.value);
       elements = stripe.elements({
         clientSecret: clientSecret,
         appearance,
       });
 
-      const paymentElement = elements.create('payment', {
-        layout: 'tabs', // Optional layout customization
+      const paymentElement = elements.create("payment", {
+        layout: "tabs", // Optional layout customization
       });
-      paymentElement.mount('#payment-element');
-      console.log('Stripe Elements initialized successfully');
+      paymentElement.mount("#payment-element");
+      console.log("Stripe Elements initialized successfully");
     } catch (err) {
-      console.error("Error fetching SetupIntent:", err);
-      alert("An error occurred while fetching the SetupIntent.");
+      console.error("Error during Stripe initialization:", err);
+      alert("An error occurred while initializing Stripe.");
     }
   }
 });
+
 </script>
 
 <style scoped>

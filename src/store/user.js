@@ -10,6 +10,7 @@ const advisorPermissions = [...firmAdminPermissions, Role.ADVISOR];
 export const useUserStore = defineStore('user', {
     state: () => ({
         user: {},
+        stripePublicKey: ""
     }),
     getters: {
         isSuper(state) {
@@ -79,8 +80,10 @@ export const useUserStore = defineStore('user', {
 
         async getSession() {
             const {data} = await this.$axios('/api/users/session/');
+            const {public_key: publicKey} = (await this.$axios.get("/api/general/config/public-key")).data;
 
             this.user = data;
+            this.stripePublicKey = publicKey
 
             this.initializePendo();
         },
