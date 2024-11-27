@@ -46,7 +46,7 @@ stages:
   script:
     - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
     - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $IMAGE:$CI_COMMIT_SHORT_SHA
+    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $IMAGE:$CI_COMMIT_SHORT_SHA --destination $IMAGE:latest"
 
 .deploy:
   image: google/cloud-sdk
