@@ -127,8 +127,6 @@ const handleSetupSubmit = async () => {
       alert("Error setting up payment method: " + error.message);
       return; // Exit early if there's an error
     }
-    console.log("calling card on file update")
-    // Send a request to the back-end only if the setup was successful
   } catch (err) {
     console.error("Error handling SetupIntent:", err);
     alert("An error occurred while setting up your payment method.");
@@ -166,7 +164,6 @@ onMounted(async () => {
         layout: "tabs", // Optional layout customization
       });
       paymentElement.mount("#payment-element");
-      console.log("Stripe Elements initialized successfully");
     } catch (err) {
       console.error("Error during Stripe initialization:", err);
       alert("An error occurred while initializing Stripe.");

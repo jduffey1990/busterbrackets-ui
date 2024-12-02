@@ -106,7 +106,6 @@ const handleSetupSubmit = async () => {
       console.error("SetupIntent error:", error.message);
       alert("Error setting up payment method: " + error.message);
     } else {
-      console.log("SetupIntent successful:", setupIntent);
       alert("Payment method added successfully!");
     }
   } catch (err) {
@@ -146,7 +145,6 @@ onMounted(async () => {
         layout: 'tabs', // Optional layout customization
       });
       paymentElement.mount('#payment-element');
-      console.log('Stripe Elements initialized successfully');
     } catch (err) {
       console.error("Error fetching SetupIntent:", err);
       alert("An error occurred while fetching the SetupIntent.");

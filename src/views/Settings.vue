@@ -148,7 +148,6 @@ const openClientModal = async () => {
   showClientModal.value = true;
   try {
     const firm_id = user.value.firm.id
-    console.log("user", firm_id)
     const response = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
     const fetchedAdvisors = response.data;
 
@@ -194,7 +193,7 @@ const saveProfile = async () => {
   try {
     await $axios.put('/api/users/me/', account);
     Object.assign(accountCopy, {...account}); // Update accountCopy after saving
-    await useUserStore().getSession();
+    await useUserStore().xgetSession();
     show({message: 'Account saved!'});
   } catch (error) {
     show({message: parseError(error), error: true});

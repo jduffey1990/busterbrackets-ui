@@ -75,7 +75,6 @@ const loginUser = async () => {
     }
 
     if (stripeAccountAssociated.value === true && cardOnFile.value === false) {
-      console.log("called it")
       router.push('/payment-info')
     } else {
       router.push('/dashboard');

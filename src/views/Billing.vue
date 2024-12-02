@@ -399,7 +399,6 @@ const getCustomer = async () => {
 const getNextInvoice = async () => {
   try {
     let response = await $axios.get("/api/billing/retrieve-next-invoice/");
-    console.log("Futuristic:", response);
 
     if (response.status === 200 && response.data.amount_due) {
       futureInvoices.value = [{
@@ -461,8 +460,6 @@ const submitSubscription = async () => {
     });
 
     if (response.status === 200 && response.data.customer_id) {
-      console.log(`Customer ID: ${response.data.customer_id}`);
-      console.log(`Subscription ID: ${response.data.subscription_id}`);
       router.push('/subscription-success');
     } else {
       throw new Error("Customer or subscription creation failed.");
@@ -508,7 +505,6 @@ const submitChangesCustomer = async () => {
     });
 
     if (response.status === 200) {
-      console.log("Subscription updated successfully!");
     } else {
       console.error("Unexpected response status:", response.status);
     }
@@ -575,7 +571,6 @@ const getPaymentIntent = async () => {
 
     // Load the oldest intent (the first in the list) for payment
     let newestFirst = response.data.intents.reverse()
-    console.log("newestFirst", newestFirst)
     const oldestIntent = newestFirst[0];
     clientSecret.value = oldestIntent.client_secret;
     total.value = (parseInt(oldestIntent.amount) / 100).toFixed(2); // Convert cents to dollars
@@ -605,7 +600,6 @@ const getPaymentIntent = async () => {
 };
 
 const pauseSubscription = async () => {
-  console.log()
   if (unpaidInvoices.value.length !== 0) {
     if (unpaidInvoices.value.length === 1) {
       show({
