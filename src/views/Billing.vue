@@ -275,15 +275,6 @@
       </div>
     </section>
   </template>
-  <template v-else>
-    <v-alert
-        title="No Payment Needed..."
-        type="secondary"
-        class="my-4"
-    >
-      You currently have no outstanding invoices. Thank you for your business!
-    </v-alert>
-  </template>
   <div v-if="!stripeIsPaused  && stripeAccountAssociated" class="end-sub">
     <v-btn color="error" @click="pauseSubscription()">Pause Subscription</v-btn>
   </div>
