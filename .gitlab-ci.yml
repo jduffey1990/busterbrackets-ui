@@ -81,6 +81,8 @@ deploy-predev:
       when: never
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: never
+    - if: DEPLOY_UI == "false"
+      when: never
     - when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
