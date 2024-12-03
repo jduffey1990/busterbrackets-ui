@@ -155,12 +155,22 @@
       ></v-text-field>
 
       <!-- State Input -->
-      <v-text-field
+      <!--      <v-text-field-->
+      <!--          v-model="address.state"-->
+      <!--          label=" Billing State"-->
+      <!--          class="mb-4"-->
+      <!--          required-->
+      <!--      ></v-text-field>-->
+
+      <v-autocomplete
           v-model="address.state"
-          label=" Billing State"
+          :items="statesForForm"
+          item-title="name"
+          item-value="code"
+          label="Billing State"
+          clear-on-select
           class="mb-4"
-          required
-      ></v-text-field>
+      ></v-autocomplete>
 
       <!-- Postal Code Input -->
       <v-text-field
@@ -274,7 +284,7 @@
       You currently have no outstanding invoices. Thank you for your business!
     </v-alert>
   </template>
-  <div v-if="!stripeIsPaused" class="end-sub">
+  <div v-if="!stripeIsPaused  && stripeAccountAssociated" class="end-sub">
     <v-btn color="error" @click="pauseSubscription()">Pause Subscription</v-btn>
   </div>
 </template>
@@ -356,6 +366,72 @@ const countryOptions = [
   {title: "Canada", value: "CA"},
   // Add other countries as needed
 ];
+
+const statesForForm = ref([
+  {code: 'AL', name: 'AL - Alabama'},
+  {code: 'AK', name: 'AK - Alaska'},
+  {code: 'AZ', name: 'AZ - Arizona'},
+  {code: 'AR', name: 'AR - Arkansas'},
+  {code: 'CA', name: 'CA - California'},
+  {code: 'CO', name: 'CO - Colorado'},
+  {code: 'CT', name: 'CT - Connecticut'},
+  {code: 'DE', name: 'DE - Delaware'},
+  {code: 'FL', name: 'FL - Florida'},
+  {code: 'GA', name: 'GA - Georgia'},
+  {code: 'HI', name: 'HI - Hawaii'},
+  {code: 'ID', name: 'ID - Idaho'},
+  {code: 'IL', name: 'IL - Illinois'},
+  {code: 'IN', name: 'IN - Indiana'},
+  {code: 'IA', name: 'IA - Iowa'},
+  {code: 'KS', name: 'KS - Kansas'},
+  {code: 'KY', name: 'KY - Kentucky'},
+  {code: 'LA', name: 'LA - Louisiana'},
+  {code: 'ME', name: 'ME - Maine'},
+  {code: 'MD', name: 'MD - Maryland'},
+  {code: 'MA', name: 'MA - Massachusetts'},
+  {code: 'MI', name: 'MI - Michigan'},
+  {code: 'MN', name: 'MN - Minnesota'},
+  {code: 'MS', name: 'MS - Mississippi'},
+  {code: 'MO', name: 'MO - Missouri'},
+  {code: 'MT', name: 'MT - Montana'},
+  {code: 'NE', name: 'NE - Nebraska'},
+  {code: 'NV', name: 'NV - Nevada'},
+  {code: 'NH', name: 'NH - New Hampshire'},
+  {code: 'NJ', name: 'NJ - New Jersey'},
+  {code: 'NM', name: 'NM - New Mexico'},
+  {code: 'NY', name: 'NY - New York'},
+  {code: 'NC', name: 'NC - North Carolina'},
+  {code: 'ND', name: 'ND - North Dakota'},
+  {code: 'OH', name: 'OH - Ohio'},
+  {code: 'OK', name: 'OK - Oklahoma'},
+  {code: 'OR', name: 'OR - Oregon'},
+  {code: 'PA', name: 'PA - Pennsylvania'},
+  {code: 'RI', name: 'RI - Rhode Island'},
+  {code: 'SC', name: 'SC - South Carolina'},
+  {code: 'SD', name: 'SD - South Dakota'},
+  {code: 'TN', name: 'TN - Tennessee'},
+  {code: 'TX', name: 'TX - Texas'},
+  {code: 'UT', name: 'UT - Utah'},
+  {code: 'VT', name: 'VT - Vermont'},
+  {code: 'VA', name: 'VA - Virginia'},
+  {code: 'WA', name: 'WA - Washington'},
+  {code: 'WV', name: 'WV - West Virginia'},
+  {code: 'WI', name: 'WI - Wisconsin'},
+  {code: 'WY', name: 'WY - Wyoming'},
+  {code: 'AB', name: 'AB - Alberta'},
+  {code: 'BC', name: 'BC - British Columbia'},
+  {code: 'MB', name: 'MB - Manitoba'},
+  {code: 'NB', name: 'NB - New Brunswick'},
+  {code: 'NL', name: 'NL - Newfoundland and Labrador'},
+  {code: 'NS', name: 'NS - Nova Scotia'},
+  {code: 'ON', name: 'ON - Ontario'},
+  {code: 'PE', name: 'PE - Prince Edward Island'},
+  {code: 'QC', name: 'QC - Quebec'},
+  {code: 'SK', name: 'SK - Saskatchewan'},
+  {code: 'NT', name: 'NT - Northwest Territories'},
+  {code: 'NU', name: 'NU - Nunavut'},
+  {code: 'YT', name: 'YT - Yukon'}
+]);
 
 //modification functions:
 const changeEditButton = () => {
