@@ -260,7 +260,7 @@
           </v-list-item>
         </v-list>
       </div>
-      <div v-if="futureInvoices.length" class="my-5">
+      <div v-if="futureInvoices.length && !stripeIsPaused" class="my-5">
         <h5>Upcoming Invoices</h5>
         <v-list class="bg-transparent">
           <v-list-item
@@ -724,18 +724,30 @@ const renewSubscription = async () => {
 
         // Log the user out and redirect to the login page
         setTimeout(async () => {
-          router.push('success/')
-        }, 2000)
+          router.push('success/');
+        }, 2000);
       } else {
         console.error("Unexpected response status:", response.status);
         alert("An unexpected error occurred while renewing the account.");
       }
     } catch (error) {
+      console.log(error);
       console.error("Error renewing account:", error);
-      alert("Failed to renew the account. Please try again later.");
+
+      // Check if the error message includes the specific text
+      const errorMessage = error.response?.data?.error || ""; // Safely access error message
+      if (
+          errorMessage.includes(
+              "This customer has no attached payment source or default payment method"
+          )
+      ) {
+        alert("Please add a card on file at the link below in order to renew your account.");
+      } else {
+        alert("Failed to renew the account. Please try again later.");
+      }
     }
   }
-}
+};
 
 
 onMounted(async () => {
