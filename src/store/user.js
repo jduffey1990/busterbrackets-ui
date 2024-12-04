@@ -10,7 +10,8 @@ const advisorPermissions = [...firmAdminPermissions, Role.ADVISOR];
 export const useUserStore = defineStore('user', {
     state: () => ({
         user: {},
-        stripePublicKey: ""
+        stripePublicKey: "",
+        isAccountCurrent: false
     }),
     getters: {
         isSuper(state) {
@@ -29,12 +30,13 @@ export const useUserStore = defineStore('user', {
             return !!state.user.firm.stripe_subscription_id;
         },
         stripeIsCurrent(state) {
-            if (state.user.firm.subscription_end_date > 0) {
-                const currentUnixTime = Math.floor(Date.now() / 1000); // Convert current time to Unix timestamp
-                return state.user.firm.subscription_end_date >= currentUnixTime;
-            } else {
-                return false;
-            }
+            // if (state.user.firm.subscription_end_date > 0) {
+            //     const currentUnixTime = Math.floor(Date.now() / 1000); // Convert current time to Unix timestamp
+            //     return state.user.firm.subscription_end_date >= currentUnixTime;
+            // } else {
+            //     return false;
+            // }
+            return !!state.isAccountCurrent
         },
         stripeIsPaused(state) {
             return !!state.user.firm.paused_subscription;
@@ -96,6 +98,17 @@ export const useUserStore = defineStore('user', {
 
             await this.getSession();
         },
+        async checkSubscription() {
+            try {
+                let result = await this.$axios({
+                    method: 'get',
+                    url: '/api/billing/get-status/',
+                });
+                this.isAccountCurrent = result.data.customer === 'active';
+            } catch (error) {
+                throw error;
+            }
+        },
         async login(credentials) {
             try {
                 await this.$axios({
@@ -105,6 +118,7 @@ export const useUserStore = defineStore('user', {
                 });
 
                 await this.getSession();
+                await this.checkSubscription()
             } catch (error) {
                 // Re-throw the error to be caught in `loginUser`
                 throw error;
