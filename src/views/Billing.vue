@@ -294,7 +294,7 @@ import {useOverlayStore} from "@/store/overlay";
 // Variable declarations outside of export default
 const $axios = inject('$axios');
 const {show} = inject('toast');
-const {user, stripePublicKey, isAccountCurrent} = storeToRefs(useUserStore());
+const {user, stripePublicKey} = storeToRefs(useUserStore());
 const {isSuper, stripeAccountAssociated, stripeIsCurrent, stripeIsPaused, isFirmAdminOrGreater} = useUserStore()
 const overlayStore = useOverlayStore();
 const router = useRouter();
@@ -767,8 +767,6 @@ onMounted(async () => {
     await getPaymentIntent()
     await getNextInvoice()
   }
-
-  console.log(isAccountCurrent.value)
 });
 
 watch(total, (newTotal) => {
