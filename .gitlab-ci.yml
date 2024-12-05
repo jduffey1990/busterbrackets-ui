@@ -85,6 +85,7 @@ deploy-predev:
     - if: $DEPLOY_PREDEV_UI == "true"
       when: always
     - when: never
+ # test
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_BRANCH"
