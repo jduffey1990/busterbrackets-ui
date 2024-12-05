@@ -261,7 +261,7 @@
           >
             <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
             <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
-            <a :href="invoice.invoice_url" target="_blank" @click="isPaymentButtonDisabled = true">
+            <a :href="invoice.invoice_url" target="_blank" @click="isPaymentButtonDisabled = true" class="mr-3">
               Invoice Link
             </a>
             <a :href="invoice.invoice_pdf" target="_blank">
