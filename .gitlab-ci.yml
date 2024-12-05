@@ -74,7 +74,7 @@ build-predev:
       when: never
     - when: always
   variables:
-    IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_BRANCH"
+    IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_REF_NAME"
 
 deploy-predev:
   extends: .deploy
@@ -91,8 +91,8 @@ deploy-predev:
     - when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
-    IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_BRANCH"
-    CLOUD_RUN_SERVICE: "ui-$CI_COMMIT_BRANCH"
+    IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_REF_NAME"
+    CLOUD_RUN_SERVICE: "ui-$CI_COMMIT_REF_NAME"
     SERVICE_ACCOUNT: "google-ui-service-account"
 
 # ---- Cloud Run Dev ----
