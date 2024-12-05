@@ -8,7 +8,7 @@ variables:
 workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
-    - if: '$CI_PIPELINE_SOURCE == "trigger"'
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
 
 # ---- caches ----
 
