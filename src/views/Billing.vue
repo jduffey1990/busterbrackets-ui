@@ -262,7 +262,10 @@
             <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
             <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
             <a :href="invoice.invoice_url" target="_blank" @click="isPaymentButtonDisabled = true">
-              Invoice Link (Will disable local payment button for payment integrity)
+              Invoice Link
+            </a>
+            <a :href="invoice.invoice_pdf" target="_blank">
+              Invoice PDF
             </a>
           </v-list-item>
         </v-list>
@@ -659,7 +662,8 @@ const getPaymentIntent = async () => {
     unpaidInvoices.value = response.data.intents.map(intent => ({
       amount: (parseInt(intent.amount) / 100).toFixed(2),
       created_at: new Date(intent.invoice_created_at * 1000).toLocaleDateString(),
-      invoice_url: intent.invoice_url
+      invoice_url: intent.invoice_url,
+      invoice_pdf: intent.invoice_pdf
     }));
 
 
