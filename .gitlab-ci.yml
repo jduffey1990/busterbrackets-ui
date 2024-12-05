@@ -4,7 +4,10 @@ variables:
   FF_USE_FASTZIP: "true"
   ARTIFACT_COMPRESSION_LEVEL: "fast"
   CACHE_COMPRESSION_LEVEL: "fast"
-  DEPLOY_PREDEV_UI: "true"
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
 
 # ---- caches ----
 
@@ -82,10 +85,9 @@ deploy-predev:
       when: never
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: never
-    - if: $DEPLOY_PREDEV_UI == "true"
-      when: always
-    - when: never
- # test
+    - if: $DEPLOY_PREDEV_UI == "false"
+      when: never
+    - when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_BRANCH"
