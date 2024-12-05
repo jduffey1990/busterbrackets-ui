@@ -2,9 +2,9 @@
   <template v-if="stripeIsPaused">
     <div class="subscription-status">
       <h2>Your Subscription Status</h2>
-      <p class="subscription-message">
+      <h5>
         {{ user.firm.name }} has a paused subscription. Click the button below to resume your subscription.
-      </p>
+      </h5>
       <v-btn color="primary" @click="renewSubscription()">Renew Subscription</v-btn>
     </div>
 
@@ -12,10 +12,10 @@
   <template v-else-if="stripeAccountAssociated && dateOfBlock.length !== 0 && stripeIsCurrent && !stripeIsPaused">
     <div class="subscription-status">
       <h2>Your Subscription Status</h2>
-      <p class="subscription-message">
-        Your Account is live until {{ dateOfBlock }}
-      </p>
-      <p>
+      <h5 class="mb-3">
+        Your Account is live until {{ dateOfBlock }}.
+      </h5>
+      <p class="small">
         Thank you for your continued partnership with Pomarium! For uninterrupted access to your account and all
         features, please ensure your billing information remains up to date.
       </p>
@@ -24,9 +24,9 @@
   <template v-else-if="stripeAccountAssociated && !stripeIsCurrent">
     <div class="subscription-status">
       <h2>Your Subscription Status</h2>
-      <p class="subscription-message">
-        {{ user.firm.name }} has lapsed in access on {{ dateOfBlock }} due to late payment. Please remedy subscription
-        status below or at your stripe customer account.
+      <p>
+        Your subscription access has lapsed as of {{ dateOfBlock }}, due to a late payment. Please update your payment
+        details below or through your Stripe account to restore access.
       </p>
     </div>
 
@@ -35,7 +35,7 @@
 
   <template v-if="stripeAccountAssociated && canEdit">
     <div v-if="!editingUser" class="my-3">
-      <div class="d-flex">
+      <div @mouseover="hoverAdmin = true" @mouseleave="hoverAdmin=false" class="d-flex">
         <h4>Firm Billing Administrator</h4>
         <v-tooltip
             :text="`${user.full_name} is responsible for receiving stripe correspondence and maintaining ${user.firm.name}'s active standing`"
@@ -43,6 +43,7 @@
         >
           <template v-slot:activator="{ props }">
             <v-icon
+                v-if="hoverAdmin"
                 v-bind="props"
                 small
                 color="grayblue"
@@ -53,9 +54,10 @@
       </div>
       <v-data-table :items="customerTable" :items-per-page="-1" :headers="headers" :mobile="false"
                     style="max-width: 400px" class="mb-3">
+        <template v-slot:headers></template>
         <template #bottom></template>
       </v-data-table>
-      <div class="d-flex">
+      <div @mouseover="hoverAddress = true" @mouseleave="hoverAddress=false" class="d-flex">
         <h4>Billing Address</h4>
         <v-tooltip
             :text="`${user.firm.name}'s billing address to match your payment billing`"
@@ -63,6 +65,7 @@
         >
           <template v-slot:activator="{ props }">
             <v-icon
+                v-if="hoverAddress"
                 v-bind="props"
                 small
                 color="grayblue"
@@ -73,6 +76,7 @@
       </div>
       <v-data-table :items="addressTable" :items-per-page="-1" :headers="headers" :mobile="false"
                     style="max-width: 400px">
+        <template v-slot:headers></template>
         <template #bottom></template>
       </v-data-table>
     </div>
@@ -84,6 +88,7 @@
         style="max-width: 400px"
         class="mb-3"
     >
+      <template v-slot:headers></template>
       <template v-slot:item.value="{ item }">
         <v-text-field
             v-if="editingUser"
@@ -99,6 +104,7 @@
             class="mb-4"
         ></v-select>
       </template>
+      <template #bottom></template>
     </v-data-table>
 
     <v-btn @click="changeEditButton" color="secondary">{{ buttonText }}</v-btn>
@@ -199,7 +205,7 @@
   <template v-if="stripeAccountAssociated">
     <section class="payment-section my-7">
       <div>
-        <div class="d-flex">
+        <div class="d-flex" @mouseover="hoverInvoice = true" @mouseleave="hoverInvoice=false">
           <h4>Pomarium invoice</h4>
           <v-tooltip
               :text="`We present ${user.firm.name}'s oldest invoice first.  If there are multiple outstanding invoices you
@@ -208,6 +214,7 @@
           >
             <template v-slot:activator="{ props }">
               <v-icon
+                  v-if="hoverInvoice"
                   v-bind="props"
                   small
                   color="grayblue"
@@ -316,10 +323,13 @@ const customerData = ref(null);
 const errorMessage = ref("");
 let clientSecret = ref('')
 const buttonText = ref('Edit Stripe User Profile');
-const intentButtonText = ref('$0 due (button disabled)');
+const intentButtonText = ref('$0 due');
 let unpaidInvoices = ref([])
 let futureInvoices = ref({})
 let dateOfBlock = ref("")
+let hoverAdmin = ref(false)
+let hoverAddress = ref(false)
+let hoverInvoice = ref(false)
 const customerTable = ref([
   {title: "Firm Billing User", value: ""},
   {title: "Firm Billing Email", value: ""}
@@ -338,8 +348,8 @@ const addressTable = ref([
 const combinedTable = ref([]);
 
 const headers = [
-  {title: "Field", align: "start", value: "title"},
-  {title: "Value", value: "value"}
+  {title: "", align: "start", value: "title"},
+  {title: "", value: "value"}
 ];
 
 
@@ -353,8 +363,8 @@ const address = ref({
 });
 
 const countryOptions = [
-  {title: "United States", value: "US"},
-  {title: "Canada", value: "CA"},
+  {title: "United States", value: "United States"},
+  {title: "Canada", value: "Canada"},
   // Add other countries as needed
 ];
 
@@ -572,18 +582,13 @@ const submitChangesCustomer = async () => {
     });
 
     if (response.status === 200) {
+      await getCustomer()
+      show({type: "error", message: `You have successfully updated ${user.value.firm.name}'s contact information`});
+
+      editSubmitDisabled.value = false
     } else {
       console.error("Unexpected response status:", response.status);
     }
-    editSubmitDisabled.value = false
-
-    overlayStore.openOverlay(
-        'Success!',
-        `You have successfully updated ${user.value.firm.name}'s contact information`,
-        '/UI-IMGs/Values-ss.png'
-    );
-
-    await getCustomer()
 
   } catch (error) {
     console.error("Error updating subscription:", error);
@@ -776,7 +781,7 @@ watch(total, (newTotal) => {
   } else if (isLoading.value) {
     intentButtonText.value = "Loading..."
   } else {
-    intentButtonText.value = '$0 due (button disabled)';
+    intentButtonText.value = '$0 due';
     isPaymentButtonDisabled.value = true;
   }
 });

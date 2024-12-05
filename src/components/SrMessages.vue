@@ -12,7 +12,7 @@ const messagesRef = toRef(props, 'messages');
 
 const splitMessages = computed(() => {
   return messagesRef.value.map((x) => {
-
+    console.log("here is message", x)
     const paymentIntentRe = /(pi_(\S*)\b)/
     const paymentIntentMatch = x.match(paymentIntentRe)
     return {
@@ -35,8 +35,7 @@ const addDashboardLinks = (paymentIntent) => {
     <span
         v-for="message in splitMessages"
         :key="message"
-    >
-      > {{ message.content }}<a
+    >{{ message.content }}<a
         v-if="message.paymentIntent"
         :href="addDashboardLinks(message.paymentIntent)"
     >{{ message.paymentIntent }}</a>

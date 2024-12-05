@@ -94,7 +94,7 @@ export default {
 </script>
 
 
-<style>
+<style scoped>
 .success-page {
   display: flex;
   justify-content: center;

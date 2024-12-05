@@ -1,36 +1,25 @@
 <template>
   <div class="success-page">
     <div class="success-container">
-      <h1>Thank You for Your Business!</h1>
-      <p>
-        We truly appreciate your ongoing partnership with Pomarium. Your recent payment/payment setup was successfully
-        processed, and we are thrilled to have you as a valued customer. Please know that your transaction was securely
-        processed through Stripe.
+      <h3 class="font-weight-regular text-h3">Thank you!</h3>
+      <p class="my-3">
+        Your recent payment has been successfully processed and your transaction was securely handled through Stripe.
+        Thank you for being a valued customer.
       </p>
 
-      <h2>What Happens Next?</h2>
+      <h4 class="text-h4">What Happens Next?</h4>
       <ul class="next-steps">
-        <li>Any updates to your subscription or billing in general will be seen on your
+        <li>Any changes to your subscription or billing details can be viewed on your
           <strong><a href="/billing" target="_blank">Billing Page</a></strong>.
         </li>
-        <li>If you need assistance or have questions about your transaction, please don’t hesitate to reach out
-          to our support team.
+        <li>To ensure uninterrupted service, please keep your billing information and payment method up-to-date for
+          future transactions.
         </li>
-        <li>For future transactions, please ensure your billing info and/or payment method is up-to-date for
-          uninterrupted service.
+        <li>If you have any questions or need assistance with this transaction, reach out support
+          <a href="https://www.getpomarium.com/product/resources" target="_blank">here</a> or at
+          <a href="mailto:support@getpomarium.com">support@getpomarium.com</a>.
         </li>
       </ul>
-
-      <div class="contact-info">
-        <h3>Need Help?</h3>
-        <p>Our support team is here to assist you with any questions or concerns. You can reach us at:</p>
-        <p><a href="https://www.getpomarium.com/product/resources" target="_blank">Pomarium Support</a></p>
-      </div>
-
-      <div class="button-container">
-        <a href="/dashboard" class="primary-button">Return to Dashboard</a>
-        <a href="/admin" class="secondary-button">Return to Admin Page</a>
-      </div>
     </div>
   </div>
 </template>
@@ -54,44 +43,6 @@
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  color: var(--Primary-Dark, #07152A);
-  font-family: "halyard-display" !important;
-  font-size: 58px;
-  font-weight: 400;
-  line-height: 110%;
-  margin-bottom: 20px;
-}
-
-p {
-  color: var(--Primary-Dark, #07152A);
-  font-family: "halyard-text" !important;
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 130%;
-  margin-bottom: 20px;
-}
-
-h2 {
-  color: var(--Primary-Dark, #07152A);
-  font-family: "halyard-display" !important;
-  font-size: 46px;
-  font-weight: 400;
-  line-height: 110%;
-  margin-top: 30px;
-  margin-bottom: 15px;
-}
-
-h3 {
-  color: var(--Primary-Dark, #07152A);
-  font-family: "halyard-display" !important;
-  font-size: 38px;
-  font-weight: 400;
-  line-height: 120%;
-  margin-top: 40px;
-  margin-bottom: 15px;
-}
-
 .next-steps {
   text-align: left;
   padding-left: 20px;
@@ -104,43 +55,5 @@ h3 {
 .next-steps li {
   line-height: 130%;
   margin-bottom: 10px;
-}
-
-.contact-info p, .contact-info a {
-  font-size: 20px;
-  font-family: "halyard-text" !important;
-  color: var(--Primary-Dark, #07152A);
-}
-
-.primary-button,
-.secondary-button {
-  display: inline-block;
-  padding: 10px 20px;
-  margin: 15px 5px;
-  border-radius: 50px;
-  font-weight: 500;
-  font-size: 16px;
-  text-transform: uppercase;
-  text-decoration: none;
-  font-family: "halyard-text" !important;
-}
-
-.primary-button {
-  background-color: var(--Primary-Dark, #07152A);
-  color: #ffffff;
-}
-
-.primary-button:hover {
-  background-color: #005bb5;
-}
-
-.secondary-button {
-  background-color: #ffffff;
-  border: 2px solid #07152A;
-  color: #07152A; /* To set the text color to match the stroke */
-}
-
-.secondary-button:hover {
-  background-color: #eef7ff;
 }
 </style>
