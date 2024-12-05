@@ -8,7 +8,6 @@ import router from './router';
 import vuetify from './plugins/vuetify';
 import {useUserStore} from './store/user';
 import SubSuccess from "@/components/SubSuccess.vue";
-import PaymentUpdate from "@/components/PaymentUpdate.vue";
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -42,7 +41,7 @@ app.use(axios).use(pinia).use(vuetify);
                 stripeIsPaused
             } = userStore;
 
-            const paymentPage = ['PaymentInfo', 'PaymentUpdate']
+            const paymentPage = ['PaymentInfo']
             if (paymentPage.includes(to.name) && isFirmAdminOrGreater && stripeAccountAssociated) {
                 next()
             }

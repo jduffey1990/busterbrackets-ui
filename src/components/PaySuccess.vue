@@ -1,7 +1,7 @@
 <template>
   <div class="success-page">
     <div class="success-container">
-      <h1 class="mb-4">Thanks For your Payment!</h1>
+      <h1 class="mb-4">Thanks for your payment!</h1>
 
       <p class="mt-6">
         Your payment is processing with stripe. It may take a few moments for them to update us on the successful

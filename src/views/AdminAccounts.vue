@@ -6,7 +6,7 @@
       <!-- Advisors Card -->
 
       <v-card class="square-card" elevation="3">
-        <v-card-title class="card-title"># of Advisors</v-card-title>
+        <v-card-title class="card-title">Advisors</v-card-title>
         <v-card-subtitle>
           <div class="circle">
             <span>{{ advisorsLength }}</span>
@@ -18,7 +18,7 @@
       <!-- Clients Card -->
 
       <v-card class="square-card" elevation="3">
-        <v-card-title class="card-title"># of Clients</v-card-title>
+        <v-card-title class="card-title">Clients with Accounts</v-card-title>
         <v-card-subtitle>
           <div class="circle">
             <span>{{ clientsLength }}</span>
@@ -30,7 +30,7 @@
       <!-- Accounts Card -->
 
       <v-card class="square-card" elevation="3">
-        <v-card-title class="card-title"># of Accounts</v-card-title>
+        <v-card-title class="card-title">Accounts</v-card-title>
         <v-card-subtitle>
           <div class="circle">
             <span>{{ accountsLength }}</span>
@@ -80,6 +80,7 @@
         :headers="accountHeaders"
         :items="accountsData[chosenAdvisor.id]"
         class="elevation-1"
+        :no-data-text="noResultsText"
     >
       <template v-slot:item.value="{ item }">
         {{ addCommas(item.value) }}
@@ -136,6 +137,7 @@ const chosenAdvisor = ref(null);
 const chosenFirm = ref(null);
 const emit = defineEmits(['updateChosenFirm']);
 const allData = ref([])
+const noResultsText = ref("This advisor has no active accounts under advisement")
 
 const advisorsLength = ref(0)
 const clientsLength = ref(0)

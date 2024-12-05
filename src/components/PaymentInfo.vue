@@ -1,7 +1,11 @@
 <template>
   <div class="success-page">
     <div class="success-container">
-      <h4>Please add your payment info now to prevent access speedbumps later</h4>
+      <h4>Payment Information</h4>
+      <p>By providing your payment information, you acknowledge that Pomarium may charge $250 per month, per advisor
+        for continued access to the application and related data, following the conclusion of any applicable trial
+        period, unless you cancel prior to the trial's end.</p>
+
       <form id="setup-form" @submit.prevent="handleSetupSubmit">
         <!-- Optional: Link Authentication Element -->
         <div id="payment-element" class="mb-5"></div>
@@ -18,18 +22,15 @@
       </form>
       <hr>
 
-      <h2 class="mt-6">What Happens Next?</h2>
-      <ul class="next-steps">
-        <li>Start by adding any advisors that need access in your <a href="/admin" target="_blank">firm admin page</a>.
-        </li>
-        <li>Manage clients in your <a href="/dashboard" target="_blank">dashboard</a>.
-        </li>
-        <li>Ensure that your account and payment information remain up-to-date to enjoy uninterrupted service on your
-          <a href="/billing" target="_blank">billing page</a>. Though it may take a minute or two for the subscription
-          to be
-          live.
-        </li>
-      </ul>
+      <div>
+        <p class="disclosure-payment">POMARIUM Usage and Responsibility: POMARIUM is an interactive web-based investment
+          tool developed by Inicio Inc. DBA POMARIUM. It allows an investment professional (generally a registered
+          investment advisor or a sophisticated investor) to select a desired investment strategy for the professional’s
+          client. At all times, the investment professional, not POMARIUM, is responsible for determining the initial
+          and ongoing suitability of any investment strategy for the investment professional’s underlying client. The
+          client shall not rely on POMARIUM for any such initial or subsequent review or determination. Rather, the
+          professional shall remain exclusively responsible for these assessments.</p>
+      </div>
 
       <div class="contact-info">
         <h2>Need Help?</h2>
@@ -247,6 +248,13 @@ h3 {
 .next-steps li {
   line-height: 130%;
   margin-bottom: 10px;
+}
+
+.disclosure-payment {
+  font-size: 14px !important;
+  color: rgba(7, 21, 42, 0.6);
+  line-height: 1.3;
+  margin-top: 20px;
 }
 
 .contact-info p, .contact-info a {

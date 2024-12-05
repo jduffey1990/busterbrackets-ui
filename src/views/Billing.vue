@@ -216,7 +216,7 @@
             </template>
           </v-tooltip>
         </div>
-        <p class="mb-4">Need to update your card on file? Click <a href="/payment-update">here</a></p>
+        <p class="mb-4">Need to update your card on file? Click <a href="/payment-info">here</a></p>
       </div>
       <div class="pay-here">
         <p v-if="isSuper">
@@ -240,7 +240,7 @@
           >
             {{ intentButtonText }}
           </button>
-          <sr-messages :messages="messages"/>
+          <sr-messages :messages="messages" class="small"/>
         </form>
       </div>
       <!-- List of unpaid invoices -->
@@ -252,8 +252,8 @@
               :key="index"
               class="d-flex justify-space-between"
           >
-            <span class="mr-3">Invoice Date: {{ invoice.created_at }}</span>
-            <span class="mr-3">Amount Due: ${{ invoice.amount }}</span>
+            <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
+            <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
             <a :href="invoice.invoice_url" target="_blank" @click="isPaymentButtonDisabled = true">
               Invoice Link (Will disable local payment button for payment integrity)
             </a>
@@ -268,8 +268,8 @@
               :key="index"
               class="d-flex justify-space-between"
           >
-            <span class="mr-3">Invoice Date: {{ invoice.created_at }}</span>
-            <span class="mr-3">Amount Due: ${{ invoice.amount }}</span>
+            <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
+            <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
           </v-list-item>
         </v-list>
       </div>
