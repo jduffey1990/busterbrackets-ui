@@ -46,7 +46,7 @@ app.use(axios).use(pinia).use(vuetify);
                 next()
             }
 
-            if (stripeAccountAssociated && stripeIsCurrent && !stripeIsPaused) {
+            if (stripeAccountAssociated && stripeIsCurrent) {
                 next(); // Allow navigation if subscription is current
             } else {
                 if (isFirmAdminOrGreater) {

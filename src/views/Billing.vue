@@ -2,10 +2,11 @@
   <template v-if="stripeIsPaused">
     <div class="subscription-status">
       <h2>Your Subscription Status</h2>
-      <h5>
-        {{ user.firm.name }} has a paused subscription. Click the button below to resume your subscription.
+      <h5 class="mb-3">
+        {{ user.firm.name }} has a paused subscription, limiting use of App on {{ dateOfBlock }}. Click the button below
+        to resume your subscription.
       </h5>
-      <v-btn color="primary" @click="renewSubscription()">Renew Subscription</v-btn>
+      <v-btn color="primary" @click="renewSubscription()">Resume Subscription</v-btn>
     </div>
 
   </template>
@@ -692,21 +693,23 @@ const pauseSubscription = async () => {
     }
   }
   const confirmation = confirm(
-      "While your firm data in Pomarium will not be removed, your subscription and all user access will end " +
-      "immediately.  Continue?"
+      "While your firm data in Pomarium will not be removed, your subscription will be paused at the end of your " +
+      "billing period.  At that time, your access to the site will be limited, Continue?"
   );
   if (confirmation) {
     try {
       const response = await $axios.post(`api/billing/cancel-subscription/`);
 
       if (response.status === 200) {
-        show({message: "Your subscription has been paused. You will now be logged out."});
+        show({
+          message: "Your subscription has been paused. You may continue using the application as usual until the " +
+              "end of your current billing period"
+        });
 
         // Log the user out and redirect to the login page
         setTimeout(async () => {
-          await useUserStore().logout();
-          router.push('/login');
-        }, 1000)
+          window.location.reload()
+        }, 2000)
       } else {
         console.error("Unexpected response status:", response.status);
         alert("An unexpected error occurred while archiving the user.");
