@@ -66,7 +66,7 @@
           <hr class=my-4>
 
           <div class="client-move">
-            <p class="my-4">ArchiveAccount</p>
+            <p class="my-4">Archive Account</p>
             <v-btn color="error" @click="archiveUser()">Archive</v-btn>
           </div>
 

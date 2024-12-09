@@ -2,9 +2,11 @@
   <div class="success-page">
     <div class="success-container">
       <h4>Payment Information</h4>
-      <p>By providing your payment information, you acknowledge that Pomarium may charge $250 per month, per advisor
-        for continued access to the application and related data, following the conclusion of any applicable trial
-        period, unless you cancel prior to the trial's end.</p>
+      <p>By providing your payment information, you acknowledge that Pomarium may charge your agreed upon subscription
+        terms for continued access to the application and related data, following the conclusion
+        of any applicable trial period, unless you cancel prior to the trial's end.Please see below for more
+        information and reach out to <a href="mailto:support@getpomarium.com">support@getpomarium.com</a>
+        with any questions.</p>
 
       <form id="setup-form" @submit.prevent="handleSetupSubmit">
         <!-- Optional: Link Authentication Element -->
@@ -20,6 +22,36 @@
         <!-- Display messages -->
         <sr-messages :messages="messages"/>
       </form>
+
+      <div v-if="unpaidInvoices.length" class="my-5">
+        <h5>Outstanding Invoices</h5>
+        <v-list class="bg-transparent">
+          <v-list-item
+              v-for="(invoice, index) in unpaidInvoices"
+              :key="index"
+              class="d-flex justify-space-between"
+          >
+            <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
+            <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
+            <a :href="invoice.invoice_pdf" target="_blank">
+              Invoice PDF
+            </a>
+          </v-list-item>
+        </v-list>
+      </div>
+      <div v-if="futureInvoices.length && !stripeIsPaused" class="my-5">
+        <h5>Upcoming Invoices</h5>
+        <v-list class="bg-transparent">
+          <v-list-item
+              v-for="(invoice, index) in futureInvoices"
+              :key="index"
+              class="d-flex justify-space-between"
+          >
+            <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
+            <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
+          </v-list-item>
+        </v-list>
+      </div>
       <hr>
 
       <div>
@@ -46,11 +78,13 @@ import {inject, onMounted, ref} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from "pinia";
 
-const {stripeAccountAssociated} = useUserStore();
+const {stripeAccountAssociated, stripeIsPaused} = useUserStore();
 const {stripePublicKey} = storeToRefs(useUserStore())
 
 const $axios = inject('$axios');
 
+let unpaidInvoices = ref([])
+let futureInvoices = ref({})
 const setupBtnDisabled = ref(false);
 const stateClient = ref({});
 let stripe;
@@ -136,6 +170,25 @@ const handleSetupSubmit = async () => {
   }
 };
 
+const getNextInvoice = async () => {
+  try {
+    let response = await $axios.get("/api/billing/retrieve-next-invoice/");
+
+    if (response.status === 200 && response.data.amount_due) {
+      futureInvoices.value = [{
+        amount: (parseInt(response.data.amount_due) / 100).toFixed(2),
+        created_at: new Date(response.data.created_at * 1000).toLocaleDateString(),
+        invoice_url: response.data.invoice_url
+      }];
+    } else {
+      throw new Error("Invoice data not found");
+    }
+  } catch (error) {
+    console.error("Error fetching upcoming invoice:", error);
+    errorMessage.value = "An error occurred while fetching upcoming invoice data.";
+  }
+};
+
 
 onMounted(async () => {
   if (!stripeAccountAssociated) {
@@ -144,15 +197,25 @@ onMounted(async () => {
     }, 500);
   } else {
     try {
-      // Request a SetupIntent from the backend
+
+      // Request a SetupIntent and outstanding invoices from the backend
       const response = await $axios.post("/api/billing/create-setup-intent/");
-      const {client_secret: clientSecret} = response.data;
+      const {client_secret: clientSecret, outstanding_invoices: invoices} = response.data;
 
       if (!clientSecret) {
         throw new Error("SetupIntent client secret not received.");
       }
 
+      // Set the client secret
       stateClient.value = {clientSecret};
+
+      // Populate the unpaid invoices array
+      unpaidInvoices.value = invoices.map(invoice => ({
+        amount: (parseInt(invoice.amount_due) / 100).toFixed(2), // Convert cents to dollars
+        created_at: new Date(invoice.invoice_created_at * 1000).toLocaleDateString(),
+        invoice_url: invoice.invoice_url,
+        invoice_pdf: invoice.invoice_pdf,
+      }));
 
       // Initialize Stripe elements
       stripe = await loadStripe(stripePublicKey.value);
@@ -165,12 +228,15 @@ onMounted(async () => {
         layout: "tabs", // Optional layout customization
       });
       paymentElement.mount("#payment-element");
+
+      await getNextInvoice()
     } catch (err) {
       console.error("Error during Stripe initialization:", err);
-      alert("An error occurred while initializing Stripe.");
+      messages.value.push("An error occurred while initializing Stripe.");
     }
   }
 });
+
 
 </script>
 
