@@ -4,7 +4,7 @@
       <h4>Payment Information</h4>
       <p>By providing your payment information, you acknowledge that Pomarium may charge your agreed upon subscription
         terms for continued access to the application and related data, following the conclusion
-        of any applicable trial period, unless you cancel prior to the trial's end.Please see below for more
+        of any applicable trial period, unless you cancel prior to the trial's end. Please see below for more
         information and reach out to <a href="mailto:support@getpomarium.com">support@getpomarium.com</a>
         with any questions.</p>
 
