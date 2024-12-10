@@ -80,7 +80,7 @@ export const useUserStore = defineStore('user', {
 
         async getSession() {
             const {data} = await this.$axios('/api/users/session/');
-            const {public_key: publicKey} = (await this.$axios.get("/api/general/config/public-key")).data;
+            const {public_key: publicKey} = (await this.$axios.get("/api/general/config/public-key/")).data;
 
             this.user = data;
             this.stripePublicKey = publicKey
