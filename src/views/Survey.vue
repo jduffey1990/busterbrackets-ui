@@ -9,7 +9,7 @@
         class="mb-2"
     ></v-progress-linear>
 
-    <div class="text-h4">Please wait while our algorithm creates your customized portfolio</div>
+    <div class="text-h4">Please wait while our algorithm creates your customized portfolio.</div>
   </div>
 
   <div v-else>

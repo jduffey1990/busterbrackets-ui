@@ -44,6 +44,7 @@
                 @click="navigate"
             >
             </v-btn>
+            <v-btn @click="clg(valuesProfile)"></v-btn>
             <PDFBuilder v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
           </router-link>
         </div>
@@ -174,13 +175,13 @@
                   v-for="header in allocationHeaders"
                   :key="header.key"
                   v-slot:[`header.${header.key}`]="{ column }">
-                <span>{{ column.title }}</span>
+                <span v-if="hideDelete(column.title)">{{ column.title }}</span>
                 <v-tooltip
                     v-if="column.tooltip"
                     :text="column.tooltip"
                     location="top"
                 >
-                  <template v-slot:activator="{ props }">
+                  <template v-if="hideDelete(column.title)" v-slot:activator="{ props }">
                     <v-icon
                         v-bind="props"
                         small
@@ -511,6 +512,12 @@ const screenWidth = window.innerWidth;
 
 const excludedHeaders = ['Delete', ''];
 const pdfTableHeaders = ['Pomarium Allocations', 'Lowest Value Scores']
+
+const hovering = {
+  'Delete': false,
+  'Values Fit': false,
+  'Investment Fit': false,
+}
 
 const {
   user: {id: advisor_id},
@@ -1018,7 +1025,7 @@ const getValue = (response) => {
     color = 'green';
   }
 
-  if (response.question.tag === "areThereAnySpecificCompaniesYouWouldWantToInvestIn") {
+  if (response.question.tag === "areThereAnySpecificCompaniesYouWouldAvoidInvestingIn") {
     color = 'red';
   }
 
@@ -1276,24 +1283,25 @@ const refresh = () => {
 };
 
 const templateItems = [{
-  title: 'Orion',
-  value: 'orion'
-}, {
-  title: 'Raymond James',
-  value: 'rj'
-}, {
   title: 'Standard',
   value: 'standard'
-},
-  {
-    title: "LPL Financial",
-    value: 'lpl_financial'
-  },
-  {
-    title: "iRebal",
-    value: 'irebal'
-  }
-];
+}, 
+{
+  title: 'iRebal',
+  value: 'irebal'
+}, 
+{
+  title: 'LPL Financial',
+  value: 'lpl_financial'
+}, 
+{
+  title: 'Orion',
+  value: 'orion'
+}, 
+{
+  title: 'Raymond James',
+  value: 'rj'
+}];
 
 const barOptions = {
   responsive: true,
@@ -1346,6 +1354,18 @@ const getCompanies = async () => {
 };
 
 const csvHeaders = ['ticker', 'name']
+
+const hideDelete = (a) => {
+  if (a === 'Delete' && !edditingAllocations.value) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+const clg = (a) => {
+  console.log(a);
+}
 </script>
 
 <style scoped>
