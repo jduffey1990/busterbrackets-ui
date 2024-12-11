@@ -44,7 +44,7 @@
                 @click="navigate"
             >
             </v-btn>
-            <v-btn @click="clg(valuesProfile)"></v-btn>
+
             <PDFBuilder v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
           </router-link>
         </div>
@@ -1361,10 +1361,6 @@ const hideDelete = (a) => {
   } else {
     return true;
   }
-}
-
-const clg = (a) => {
-  console.log(a);
 }
 </script>
 
