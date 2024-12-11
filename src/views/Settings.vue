@@ -5,8 +5,29 @@
         <v-toolbar-title class="title">Settings</v-toolbar-title>
 
         <v-toolbar-items>
-          <v-btn color="primary" variant="elevated" @click="saveProfile()">
+          <v-btn
+              v-if="isEditing"
+              color="primary"
+              variant="elevated"
+              @click="saveProfile()"
+          >
             Save
+          </v-btn>
+          <v-btn
+              v-if="isEditing"
+              color="error"
+              variant="elevated"
+              @click="cancelEdit"
+          >
+            Cancel Edit
+          </v-btn>
+          <v-btn
+              v-else
+              color="primary"
+              variant="elevated"
+              @click="startEditing"
+          >
+            Edit
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
@@ -16,17 +37,20 @@
         <v-text-field
             v-model="account.first_name"
             label="First name"
+            :readonly="!isEditing"
         ></v-text-field>
         <br/>
         <v-text-field
             v-model="account.last_name"
             label="Last name"
+            :readonly="!isEditing"
         ></v-text-field>
         <br/>
         <v-text-field
             label="Email"
             type="email"
             v-model="account.email"
+            :readonly="!isEditing"
         ></v-text-field>
 
         <!-- New Notification Section -->
@@ -43,7 +67,9 @@
               :false-value="false"
               :true-value="true"
               inset
+              :readonly="!isEditing"
           ></v-switch>
+          <hr class="my-4">
           <div class="d-flex justify-center">
             <v-card-subtitle class="sub_header">Privacy</v-card-subtitle>
           </div>
@@ -55,9 +81,34 @@
               :false-value="false"
               :true-value="true"
               inset
+              :readonly="!isEditing"
+          ></v-switch>
+          <hr class="my-4">
+
+          <div class="d-flex justify-center">
+            <v-card-subtitle class="sub_header">Survey Changes</v-card-subtitle>
+          </div>
+          <p>See client demographics</p>
+          <v-switch
+              v-model="clientDemo"
+              :label="clientDemo ? 'Yes' : 'No'"
+              color="success"
+              :false-value="false"
+              :true-value="true"
+              inset
+              :readonly="!isEditing"
+          ></v-switch>
+          <p>See client risk questions</p>
+          <v-switch
+              v-model="clientRisk"
+              :label="clientRisk ? 'Yes' : 'No'"
+              color="success"
+              :false-value="false"
+              :true-value="true"
+              inset
+              :readonly="!isEditing"
           ></v-switch>
           <hr class=my-4>
-
 
           <div v-if="isAdvisorOrGreater" class="client-move">
             <p class="my-4">Move all clients to new manager</p>
@@ -120,13 +171,16 @@ const $axios = inject('$axios');
 const {show} = inject('toast');
 
 // Get user data
-const {first_name, last_name, email, email_surveys, share_clients} = useUserStore().user;
+const {first_name, last_name, email, email_surveys, share_clients, survey_version} = useUserStore().user;
 const {user} = storeToRefs(useUserStore())
 const {isAdvisorOrGreater} = useUserStore();
 const showClientModal = ref(false);
 const advisors = ref([])
 const selectedAdvisor = ref("")
 const isSubmitting = ref(false);
+const clientDemo = ref(true)
+const clientRisk = ref(true)
+const isEditing = ref(false)
 
 // Reactive data for account and accountCopy
 const account = reactive({
@@ -134,7 +188,8 @@ const account = reactive({
   last_name,
   email,
   email_surveys,
-  share_clients
+  share_clients,
+  survey_version
 });
 
 const accountCopy = reactive({...account}); // Create a copy of the account
@@ -144,6 +199,17 @@ const resetForm = () => {
   selectedAdvisor.value = '';
   showClientModal.value = false;
 };
+
+const startEditing = () => {
+  isEditing.value = true;
+};
+
+const cancelEdit = () => {
+  isEditing.value = false;
+  // Reset the account to the saved state
+  Object.assign(account, accountCopy);
+};
+
 const openClientModal = async () => {
   showClientModal.value = true;
   try {
@@ -190,11 +256,15 @@ const hasUnsavedChanges = () => {
 
 // Save profile function
 const saveProfile = async () => {
+  pageToVersion()
   try {
     await $axios.put('/api/users/me/', account);
     Object.assign(accountCopy, {...account}); // Update accountCopy after saving
-    await useUserStore().xgetSession();
     show({message: 'Account saved!'});
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   } catch (error) {
     show({message: parseError(error), error: true});
   }
@@ -232,24 +302,55 @@ const archiveUser = async () => {
   }
 };
 
+const pageToVersion = () => {
+  let demo = clientDemo.value;
+  let risk = clientRisk.value;
+
+  if (demo && risk) {
+    account.survey_version = 1; // Both are true
+  } else if (!demo && risk) {
+    account.survey_version = 2; // Demo is false, Risk is true
+  } else if (demo && !risk) {
+    account.survey_version = 3; // Demo is true, Risk is false
+  } else {
+    account.survey_version = 4; // Both are false
+  }
+};
+
+const versionToPage = () => {
+  console.log(survey_version)
+  if (survey_version === 1) {
+    // Do nothing; both values remain true
+  } else if (survey_version === 2) {
+    clientDemo.value = false;
+  } else if (survey_version === 3) {
+    clientRisk.value = false;
+  } else if (survey_version === 4) {
+    clientDemo.value = false;
+    clientRisk.value = false;
+  }
+};
+
 
 // Warn the user if they have unsaved changes when leaving the page
 const beforeUnloadHandler = (event) => {
-  if (hasUnsavedChanges()) {
+  if (hasUnsavedChanges() && isEditing.value) {
     event.preventDefault();
-    event.returnValue = 'Oops, you have unsaved changes to your settings. Are you sure you want to continue?';
-    return event.returnValue;
+    event.returnValue = ''; // Required to trigger the confirmation dialog
   }
 };
 
 // Register the event listener on mounted and remove it on unmount
 onMounted(() => {
+  versionToPage()
   window.addEventListener('beforeunload', beforeUnloadHandler);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', beforeUnloadHandler);
 });
+
+// need watch function here:
 </script>
 
 <style scoped>

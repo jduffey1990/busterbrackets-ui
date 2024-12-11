@@ -1229,7 +1229,8 @@ const submitSurvey = () => {
 
 // Lifecycle Hooks
 onMounted(async () => {
-  const {data: surveyData} = await $axios.get('/api/surveys/');
+  console.log("we got it", advisor_id)
+  const {data: surveyData} = await $axios.get(`/api/surveys/?advisor_id=${advisor_id}`);
   let valuesProfile = [];
 
   for (let section of surveyData.survey_sections) {

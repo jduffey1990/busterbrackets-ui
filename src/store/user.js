@@ -80,10 +80,8 @@ export const useUserStore = defineStore('user', {
 
         async getSession() {
             const {data} = await this.$axios('/api/users/session/');
-            const {public_key: publicKey} = (await this.$axios.get("/api/general/config/public-key/")).data;
 
             this.user = data;
-            this.stripePublicKey = publicKey
 
             this.initializePendo();
         },
@@ -103,7 +101,8 @@ export const useUserStore = defineStore('user', {
                     url: '/api/users/login/',
                     data: credentials,
                 });
-
+                const {public_key: publicKey} = (await this.$axios.get("/api/general/config/public-key")).data;
+                this.stripePublicKey = publicKey
                 await this.getSession();
             } catch (error) {
                 // Re-throw the error to be caught in `loginUser`
