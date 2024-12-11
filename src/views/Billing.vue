@@ -241,7 +241,7 @@
         >
           <div id="link-authentication-element"/>
           <div id="payment-element"/>
-          <div class="center-section">
+          <div>
             <button
                 id="submit"
                 :disabled="isPaymentButtonDisabled || isLoading"
@@ -304,9 +304,25 @@
           <template #bottom></template>
         </v-data-table>
       </div>
-      <div v-if="paidInvoices.length && !stripeIsPaused" class="my-5">
-        <h5 class="mb-4">Last Five Paid Invoices</h5>
+      <div class="my-5">
+        <h5 class="mb-4">Paid Invoices</h5>
+        <div v-if="!attemptedReceipts">
+          <v-btn color="primary" @click="fetchPaidInvoices()" class="mb-4">Show Receipts</v-btn>
+        </div>
+        <div
+            v-if="receiptsLoading"
+            class="text-center"
+        >
+          <v-progress-linear
+              color="primary"
+              indeterminate
+              class="mb-2"
+          ></v-progress-linear>
+
+          <div class="text-h4">Loading...</div>
+        </div>
         <v-data-table
+            v-if="!receiptsLoading && paidInvoices.length"
             :items="paidInvoices"
             :headers="[
                 { title:'Invoice Created', value:'created_at'},
@@ -317,6 +333,7 @@
             class="elevation-1 paid"
             hide-default-footer
             :mobile-breakpoint="500"
+            no-data-text="There are no paid invoices to show"
         >
           <template #item.created_at="{ item }">
             <span>{{ item.created_at }}</span>
@@ -333,6 +350,7 @@
           <template #bottom></template>
         </v-data-table>
       </div>
+
     </section>
   </template>
   <div v-if="!stripeIsPaused  && stripeAccountAssociated" class="end-sub">
@@ -380,6 +398,8 @@ const intentButtonText = ref('$0 due');
 let unpaidInvoices = ref([])
 let futureInvoices = ref({})
 let paidInvoices = ref([])
+let attemptedReceipts = ref(false)
+let receiptsLoading = ref(false)
 let dateOfBlock = ref("")
 let hoverAdmin = ref(false)
 let hoverAddress = ref(false)
@@ -546,6 +566,8 @@ const getNextInvoice = async () => {
 };
 
 const fetchPaidInvoices = async () => {
+  attemptedReceipts.value = true
+  receiptsLoading.value = true
   try {
     const response = await $axios.get("/api/billing/retrieve-past-invoices");
     // Populate the paidInvoices array with the response data
@@ -558,6 +580,8 @@ const fetchPaidInvoices = async () => {
     console.log("Processed Invoices:", paidInvoices.value);
   } catch (error) {
     console.error("Error fetching invoices:", error.response?.data || error.message);
+  } finally {
+    receiptsLoading.value = false
   }
 };
 
@@ -839,7 +863,6 @@ onMounted(async () => {
 
   // Initialize Stripe elements
   stripe = await loadStripe(stripePublicKey.value);
-  await fetchPaidInvoices()
 
   formatDate()
   if (stripeAccountAssociated) {
