@@ -87,6 +87,7 @@
 
           <div class="d-flex justify-center">
             <v-card-subtitle class="sub_header">Survey Changes</v-card-subtitle>
+
           </div>
           <p>See client demographics</p>
           <v-switch
@@ -108,6 +109,8 @@
               inset
               :readonly="!isEditing"
           ></v-switch>
+          <p class="small">The answers to these questions will not be deleted from your client profiles if they have
+            already completed a survey with these values</p>
           <hr class=my-4>
 
           <div v-if="isAdvisorOrGreater" class="client-move">

@@ -1230,7 +1230,15 @@ const submitSurvey = () => {
 // Lifecycle Hooks
 onMounted(async () => {
   console.log("we got it", advisor_id)
-  const {data: surveyData} = await $axios.get(`/api/surveys/?advisor_id=${advisor_id}`);
+  console.log("They've got it", advisor)
+  let useful_id
+  if (advisor_id) {
+    useful_id = advisor_id //on the app, advisor_id is a store var
+  } else {
+    useful_id = advisor //for the link, advisor is the route params advisor id
+  }
+
+  const {data: surveyData} = await $axios.get(`/api/surveys/?advisor_id=${useful_id}`);
   let valuesProfile = [];
 
   for (let section of surveyData.survey_sections) {
