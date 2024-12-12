@@ -93,7 +93,8 @@
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
             <div v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
-              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders" :tableHeaders="pdfTableHeaders"/>
+              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders"
+                          :tableHeaders="pdfTableHeaders"/>
             </div>
 
             <div class="text-h4">Portfolio vs. Market</div>
@@ -130,28 +131,28 @@
           <hr/>
           <div class="my-8 table-content">
             <div class="text-h4">Allocations</div>
-  
+
             <div style="display: flex;" class="my-3">
               <v-card
-                :title="allocations.length"
-                text="Companies"
-                width="200px"
-                style="text-align: center;"
-                class="mx-6"
+                  :title="allocations.length"
+                  text="Companies"
+                  width="200px"
+                  style="text-align: center;"
+                  class="mx-6"
               ></v-card>
               <v-card
-                :title="averageVFit"
-                text="Values Score"
-                width="200px"
-                style="text-align: center;"
-                class="mx-6"
+                  :title="averageVFit"
+                  text="Values Score"
+                  width="200px"
+                  style="text-align: center;"
+                  class="mx-6"
               ></v-card>
               <v-card
-                :title="averageIFit"
-                text="Investment Score"
-                width="200px"
-                style="text-align: center;"
-                class="mx-6"
+                  :title="averageIFit"
+                  text="Investment Score"
+                  width="200px"
+                  style="text-align: center;"
+                  class="mx-6"
               ></v-card>
             </div>
             <div class="d-flex justify-end" v-if="!edditingAllocations">
@@ -195,9 +196,9 @@
               <template v-slot:item="{ item }">
                 <tr>
                   <td>
-                    <v-checkbox-btn 
-                      v-if="edditingAllocations"
-                      @input="addOrRemoveAllocationToDelete(item.ticker)"
+                    <v-checkbox-btn
+                        v-if="edditingAllocations"
+                        @input="addOrRemoveAllocationToDelete(item.ticker)"
                     >
                     </v-checkbox-btn>
                   </td>
@@ -259,70 +260,70 @@
           </div>
 
           <hr/>
-              <div class="my-8 table-content">
-                <div class="d-flex justify-start flex-row">
-                  <v-tooltip
-                      text="These companies were excluded from your portfolio, likely among others."
-                      location="top">
-                    <template v-slot:activator="{ props }">
-                      <div class="text-h4" v-bind="props">Excluded Companies (10 lowest Values Score)</div>
-                      <v-icon
-                          v-bind="props"
-                          size="20"
-                          color="grayblue"
-                          class="ml-1 translate">mdi-information
-                      </v-icon>
-                    </template>
-                  </v-tooltip>
-                </div>
+          <div class="my-8 table-content">
+            <div class="d-flex justify-start flex-row">
+              <v-tooltip
+                  text="These companies were excluded from your portfolio, likely among others."
+                  location="top">
+                <template v-slot:activator="{ props }">
+                  <div class="text-h4" v-bind="props">Excluded Companies (10 lowest Values Score)</div>
+                  <v-icon
+                      v-bind="props"
+                      size="20"
+                      color="grayblue"
+                      class="ml-1 translate">mdi-information
+                  </v-icon>
+                </template>
+              </v-tooltip>
+            </div>
 
-                <v-data-table
-                    :items="worstCompanies"
-                    :headers="worstHeaders"
-                    :items-per-page="-1"
-                    hide-default-header
-                    mobile-breakpoint="700"
-                    class="worst-companies"
+            <v-data-table
+                :items="worstCompanies"
+                :headers="worstHeaders"
+                :items-per-page="-1"
+                hide-default-header
+                mobile-breakpoint="700"
+                class="worst-companies"
+            >
+              <!-- Custom Header Slot -->
+              <template
+                  v-for="header in worstHeaders"
+                  :key="header.key"
+                  v-slot:[`header.${header.key}`]="{ column }">
+                <span>{{ column.title }}</span>
+                <v-tooltip
+                    v-if="column.tooltip"
+                    :text="column.tooltip"
+                    location="top"
                 >
-                  <!-- Custom Header Slot -->
-                  <template
-                      v-for="header in worstHeaders"
-                      :key="header.key"
-                      v-slot:[`header.${header.key}`]="{ column }">
-                    <span>{{ column.title }}</span>
-                    <v-tooltip
-                        v-if="column.tooltip"
-                        :text="column.tooltip"
-                        location="top"
-                    >
-                      <template v-slot:activator="{ props }">
-                        <v-icon
-                            v-bind="props"
-                            small
-                            color="grayblue"
-                            class="ml-1">mdi-information
-                        </v-icon>
-                      </template>
-                    </v-tooltip>
+                  <template v-slot:activator="{ props }">
+                    <v-icon
+                        v-bind="props"
+                        small
+                        color="grayblue"
+                        class="ml-1">mdi-information
+                    </v-icon>
                   </template>
+                </v-tooltip>
+              </template>
 
 
-                  <template v-slot:item="{ item }">
-                    <tr>
-                      <td style="padding: 0px;">
-                        <LazyImage
-                            :src="item.image"
-                            :alt="item.ticker"
-                            style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
-                      </td>
-                      <td style="white-space: nowrap;">{{ item.name }}</td>
-                      <td>{{ item.ticker }}</td>
-                      <td>{{ item.worst_value }}</td>
-                    </tr>
-                  </template>
-                  <template #bottom></template>
-                </v-data-table>
-              </div>
+              <template v-slot:item="{ item }">
+                <tr>
+                  <td style="padding: 0px;">
+                    <LazyImage
+                        :src="item.image"
+                        :alt="item.ticker"
+                        style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
+                  </td>
+                  <td style="white-space: nowrap;">{{ item.name }}</td>
+                  <td>{{ item.ticker }}</td>
+                  <td>{{ item.worst_value }}</td>
+                </tr>
+              </template>
+              <template #bottom></template>
+            </v-data-table>
+          </div>
 
           <div class="my-8 canvas-item" v-if="Object.keys(eliminatedCount).length">
             <div class="text-h4">All Excluded Companies</div>
@@ -1285,23 +1286,23 @@ const refresh = () => {
 const templateItems = [{
   title: 'Standard',
   value: 'standard'
-}, 
-{
-  title: 'iRebal',
-  value: 'irebal'
-}, 
-{
-  title: 'LPL Financial',
-  value: 'lpl_financial'
-}, 
-{
-  title: 'Orion',
-  value: 'orion'
-}, 
-{
-  title: 'Raymond James',
-  value: 'rj'
-}];
+},
+  {
+    title: 'iRebal',
+    value: 'irebal'
+  },
+  {
+    title: 'LPL Financial',
+    value: 'lpl_financial'
+  },
+  {
+    title: 'Orion',
+    value: 'orion'
+  },
+  {
+    title: 'Raymond James',
+    value: 'rj'
+  }];
 
 const barOptions = {
   responsive: true,
