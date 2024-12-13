@@ -68,6 +68,7 @@
               :true-value="true"
               inset
               :readonly="!isEditing"
+              @click="preventClickWhenReadOnly"
           ></v-switch>
           <hr class="my-4">
           <div class="d-flex justify-center">
@@ -82,6 +83,7 @@
               :true-value="true"
               inset
               :readonly="!isEditing"
+              @click="preventClickWhenReadOnly"
           ></v-switch>
           <hr class="my-4">
 
@@ -98,6 +100,7 @@
               :true-value="true"
               inset
               :readonly="!isEditing"
+              @click="preventClickWhenReadOnly"
           ></v-switch>
           <p>See client risk questions</p>
           <v-switch
@@ -108,6 +111,7 @@
               :true-value="true"
               inset
               :readonly="!isEditing"
+              @click="preventClickWhenReadOnly"
           ></v-switch>
           <p class="small">The answers to these questions will not be deleted from your client profiles if they have
             already completed a survey with these values</p>
@@ -342,6 +346,13 @@ const beforeUnloadHandler = (event) => {
     event.returnValue = ''; // Required to trigger the confirmation dialog
   }
 };
+
+const preventClickWhenReadOnly = (event) => {
+  if (!isEditing.value) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+}
 
 // Register the event listener on mounted and remove it on unmount
 onMounted(() => {
