@@ -13,6 +13,13 @@ import Billing from '@/views/Billing.vue';
 import Settings from '@/views/Settings.vue';
 import Accounts from '@/views/Accounts.vue';
 import Advisors from '@/views/Advisors.vue';
+import Failure from "@/components/Failure.vue";
+import AdvisorBlocked from "@/components/AdvisorBlocked.vue";
+import Success from "@/components/Success.vue";
+import SubSuccess from "@/components/SubSuccess.vue";
+import PaymentInfo from "@/components/PaymentInfo.vue";
+import PaySuccess from "@/components/PaySuccess.vue";
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -158,10 +165,41 @@ const router = createRouter({
             },
         },
         {
+            path: "/success",
+            name: "Success",
+            component: Success
+        },
+        {
+            path: "/subscription-success",
+            name: "SubSuccess",
+            component: SubSuccess
+        },
+        {
+            path: "/payment-processing",
+            name: "PaySuccess",
+            component: PaySuccess
+        },
+        {
+            path: "/payment-info",
+            name: "PaymentInfo",
+            component: PaymentInfo
+        },
+        {
+            path: "/failure",
+            name: "Failure",
+            component: Failure
+        },
+        {
+            path: '/advisor-notice',
+            name: 'AdvisorBlockedNotice',
+            component: AdvisorBlocked, // Create this view
+        },
+        {
             path: '/:pathMatch(.*)*',
             redirect: '/',
         },
     ],
 });
+
 
 export default router;

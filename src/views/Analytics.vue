@@ -43,6 +43,26 @@
           <v-toolbar-title class="bar-title">Whole Portfolio Analysis</v-toolbar-title>
         </v-toolbar>
       </template>
+      <template v-slot:item.metric="{ item }">
+        
+        <p v-on:mouseover="hovering[item.metric] = true" v-on:mouseleave="hovering[item.metric] = false">
+          {{ item.metric }}
+          <v-tooltip
+              v-if="hovering[item.metric] && wholeToolTips[item.metric]"
+              :text="wholeToolTips[item.metric]"
+              location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon
+                  v-bind="props"
+                  size="x-small"
+                  color="grayblue"
+                  class="ml-2">mdi-information
+              </v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+      </template>
       <template #bottom></template>
     </v-data-table>
 
@@ -86,6 +106,26 @@
           <v-toolbar-title class="bar-title">U.S. Large & Mid Cap Stock Comparison</v-toolbar-title>
         </v-toolbar>
       </template>
+      <template v-slot:item.metric="{ item }">
+        
+        <p v-on:mouseover="hovering[item.metric] = true" v-on:mouseleave="hovering[item.metric] = false">
+          {{ item.metric }}
+          <v-tooltip
+              v-if="hovering[item.metric] && wholeToolTips[item.metric]"
+              :text="wholeToolTips[item.metric]"
+              location="top"
+          >
+            <template v-slot:activator="{ props }">
+              <v-icon
+                  v-bind="props"
+                  size="x-small"
+                  color="grayblue"
+                  class="ml-2">mdi-information
+              </v-icon>
+            </template>
+          </v-tooltip>
+        </p>
+      </template>
       <template #bottom></template>
     </v-data-table>
 
@@ -126,7 +166,27 @@ import LineChart from '../components/LineChart.vue';
 
 const screenWidth = window.innerWidth;
 const {user} = storeToRefs(useUserStore());
-
+const hovering = ref({ 
+  'Volatility': false, 
+  '3 Year Return (Net of fees)': false, 
+  'Max Drawdown': false, 
+  'Sharpe Ratio': false, 
+  "Investment Fit Score": false,
+  "Values Fit Score": false,
+  "1yr Return": false,
+  "3yr Return": false,
+  "5yr Return": false,
+  "Sortino Ratio": false,
+  "Beta": false,
+  "Tracking Error": false,
+  "Active Share": false,
+  "Up Capture": false,
+  "Down Capture": false,
+  "Correlation": false,
+  "Best Year": false,
+  "Worst Year": false,
+});
+const clg = (msg) => console.log(msg);
 // Props
 const props = defineProps({
   metrics: Object,
@@ -438,6 +498,27 @@ const wholeTableData = computed(() => {
     },
   ];
 });
+
+const wholeToolTips = {
+  'Volatility': 'A measure of price variation over time; higher values generally indicate greater risk.',
+  '3 Year Return (Net of fees)': 'The largest percentage loss from a peak before a recovery.',
+  'Max Drawdown': 'The annualized return over three years, after fees.',
+  'Sharpe Ratio': 'A measure of risk-adjusted return; higher is better.',
+  "Investment Fit Score": "How well the investment aligns with your advisor's investment preferences.",
+  "Values Fit Score": "How well the investment aligns with your personal values.",
+  "1yr Return": "The total return of the investment over the past year, after fees.",
+  "3yr Return": "The annualized return of the investment over the past three years, after fees.",
+  "5yr Return": "The annualized return of the investment over the past five years, after fees.",
+  "Sortino Ratio": "A risk-adjusted return metric that focuses only on downside risk.",
+  "Beta": "The investment's sensitivity to market movements; 1 = moves with the market.",
+  "Tracking Error": "How closely the investment follows benchmark performance.",
+  "Active Share": "The percentage of the portfolio that differs from its benchmark.",
+  "Up Capture": "How well the portfolio performs during market upswings.",
+  "Down Capture": "How well the portfolio limits losses during market downturns.",
+  "Correlation": "How closely the investment's returns move with the market's.",
+  "Best Year": "The highest annual return the investment has achieved.",
+  "Worst Year": "The lowest annual return the investment has experienced.",
+}
 
 const getScatterChartData = (data) => {
   const volatilityEntry = data.find(metric => metric.metric === 'Volatility');

@@ -9,7 +9,7 @@
         class="mb-2"
     ></v-progress-linear>
 
-    <div class="text-h4">Please wait while our algorithm creates your customized portfolio</div>
+    <div class="text-h4">Please wait while our algorithm creates your customized portfolio.</div>
   </div>
 
   <div v-else>
@@ -101,7 +101,8 @@
                   >
                     <!-- Loop through each question in the group -->
                     <div class="autocomplete-div">
-                      <span class="my-2 text-h5" v-for="q in group.survey_questions" v-html="formatLabel(q.question.text)"></span>
+                      <span class="my-2 text-h5" v-for="q in group.survey_questions"
+                            v-html="formatLabel(q.question.text)"></span>
                       <v-autocomplete
                           v-for="q in group.survey_questions"
                           :key="q.question.id"
@@ -118,7 +119,8 @@
                           class="autocomplete"
                       >
                         <template v-slot:label>
-                          <span class="auto-complete" v-html="'Start typing the names of companies or tickers here'"></span>
+                          <span class="auto-complete"
+                                v-html="'Start typing the names of companies or tickers here'"></span>
                         </template>
 
                         <template v-slot:chip="{ props, item }">
@@ -567,16 +569,16 @@
                             <div class="text-h5" style="margin-left: 10px;">
                               {{ q.question.text }}
                             </div>
-                            <v-radio-group 
-                              v-model="q.question.default_value" 
-                              v-for="(option, index) in q.question.slider_ticks"
+                            <v-radio-group
+                                v-model="q.question.default_value"
+                                v-for="(option, index) in q.question.slider_ticks"
                             >
                               <v-radio
-                                :label="newRadioLabels[index]"
-                                :value="index"
-                                @change="updateResponse(q, section.tag)"
-                                class="my-2"
-                                style="margin-left: 10px;"
+                                  :label="newRadioLabels[index]"
+                                  :value="index"
+                                  @change="updateResponse(q, section.tag)"
+                                  class="my-2"
+                                  style="margin-left: 10px;"
                               ></v-radio>
                               <p style="font-size: 14px;" class="ml-12">{{ radioDescriprions[index] }}</p>
                             </v-radio-group>
@@ -1068,7 +1070,7 @@ const getElims = async () => {
     try {
       // Send the mapped responses to the backend
       const result = await $axios.post(
-          `/api/advisors/${advisor_id}/clients/${user_id}/eliminations/`,
+          `/api/advisors/eliminations/`,
           allWeeds //finalResponses
       );
 
@@ -1328,7 +1330,7 @@ window.addEventListener('beforeunload', (event) => {
   }
 });
 
-const radioValue = [0,1,2]
+const radioValue = [0, 1, 2]
 
 const newRadioLabels = ["Personal Values", 'Balance', "Market Focus"]
 const radioDescriprions = ["Prioritize investments in companies that align with your values", "Find a middle ground between your values and traditional investment scores", "Prioritize investments based on traditional investment scores"]
@@ -1420,9 +1422,9 @@ const radioDescriprions = ["Prioritize investments in companies that align with 
 }
 
 .autocomplete-div {
-  width: 100%; 
-  display: flex; 
-  align-items: center; 
+  width: 100%;
+  display: flex;
+  align-items: center;
   flex-direction: column;
 }
 
@@ -1737,6 +1739,7 @@ const radioDescriprions = ["Prioritize investments in companies that align with 
     width: 120%;
     transform: translatex(-40px);
   }
+
   .auto-complete {
     text-wrap: wrap;
     font-size: 14px;
@@ -1745,11 +1748,12 @@ const radioDescriprions = ["Prioritize investments in companies that align with 
 }
 
 @media only screen and (max-width: 400px) {
-  .slider{
+  .slider {
     max-width: 100%;
     width: 110%;
     transform: translatex(-7.5%);
   }
+
   .autocomplete-div {
     transform: translateX(10%);
   }

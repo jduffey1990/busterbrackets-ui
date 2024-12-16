@@ -1,36 +1,65 @@
 import 'vuetify/styles';
 import App from './App.vue';
-import { createApp } from 'vue';
+import {createApp} from 'vue';
 import './assets/scss/misc.scss';
 import axios from './plugins/axios';
-import { createPinia } from 'pinia';
+import {createPinia} from 'pinia';
 import router from './router';
 import vuetify from './plugins/vuetify';
-import { useUserStore } from './store/user';
+import {useUserStore} from './store/user';
+import SubSuccess from "@/components/SubSuccess.vue";
 
 const app = createApp(App);
-
 const pinia = createPinia();
-pinia.use(async ({ store }) => {
-  store.$axios = app.config.globalProperties.$axios;
+
+pinia.use(({store}) => {
+    store.$axios = app.config.globalProperties.$axios;
 });
 
 app.use(axios).use(pinia).use(vuetify);
 
 (async () => {
-  await useUserStore().getSession();
+    // Initialize the user store and fetch session info
+    const userStore = useUserStore();
+    await userStore.getSession();
 
-  // const loginPath = '/login';
+    // Define the router guard
+    router.beforeEach((to, from, next) => {
+        const {isLoggedIn} = userStore;
 
-  // router.beforeEach((to) => {
-  //   if (to.path !== loginPath && !useUserStore().isLoggedIn) {
-  //     return loginPath;
-  //   }
+        if (isLoggedIn) {
+            const unrestrictedRoutes = ['Login', 'ResetPassword', 'Billing', 'AdvisorBlockedNotice', 'Logout',
+                "Success", "SubSuccess", "PaySuccess"];
 
-  //   if (to.path === loginPath && useUserStore().isLoggedIn) {
-  //     return '/';
-  //   }
-  // });
+            if (unrestrictedRoutes.includes(to.name)) {
+                next();
+                return;
+            }
 
-  app.use(router).mount('#app');
+            const {
+                stripeAccountAssociated, stripeIsCurrent, isFirmAdminOrGreater,
+                stripeIsPaused
+            } = userStore;
+
+            const paymentPage = ['PaymentInfo']
+            if (paymentPage.includes(to.name) && isFirmAdminOrGreater && stripeAccountAssociated) {
+                next()
+            }
+
+            if (stripeAccountAssociated && stripeIsCurrent) {
+                next(); // Allow navigation if subscription is current
+            } else {
+                if (isFirmAdminOrGreater) {
+                    next({name: 'Billing'});
+                } else {
+                    next({name: 'AdvisorBlockedNotice'});
+                }
+            }
+        } else {
+            next(); // Allow access for non-auth routes
+        }
+    });
+
+    // Apply router and mount app
+    app.use(router).mount('#app');
 })();

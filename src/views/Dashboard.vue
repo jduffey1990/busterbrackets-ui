@@ -72,7 +72,8 @@
           ></v-text-field>
 
           <!-- Data table for clients -->
-          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown" :mobile-breakpoint="700">
+          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown"
+                        :mobile-breakpoint="700">
             <template v-slot:item.actions="{ item }">
               <!-- Button to archive a client -->
               <v-icon
@@ -81,6 +82,15 @@
                   class="ml-2"
                   size="small"
                   @click="archiveClient(item)"
+              >
+              </v-icon>
+
+              <v-icon
+                  icon="mdi-pencil"
+                  color="primary"
+                  class="ml-4"
+                  size="small"
+                  @click="editClient(item, 'clients')"
               >
               </v-icon>
             </template>
@@ -133,7 +143,8 @@
           ></v-text-field>
 
           <!-- Data table for prospects -->
-          <v-data-table v-if="displayState.showProspects" :headers="headers" :items="prospectsShown" :mobile-breakpoint="700">
+          <v-data-table v-if="displayState.showProspects" :headers="headers" :items="prospectsShown"
+                        :mobile-breakpoint="700">
             <template v-slot:item.actions="{ item }">
               <!-- Button to accept a prospect -->
               <v-btn
@@ -152,6 +163,13 @@
                   @click="archiveProspect(item)"
               >Archive
               </v-btn>
+              <v-icon
+                  icon="mdi-pencil"
+                  color="secondary-btn"
+                  class="ml-2"
+                  size="small"
+                  @click="editClient(item, 'prospects')"
+              ></v-icon>
             </template>
           </v-data-table>
         </div>
@@ -185,21 +203,22 @@
               </v-btn>
             </template>
           </v-data-table>
-          <v-text-field 
-            v-if="displayState.showOtherClients"
-            v-model="otherSearchInput"
-            append-inner-icon="mdi-magnify"
-            append-icon="mdi-close"
-            density="compact"
-            label="Search for a client"
-            variant="solo"
-            hide-details
-            single-line
-            @click:append-inner="findOtherClient(otherSearchInput)"
-            @click:append="otherSearchInput = ''"
-            class="mb-4 search"
+          <v-text-field
+              v-if="displayState.showOtherClients"
+              v-model="otherSearchInput"
+              append-inner-icon="mdi-magnify"
+              append-icon="mdi-close"
+              density="compact"
+              label="Search for a client"
+              variant="solo"
+              hide-details
+              single-line
+              @click:append-inner="findOtherClient(otherSearchInput)"
+              @click:append="otherSearchInput = ''"
+              class="mb-4 search"
           ></v-text-field>
-          <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers" :mobile-breakpoint="700">
+          <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers"
+                        :mobile-breakpoint="700">
             <template v-slot:item.full_name="{ item }">
               <v-btn variant="text" @click="goToClient(item)">
                 {{ item.full_name }}
@@ -255,6 +274,39 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Dialog for creating a new advisor -->
+    <v-dialog max-width="500" v-model="openEditClientModal">
+      <v-card title="Edit Client Details">
+        <v-card-text>
+          <!-- Input fields for new advisor details -->
+          <v-text-field
+              v-model="clientToEdit.first_name"
+              label="First name"
+          ></v-text-field>
+          <br/>
+          <v-text-field
+              v-model="clientToEdit.last_name"
+              label="Last name"
+          ></v-text-field>
+          <br/>
+          <v-text-field
+              label="Email"
+              type="email"
+              v-model="clientToEdit.email"
+          ></v-text-field>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <!-- Buttons to cancel or save the new advisor -->
+          <v-btn text color="error" @click="() => { openEditClientModal = false; resetEditForm(); }">
+            Cancel
+          </v-btn>
+          <v-btn text="Save" color="primary" @click="submitEditedClient(clientToEdit.id)"></v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
 </template>
 
@@ -286,12 +338,20 @@ const {id: advisor_id} = user.value;
 
 // State variables
 const openCreateNewClientModal = ref(false);
+const openEditClientModal = ref(false);
 const currentTab = ref(0);
 const initialState = {
   first_name: undefined,
   last_name: undefined,
   email: undefined,
 };
+const clientToEdit = ref({
+  id: "",
+  first_name: "",
+  last_name: "",
+  email: "",
+});
+
 const newClient = reactive({...initialState});
 const clients = ref([]);
 const otherClients = ref([]);
@@ -308,6 +368,7 @@ const foundClient = ref([]);
 const searchInputP = ref('');
 const foundProspect = ref([]);
 const prospectsShown = ref([]);
+const editingRole = ref("")
 
 // Display state
 const displayState = reactive({
@@ -387,6 +448,17 @@ const resetForm = () => {
   Object.assign(newClient, initialState);
 };
 
+//edit form reset
+const resetEditForm = () => {
+  clientToEdit.value = {
+    id: null,
+    first_name: "",
+    last_name: "",
+    email: "",
+  };
+}
+
+
 // Create new client
 const createNewClient = async () => {
   try {
@@ -446,6 +518,53 @@ const archiveClient = async ({id}) => {
     }
   }
 };
+
+const editClient = (item, role) => {
+  // Populate the `clientToEdit` with the selected client's details
+  editingRole.value = role;
+  clientToEdit.value = {
+    id: item.id,
+    first_name: item.first_name,
+    last_name: item.last_name,
+    email: item.email,
+  };
+  openEditClientModal.value = true;
+};
+
+const submitEditedClient = async (id) => {
+  console.log("Saving client data:", clientToEdit.value);
+  try {
+    const result = await $axios.patch(
+        `/api/advisors/${advisor_id}/${editingRole.value}/${id}/`,
+        {
+          first_name: clientToEdit.value.first_name,
+          last_name: clientToEdit.value.last_name,
+          email: clientToEdit.value.email.toLowerCase(),
+        }
+    );
+    console.log("Client data saved successfully:", result);
+    openEditClientModal.value = false;
+    resetEditForm();
+    window.location.reload();
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      // Check if the error is related to a duplicate email
+      const emailErrors = error.response.data.email;
+      if (emailErrors && emailErrors.includes("User with this email already exists.")) {
+        show({
+          message: "A user with this email already exists. " +
+              "Please use another email to update this user.", error: true
+        });
+      } else {
+        show({message: "An error occurred while updating the user. Please try again.", error: true});
+      }
+    } else {
+      console.error("Unexpected error:", error);
+      alert("An unexpected error occurred. Please contact support.");
+    }
+  }
+};
+
 
 // Survey link and clipboard functions
 const surveyLink = `/survey?advisor=${advisor_id}`;
@@ -587,7 +706,7 @@ const resetDisplayState = () => {
 }
 
 .search {
-  width: 400px; 
+  width: 400px;
   font-family: halyard-text;
 }
 

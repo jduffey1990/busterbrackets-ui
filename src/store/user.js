@@ -2,6 +2,7 @@ import {defineStore} from 'pinia';
 
 import {useCookies} from 'vue3-cookies';
 import {Role} from '@/enums/user';
+import {formatDate} from "@/utils/string";
 
 const firmAdminPermissions = [Role.FIRM_ADMIN, Role.SUPER];
 const advisorPermissions = [...firmAdminPermissions, Role.ADVISOR];
@@ -9,6 +10,7 @@ const advisorPermissions = [...firmAdminPermissions, Role.ADVISOR];
 export const useUserStore = defineStore('user', {
     state: () => ({
         user: {},
+        stripePublicKey: "",
     }),
     getters: {
         isSuper(state) {
@@ -23,6 +25,23 @@ export const useUserStore = defineStore('user', {
         isLoggedIn(state) {
             return !!state.user.email;
         },
+        stripeAccountAssociated(state) {
+            return !!state.user.firm.stripe_subscription_id;
+        },
+        stripeIsCurrent(state) {
+            if (state.user.firm.subscription_end_date > 0) {
+                const currentUnixTime = Math.floor(Date.now() / 1000); // Convert current time to Unix timestamp
+                return state.user.firm.subscription_end_date >= currentUnixTime;
+            } else {
+                return false;
+            }
+        },
+        stripeIsPaused(state) {
+            return !!state.user.firm.paused_subscription;
+        },
+        cardOnFile(state) {
+            return !!state.user.firm.card_on_file;
+        }
     },
     actions: {
         async getValuesProfile({advisor_id, user_id}) {
@@ -61,8 +80,10 @@ export const useUserStore = defineStore('user', {
 
         async getSession() {
             const {data} = await this.$axios('/api/users/session/');
+            const {public_key: publicKey} = (await this.$axios.get("/api/general/config/public-key/")).data;
 
             this.user = data;
+            this.stripePublicKey = publicKey
 
             this.initializePendo();
         },
@@ -76,15 +97,18 @@ export const useUserStore = defineStore('user', {
             await this.getSession();
         },
         async login(credentials) {
-            await this.$axios({
-                method: 'post',
-                url: '/api/users/login/',
-                data: credentials,
-            });
+            try {
+                await this.$axios({
+                    method: 'post',
+                    url: '/api/users/login/',
+                    data: credentials,
+                });
 
-            await this.getSession();
-
-
+                await this.getSession();
+            } catch (error) {
+                // Re-throw the error to be caught in `loginUser`
+                throw error;
+            }
         },
         async logout() {
             await this.$axios('/api/users/logout/');
@@ -95,6 +119,7 @@ export const useUserStore = defineStore('user', {
             cookies.remove('csrftoken');
 
             this.user = {};
+            window.location.href = '/login';
         },
         initializePendo() {
             if (this.user && Object.keys(this.user).length !== 0 && !this.isSuper) {
@@ -112,6 +137,12 @@ export const useUserStore = defineStore('user', {
                     }
                 });
             }
-        }
+        },
+        async fetchUserData() {
+            console.log("we are fetching!")
+            const {data} = await this.$axios('/api/users/me');
+            console.log("user data", data)
+            this.user = data;
+        },
     },
 });

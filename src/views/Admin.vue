@@ -22,11 +22,12 @@
     <!-- Content of the selected tab -->
     <v-tabs-window v-model="currentTab">
       <v-tabs-window-item>
-        <Billing @updateChosenFirm="handleChosenFirmUpdate"/>
+        <AdminAccounts @updateChosenFirm="handleChosenFirmUpdate"/>
       </v-tabs-window-item>
       <v-tabs-window-item>
         <h4 class="pt-6">White Label</h4>
-        <p>Please note: this only affects the survey. Pages on the app from the advisor view will remain branded as Pomarium.</p>
+        <p>Please note: this only affects the survey. Pages on the app from the advisor view will remain branded as
+          Pomarium.</p>
         <ImageUpload/>
         <div>
           <h4 class="pt-6">Background Color</h4>
@@ -37,7 +38,11 @@
           <v-btn @click="saveWhiteLabelSettings">Save</v-btn>
         </div>
       </v-tabs-window-item>
+      <!--      <v-tabs-window-item>-->
+      <!--        <Billing/>-->
+      <!--      </v-tabs-window-item>-->
     </v-tabs-window>
+
 
     <!-- Dialog for creating a new advisor -->
     <v-dialog max-width="500" v-model="openCreateNewAdvisorModal">
@@ -96,6 +101,7 @@ import {parseError} from '@/utils/error';
 import {useRouter} from 'vue-router';
 import Billing from './Billing.vue';
 import ImageUpload from '@/components/ImageUpload.vue';
+import AdminAccounts from "@/views/AdminAccounts.vue";
 
 // Injecting services and router
 const $axios = inject('$axios');
@@ -162,7 +168,8 @@ const createNewAdvisor = async () => {
 
     await $axios.post(`/api/firms/${firm}/advisors/`, newAdvisor);
     openCreateNewAdvisorModal.value = false;
-    getAdvisors();
+    await $axios.post(`/api/billing/subscription-quantity-update/`);
+    await getAdvisors();
     show({message: 'Advisor created!'});
 
     // Set a timeout before reloading the page

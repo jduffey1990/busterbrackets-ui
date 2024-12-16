@@ -1,13 +1,12 @@
 <template>
   <div>
     <!-- Header section with advisor's name and action buttons -->
-    <div class="d-flex my-4">
-      <div class="text-h4">
-        <!-- Display current advisor's full name if available -->
-        <span v-if="currentAdvisor">{{ currentAdvisor.full_name }}</span>
-        Investment Preferences
+    <div class="d-flex my-4" style="justify-content: flex-start;">
+      <div class="text-h4 mr-4">
+      <!-- Display current advisor's full name if available -->
+      <span v-if="currentAdvisor">{{ currentAdvisor.full_name }}</span>
+      Investment Preferences
       </div>
-      <v-spacer></v-spacer>
 
       <!-- Buttons for navigation and saving preferences, shown only if canEdit (super admin) is true -->
        <template v-if="!editLevers">
@@ -15,23 +14,24 @@
           @click="editLevers = true"
           color="primary"
           text="Edit Factor Levers"
+          class="ml-2 my-2"
         >
         </v-btn>
        </template>
       <template v-if="canEdit && editLevers">
         <!-- Button to navigate back to advisors list -->
         <v-btn
-            @click="cancelEdit()"
-            text="Cancel"
-            class="ml-2"
+          @click="cancelEdit()"
+          text="Cancel"
+          class="ml-2 my-2"
         ></v-btn>
 
         <!-- Button to save factor levers -->
         <v-btn
-            @click="saveFactorLevers()"
-            color="primary"
-            text="Save"
-            class="ml-2"
+          @click="saveFactorLevers()"
+          color="primary"
+          text="Save"
+          class="ml-2 my-2"
         ></v-btn>
       </template>
     </div>
@@ -60,7 +60,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
 
         <p v-on:mouseover="hovering[2] = true" v-on:mouseleave="hovering[2] = false">GARP
           <v-tooltip 
@@ -82,7 +88,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
 
         <p v-on:mouseover="hovering[3] = true" v-on:mouseleave="hovering[3] = false">Low Volatility
           <v-tooltip 
@@ -104,7 +116,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
 
         <p v-on:mouseover="hovering[8] = true" v-on:mouseleave="hovering[8] = false">Market Cap
           <v-tooltip 
@@ -126,7 +144,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
 
         <p v-on:mouseover="hovering[4] = true" v-on:mouseleave="hovering[4] = false">Momentum
           <v-tooltip 
@@ -148,7 +172,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
 
         <p v-on:mouseover="hovering[5] = true" v-on:mouseleave="hovering[5] = false">Quality
           <v-tooltip 
@@ -170,7 +200,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
 
         <p v-on:mouseover="hovering[6] = true" v-on:mouseleave="hovering[6] = false">Shareholder Yield
           <v-tooltip 
@@ -192,7 +228,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
 
         <p v-on:mouseover="hovering[7] = true" v-on:mouseleave="hovering[7] = false">Value
           <v-tooltip 
@@ -214,7 +256,13 @@
             :disabled="!canEdit || !editLevers"
             @end="continuousAggregateUpload"
             thumb-label
-        ></v-slider>
+        >
+          <template
+            v-slot:thumb-label="{ modelValue }"
+          >
+            {{ (modelValue * 100).toFixed(0) }}%
+          </template>
+        </v-slider>
         <div class="d-flex my-4 align-center">
       <div class="text-h6 my-4">Advisor Fee %</div>
     </div>
@@ -263,7 +311,7 @@
                 <v-icon :color="orderedColorsSectors[index]">mdi-circle</v-icon>
               </td>
               <td class="text-no-wrap">{{ p.type }}</td>
-              <td class="text-no-wrap">{{ (p.value*100).toFixed(2) }}%</td>
+              <td class="text-no-wrap">{{ (p.value*100).toFixed(0) }}%</td>
             </tr>
           </tbody>
         </v-table>
@@ -280,11 +328,15 @@
       <div class="text-h6">Asset Allocation Guidelines</div>
       <v-spacer></v-spacer>
 
-      <input
+      <v-file-input 
+          class="mr-12"
           type="file"
           accept="text/csv"
           v-if="canEdit"
           @change="onFileUpload($event)"
+          font-family="halyard-text"
+          label="upload csv"
+          max-width="250px"
       />
 
     </div>
@@ -954,7 +1006,7 @@ const getUniqueRandomColor = (colors, usedColors) => {
 const getPieChart = (data) => {
   const labels = data.map((d) => d.type);
   const usedColors = new Set();
-  orderedColorsSectors.value = labels.map(() => getUniqueRandomColor(brandColors, usedColors));
+  orderedColorsSectors.value = ['#07152A', '#F9BBA9', '#FFE6B6', '#CF6232', '#CDD0D4', '#636970', '#903F30', '#0E2F5F',];
 
   return {
     labels,

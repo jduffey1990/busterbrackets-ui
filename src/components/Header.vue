@@ -25,59 +25,66 @@
         <div class="nav-bar-mobile">
           <v-spacer></v-spacer>
           <template v-if="isLoggedIn">
-            
-              <div class="mx-3 hide">
-                <router-link to="/dashboard" custom v-slot="{ navigate, isActive }">
-                  <v-btn
-                      @click="navigate"
-                      :class="{ 'font-weight-black': isActive }"
-                  >
-                    Dashboard
-                  </v-btn>
-                </router-link>
-              </div>
 
-              <v-menu :elevation="0">
-                <template v-slot:activator="{ props }">
-                  <v-btn v-bind="props" class="text-disabled">
-                    {{ user.full_name || user.email }} ({{
-                      user.role.replace('_', ' ')
-                    }})
-                  </v-btn>
-                </template>
-                <v-list :elevation="0">
-                  <v-list-item v-if="isSuper" link :to="{ name: 'Advisors' }">
-                    <v-list-item-title>Super Tools</v-list-item-title>
-                  </v-list-item>
+            <div class="mx-3 hide">
+              <router-link to="/dashboard" custom v-slot="{ navigate, isActive }">
+                <v-btn
+                    @click="navigate"
+                    :class="{ 'font-weight-black': isActive }"
+                >
+                  Dashboard
+                </v-btn>
+              </router-link>
+            </div>
 
-                  <v-list-item
-                      v-if="isFirmAdminOrGreater"
-                      link
-                      :to="{ name: 'Admin' }"
-                  >
-                    <v-list-item-title>Admin</v-list-item-title>
-                  </v-list-item>
+            <v-menu :elevation="0">
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" class="text-disabled">
+                  {{ user.full_name || user.email }} ({{
+                    user.role.replace('_', ' ')
+                  }})
+                </v-btn>
+              </template>
+              <v-list :elevation="0">
+                <v-list-item v-if="isSuper" link :to="{ name: 'Advisors' }">
+                  <v-list-item-title>Super Tools</v-list-item-title>
+                </v-list-item>
 
-                  <v-list-item link :to="{ name: 'Settings' }">
-                    <v-list-item-title>Settings</v-list-item-title>
-                  </v-list-item>
+                <v-list-item
+                    v-if="isFirmAdminOrGreater"
+                    link
+                    :to="{ name: 'Admin' }"
+                >
+                  <v-list-item-title>Admin</v-list-item-title>
+                </v-list-item>
 
-                  <v-list-item
-                      link
-                      href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
-                      target="_blank"
-                  >
-                    <v-list-item-title>Resources</v-list-item-title>
-                  </v-list-item>
-                  <hr/>
-                  <v-list-item @click="logout()">
-                    <v-list-item-title>Logout</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-          
+                <v-list-item
+                    v-if="isFirmAdminOrGreater"
+                    link
+                    :to="{ name: 'Billing' }"
+                >
+                  <v-list-item-title>Billing</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item link :to="{ name: 'Settings' }">
+                  <v-list-item-title>Settings</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item
+                    link
+                    href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
+                    target="_blank"
+                >
+                  <v-list-item-title>Resources</v-list-item-title>
+                </v-list-item>
+                <hr/>
+                <v-list-item @click="logout()">
+                  <v-list-item-title>Logout</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </template>
-        
+
 
           <template v-else>
             <div class="mx-3">
