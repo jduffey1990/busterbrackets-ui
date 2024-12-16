@@ -29,8 +29,7 @@
 
     <!-- Tabs for switching between clients and prospects -->
     <v-tabs v-model="currentTab">
-      <v-tab @click="resetDisplayState">Clients ({{ clients.length }})</v-tab>
-      <v-tab @click="resetDisplayState">Prospects ({{ prospects.length }})</v-tab>
+      <v-tab @click="resetDisplayState">Clients ({{ allRolesClients.length }})</v-tab>
       <v-tab @click="resetDisplayState">My Firm ({{ advisors.length }})</v-tab>
       <v-tab v-if="isAdvisorOrGreater && !isSuper" @click="resetDisplayState">Investment Preferences</v-tab>
     </v-tabs>
@@ -43,7 +42,7 @@
         <v-alert
             title="No clients yet..."
             type="secondary"
-            v-if="!clients.length"
+            v-if="!allRolesClients.length"
             class="my-4"
         >
           Click "Take Survey with Client" to start adding clients to your list.
@@ -55,8 +54,9 @@
           <v-btn color="primary" @click="toggleClients" class="client_button">
             {{ !displayState.showClients ? `${displayState.hidden}` : `${displayState.shown}` }}
           </v-btn>
-
+          <!--              needs Fixing!-->
           <v-text-field
+
               v-model="searchInput"
               append-inner-icon="mdi-magnify"
               append-icon="mdi-close"
@@ -75,32 +75,70 @@
           <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown"
                         :mobile-breakpoint="700">
             <template v-slot:item.actions="{ item }">
-              <!-- Button to archive a client -->
-              <v-icon
-                  icon="mdi-delete"
-                  color="primary"
-                  class="ml-2"
-                  size="small"
-                  @click="archiveClient(item)"
-              >
-              </v-icon>
+              <template v-if="item.role === 'Active'">
+                <!-- Active Client Actions -->
+                <v-btn
+                    color="secondary"
+                    class="ml-2 secondary-btn"
+                    size="small"
+                    @click="archiveClient(item)"
+                >
+                  Archive
+                </v-btn>
 
-              <v-icon
-                  icon="mdi-pencil"
-                  color="primary"
-                  class="ml-4"
-                  size="small"
-                  @click="editClient(item, 'clients')"
-              >
-              </v-icon>
+                <v-icon
+                    icon="mdi-pencil"
+                    color="primary"
+                    class="ml-4"
+                    size="small"
+                    @click="editClient(item, 'clients')"
+                ></v-icon>
+              </template>
+              <template v-else-if="item.role === 'New (prospect)'">
+                <!-- Prospect Actions -->
+                <v-btn
+                    color="secondary"
+                    class="ml-2 secondary-btn"
+                    size="small"
+                    @click="acceptProspect(item)"
+                >
+                  Accept
+                </v-btn>
+
+                <v-btn
+                    color="secondary"
+                    class="ml-2 secondary-btn"
+                    size="small"
+                    @click="archiveProspect(item)"
+                >
+                  Archive
+                </v-btn>
+
+                <v-icon
+                    icon="mdi-pencil"
+                    color="secondary-btn"
+                    class="ml-2"
+                    size="small"
+                    @click="editClient(item, 'prospects')"
+                ></v-icon>
+              </template>
             </template>
             <template v-slot:item.full_name="{ item }">
-              <v-btn variant="text" @click="goToClient(item)">
-                {{ item.full_name }}
-              </v-btn>
+              <template v-if="item.role === 'Active'">
+                <v-btn variant="text" @click="goToClient(item)">
+                  {{ item.full_name }}
+                </v-btn>
+              </template>
+              <template v-else>
+                <v-btn variant="text" disabled>
+                  {{ item.full_name }}
+                </v-btn>
+              </template>
             </template>
             <template v-slot:item.accounts="{item}">
-              {{ accounts[findAccIndex(clients, item.id)] }}
+              <template v-if="item.role === 'Active'">
+                {{ accounts[findAccIndex(clients, item.id)] }}
+              </template>
             </template>
             <template #bottom v-if="clients.length < 10"></template>
           </v-data-table>
@@ -109,72 +147,6 @@
 
       <!-- Prospects tab content -->
       <v-tabs-window-item :key="1">
-        <!-- Alert if there are no prospects -->
-        <v-alert
-            title="No prospects yet..."
-            type="secondary"
-            v-if="!prospects.length"
-            class="my-4"
-        >
-          Click the "Copy Survey Link" to send your unique firm survey to
-          referrals or use to market and build a list of prospects.
-        </v-alert>
-
-        <!-- Prospects display section -->
-        <div v-else class="mt-10 px-10">
-          <!-- Button to toggle the display of prospects -->
-          <v-btn color="primary" @click="toggleProspects" class="mb-4">
-            {{ !displayState.showProspects ? `${displayState.hiddenProspects}` : `${displayState.shownProspects}` }}
-          </v-btn>
-
-          <v-text-field
-              v-model="searchInputP"
-              append-inner-icon="mdi-magnify"
-              append-icon="mdi-close"
-              density="compact"
-              label="Search for a prospect"
-              variant="solo"
-              hide-details
-              single-line
-              @click:append-inner="findProspect(searchInputP)"
-              @keydown.enter="findProspect(searchInputP)"
-              @click:append="searchInputP = ''"
-              class="mb-4 search"
-          ></v-text-field>
-
-          <!-- Data table for prospects -->
-          <v-data-table v-if="displayState.showProspects" :headers="headers" :items="prospectsShown"
-                        :mobile-breakpoint="700">
-            <template v-slot:item.actions="{ item }">
-              <!-- Button to accept a prospect -->
-              <v-btn
-                  color="secondary"
-                  class="ml-2 secondary-btn"
-                  size="small"
-                  @click="acceptProspect(item)"
-              >Accept
-              </v-btn>
-
-              <!-- Button to archive a prospect -->
-              <v-btn
-                  color="secondary"
-                  class="ml-2 secondary-btn"
-                  size="small"
-                  @click="archiveProspect(item)"
-              >Archive
-              </v-btn>
-              <v-icon
-                  icon="mdi-pencil"
-                  color="secondary-btn"
-                  class="ml-2"
-                  size="small"
-                  @click="editClient(item, 'prospects')"
-              ></v-icon>
-            </template>
-          </v-data-table>
-        </div>
-      </v-tabs-window-item>
-      <v-tabs-window-item :key="2">
         <div class="client_display">
           <v-text-field
               v-model="advisorSearchInput"
@@ -194,7 +166,7 @@
             <template v-slot:item.actions="{ item }">
               <v-btn
                   color="primary"
-                  @click="getClients(item.id), changeAdvisorViewing(item.id)"
+                  @click="getClients(item.id), getProspects(item.id), changeAdvisorViewing(item.id)"
                   :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
               >
                 {{
@@ -202,6 +174,7 @@
                 }}
               </v-btn>
             </template>
+            <template #bottom v-if="advisorsShown.length < 10"></template>
           </v-data-table>
           <v-text-field
               v-if="displayState.showOtherClients"
@@ -215,23 +188,33 @@
               single-line
               @click:append-inner="findOtherClient(otherSearchInput)"
               @click:append="otherSearchInput = ''"
-              class="mb-4 search"
+              class="mt-8 mb-4 search"
           ></v-text-field>
           <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers"
                         :mobile-breakpoint="700">
             <template v-slot:item.full_name="{ item }">
-              <v-btn variant="text" @click="goToClient(item)">
-                {{ item.full_name }}
-              </v-btn>
+              <template v-if="item.role === 'Active'">
+                <v-btn variant="text" @click="goToClient(item)">
+                  {{ item.full_name }}
+                </v-btn>
+              </template>
+              <template v-else>
+                <v-btn variant="text" disabled>
+                  {{ item.full_name }}
+                </v-btn>
+              </template>
             </template>
             <template v-slot:item.accounts="{item}">
-              {{ otherAccounts[findAccIndex(otherClients, item.id)] }}
+              <template v-if="item.role === 'Active'">
+                {{ accounts[findAccIndex(clients, item.id)] }}
+              </template>
             </template>
+            <template #bottom v-if="otherClientsShown.length < 10"></template>
           </v-data-table>
         </div>
 
       </v-tabs-window-item>
-      <v-tabs-window-item :key="3">
+      <v-tabs-window-item :key="2">
         <InvestmentPreferences/>
       </v-tabs-window-item>
     </v-tabs-window>
@@ -314,7 +297,7 @@
 <script setup>
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
-import {ref, reactive, computed, inject} from 'vue';
+import {ref, reactive, computed, inject, onMounted} from 'vue';
 import {useRouter} from 'vue-router';
 import moment from 'moment';
 import {parseError} from '@/utils/error';
@@ -351,6 +334,8 @@ const clientToEdit = ref({
   last_name: "",
   email: "",
 });
+// Survey link
+const surveyLink = `/survey?advisor=${advisor_id}`;
 
 const newClient = reactive({...initialState});
 const clients = ref([]);
@@ -365,10 +350,10 @@ const prospects = ref([]);
 const clientsShown = ref([]);
 const searchInput = ref('');
 const foundClient = ref([]);
-const searchInputP = ref('');
-const foundProspect = ref([]);
-const prospectsShown = ref([]);
 const editingRole = ref("")
+const accounts = ref([]);
+const otherAccounts = ref([]);
+const allRolesClients = ref([])
 
 // Display state
 const displayState = reactive({
@@ -387,6 +372,7 @@ const displayState = reactive({
 
 // Data tables headers
 const headers = [
+  {title: 'Status', key: 'role', width: 0, nowrap: true},
   {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
   {title: 'Email', key: 'email', width: 0, nowrap: true},
   {title: 'Last Survey Date', key: 'last_survey_taken_date', width: 0, nowrap: true},
@@ -405,21 +391,22 @@ const advisorHeaders = [
 // Fetch clients data
 const getClients = async (a) => {
   const {data} = await $axios.get(`/api/advisors/${a}/clients/`);
+  const formattedClients = data.map((d) => ({
+    ...d,
+    last_survey_taken_date: d.last_survey_taken_date
+        ? moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma')
+        : 'N/A', // Default value if date is missing
+    role: "Active", // Default role if undefined
+  }));
+
   if (a === advisor_id) {
-    clients.value = data.map((d) => ({
-      ...d,
-      last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
-    }));
+    clients.value = formattedClients;
     await getAccountsForAllClients(clients, accounts);
   } else {
-    otherClients.value = data.map((d) => ({
-      ...d,
-      last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
-    }));
+    otherClients.value = formattedClients;
     await getAccountsForAllClients(otherClients, otherAccounts);
-    otherClientsShown.value = otherClients.value;
+    otherClientsShown.value = otherClientsShown.value.concat(otherClients.value);
   }
-
 };
 
 const getAdvisors = async () => {
@@ -430,18 +417,20 @@ const getAdvisors = async () => {
 };
 
 // Fetch prospects data
-const getProspects = async () => {
-  const {data} = await $axios.get(`/api/advisors/${advisor_id}/prospects/`);
+const getProspects = async (theirAdvisor = null) => {
+  let advisor
+  theirAdvisor ? advisor = theirAdvisor : advisor = advisor_id
+  const {data} = await $axios.get(`/api/advisors/${advisor}/prospects/`);
   prospects.value = data.map((d) => ({
     ...d,
     last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+    role: "New (prospect)"
   }));
+  if (theirAdvisor) {
+    //Skipping otherClients because it is just a middle man to get to otherClientsShown here
+    otherClientsShown.value = otherClientsShown.value.concat(prospects.value);
+  }
 };
-
-// Initial data fetch
-getAdvisors();
-getClients(advisor_id);
-getProspects();
 
 // Form reset
 const resetForm = () => {
@@ -482,9 +471,12 @@ const acceptProspect = async ({id}) => {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {role: 'client'});
       await $axios.post(`/api/advisors/${advisor_id}/clients/${id}/portfolio/`);
-      getClients(advisor_id);
-      getProspects();
+
       show({message: 'Client created!'});
+
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000); // 1 second
     } catch (error) {
       show({message: parseError(error), error: true});
     }
@@ -495,9 +487,12 @@ const archiveProspect = async ({id}) => {
   if (confirm('Are you sure you want to archive this prospect?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {is_archived: true});
-      getClients(advisor_id);
-      getProspects();
+
       show({message: 'Prospect archived!'});
+
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000); // 1 second
     } catch (error) {
       show({message: parseError(error), error: true});
     }
@@ -509,10 +504,11 @@ const archiveClient = async ({id}) => {
   if (confirm('Are you sure you want to archive this client?')) {
     try {
       await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {is_archived: true});
-      await getClients(advisor_id);
-      clientsShown.value = clients.value;
-      getProspects();
       show({message: 'Client archived!'});
+
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000); // 1 second
     } catch (error) {
       show({message: parseError(error), error: true});
     }
@@ -566,8 +562,6 @@ const submitEditedClient = async (id) => {
 };
 
 
-// Survey link and clipboard functions
-const surveyLink = `/survey?advisor=${advisor_id}`;
 const copyText = () => {
   navigator.clipboard.writeText(`${location.origin}${surveyLink}`);
   show({
@@ -582,19 +576,13 @@ const toggleClients = () => {
   clientsToShow();
 };
 
-const toggleProspects = () => {
-  displayState.showProspects = !displayState.showProspects;
-  displayState.searchedProspects = false;
-  prospectsToShow();
-};
-
 // Find client function for search bar 
 const findClient = (search) => {
   if (search === '') {
     displayState.searched = false;
     displayState.showClients = false;
   } else {
-    foundClient.value = clients.value.filter((client) => {
+    foundClient.value = allRolesClients.value.filter((client) => {
       return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
     });
     displayState.searched = true;
@@ -603,25 +591,11 @@ const findClient = (search) => {
   }
 };
 
-const findProspect = (search) => {
-  if (search === '') {
-    displayState.searchedProspects = false;
-    displayState.showProspects = false;
-  } else {
-    foundProspect.value = prospects.value.filter((prospect) => {
-      return prospect.full_name.toLowerCase().includes(search.toLowerCase()) || prospect.email.toLowerCase().includes(search.toLowerCase());
-    });
-    displayState.searchedProspects = true;
-    prospectsToShow();
-    displayState.showProspects = true;
-  }
-};
-
 const findOtherClient = (search) => {
   if (search === '') {
     displayState.searchedOtherClients = false;
   } else {
-    otherFoundClient.value = otherClients.value.filter((client) => {
+    otherFoundClient.value = otherClientsShown.value.filter((client) => {
       return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
     });
     displayState.searchedOtherClients = true;
@@ -640,19 +614,14 @@ const findAdvisor = (search) => {
 };
 
 const clientsToShow = () => {
-  return displayState.searched ? clientsShown.value = foundClient.value : clientsShown.value = clients.value;
-};
-
-const prospectsToShow = () => {
-  return displayState.searchedProspects ? prospectsShown.value = foundProspect.value : prospectsShown.value = prospects.value;
+  return displayState.searched ? clientsShown.value = foundClient.value : clientsShown.value = allRolesClients.value;
 };
 
 const otherClientsToShow = () => {
   return displayState.searchedOtherClients ? otherClientsShown.value = otherFoundClient.value : otherClientsShown.value = otherClients.value;
 };
 
-const accounts = ref([]);
-const otherAccounts = ref([]);
+
 const getAccountsForAllClients = async (c, acc) => {
   acc.value = [];
   for (const client of c.value) {
@@ -679,6 +648,16 @@ const resetDisplayState = () => {
   displayState.showOtherClients = false;
   displayState.currentAdvisorViewing = null;
 };
+
+onMounted(async () => {
+  // Initial data fetch
+  await getAdvisors();
+  await getClients(advisor_id);
+  await getProspects();
+
+  allRolesClients.value = allRolesClients.value.concat(clients.value).concat(prospects.value)
+
+})
 </script>
 
 <style>
