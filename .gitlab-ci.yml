@@ -5,6 +5,11 @@ variables:
   ARTIFACT_COMPRESSION_LEVEL: "fast"
   CACHE_COMPRESSION_LEVEL: "fast"
 
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+
 # ---- caches ----
 
 .node_modules-cache: &node_modules-cache
@@ -46,7 +51,7 @@ stages:
   script:
     - export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/kaniko-secret.json
     - echo $GOOGLE_APPLICATION_CREDENTIALS_BASE64 | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $IMAGE:$CI_COMMIT_SHORT_SHA
+    - /kaniko/executor --cache=true --context . --dockerfile ./Dockerfile --destination $IMAGE:$CI_COMMIT_SHORT_SHA --destination $IMAGE:latest
 
 .deploy:
   image: google/cloud-sdk
@@ -67,9 +72,9 @@ build-predev:
       when: never
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: never
-    - when: manual
+    - when: always
   variables:
-    IMAGE: $UI_PREDEV_IMAGE
+    IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_REF_NAME"
 
 deploy-predev:
   extends: .deploy
@@ -81,11 +86,13 @@ deploy-predev:
       when: never
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: never
+    - if: $DEPLOY_PREDEV_UI == "false"
+      when: never
     - when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
-    IMAGE: $UI_PREDEV_IMAGE
-    CLOUD_RUN_SERVICE: "ui-predev"
+    IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_REF_NAME"
+    CLOUD_RUN_SERVICE: "ui-$CI_COMMIT_REF_NAME"
     SERVICE_ACCOUNT: "google-ui-service-account"
 
 # ---- Cloud Run Dev ----
@@ -111,7 +118,7 @@ deploy-dev:
     CLOUD_RUN_SERVICE: "ui"
     SERVICE_ACCOUNT: "google-ui-service-account"
 
-# ---- Cloud Run Beta ----
+# # ---- Cloud Run Beta ----
 
 deploy-beta:
   extends: .deploy
@@ -125,7 +132,7 @@ deploy-beta:
     CLOUD_RUN_SERVICE: "ui"
     SERVICE_ACCOUNT: "beta-google-service-account"
 
-# ---- Cloud Run Demo ----
+# # ---- Cloud Run Demo ----
 
 deploy-demo:
   extends: .deploy
