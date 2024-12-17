@@ -416,6 +416,7 @@ const getClients = async (a) => {
     otherClients.value = formattedClients;
     await getAccountsForAllClients(otherClients, otherAccounts);
     otherClientsShown.value = otherClientsShown.value.concat(otherClients.value);
+    otherClientsShown.value.sort((a, b) => a.role.localeCompare(b.role));
   }
 };
 
@@ -433,12 +434,15 @@ const getProspects = async (theirAdvisor = null) => {
   const {data} = await $axios.get(`/api/advisors/${advisor}/prospects/`);
   prospects.value = data.map((d) => ({
     ...d,
-    last_survey_taken_date: d.last_survey_taken_date && moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma'),
+    last_survey_taken_date: d.last_survey_taken_date
+        ? moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma')
+        : 'N/A', // Default value if date is missing
     role: "New (prospect)"
   }));
   if (theirAdvisor) {
     //Skipping otherClients because it is just a middle man to get to otherClientsShown here
     otherClientsShown.value = otherClientsShown.value.concat(prospects.value);
+    otherClientsShown.value.sort((a, b) => a.role.localeCompare(b.role));
   }
 };
 
@@ -639,7 +643,9 @@ const getAccountsForAllClients = async (c, acc) => {
 };
 
 const findAccIndex = (c, id) => {
-  return c.findIndex((client) => client.id === id);
+  return c.findIndex((client) => {
+    return client.id === id
+  });
 };
 
 const changeAdvisorViewing = (id) => {
