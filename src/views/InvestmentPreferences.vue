@@ -37,7 +37,19 @@
     </div>
 
     <!-- Section for factor levers -->
-    <div class="text-h6 mb-3">Factor Levers</div>
+    <div v-on:mouseover="hovering[9] = true" v-on:mouseleave="hovering[9] = false" class="text-h6 mb-3">Factor Levers
+      <v-tooltip 
+        v-if="hovering[9]"
+        text="Investment preferences allow advisors to customize client-driven direct index portfolios by selecting factors (e.g., Momentum, Value, Quality, etc.) and target number of holdings. These choices influence stock selection based on trends, valuations, and stability. Advisors can also set risk-based allocations using ETFs and mutual funds to construct full client portfolios. AUM fees are advisor fees applied to backtested returns, while Pomarium does not charge an AUM-based fee." 
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <v-icon v-bind="props" color="grayblue" size="x-small">mdi-information</v-icon>
+        </template>
+      </v-tooltip>
+    </div>
+    <!-- <p class="my-2">Investment preferences allow advisors to customize client-driven direct index portfolios by selecting factors (e.g., Momentum, Value, Quality, etc.) and target number of holdings. These choices influence stock selection based on trends, valuations, and stability. Advisors can also set risk-based allocations using ETFs and mutual funds to construct full client portfolios. AUM fees are advisor fees applied to backtested returns, while Pomarium does not charge an AUM-based fee.</p> -->
+
     <v-row no-gutters>
       <v-col cols="6">
         <p v-on:mouseover="hovering[1] = true" v-on:mouseleave="hovering[1] = false">Dividend + Quality 
@@ -475,7 +487,7 @@ const page = ref(1);
 const itemsPerPage = ref(15);
 const holdings = ref();
 const allTickerValues = ref([])
-const hovering = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false });
+const hovering = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false });
 const loadBar = ref(false);
 
 

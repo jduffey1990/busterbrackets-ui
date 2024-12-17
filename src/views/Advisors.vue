@@ -3,6 +3,7 @@
   <v-tabs v-model="currentTab">
     <v-tab>Advisors</v-tab>
     <v-tab>Accounts Manager</v-tab>
+    <v-tab>Reports</v-tab>
   </v-tabs>
   <v-tabs-window v-model="currentTab">
     <v-tabs-window-item>
@@ -38,6 +39,9 @@
     <v-tabs-window-item>
       <AdminAccounts/>
     </v-tabs-window-item>
+    <v-tabs-window-item>
+      <Reports/>
+    </v-tabs-window-item>
   </v-tabs-window>
 </template>
 
@@ -48,6 +52,7 @@ import {useRouter} from 'vue-router';
 import {parseError} from "@/utils/error"; // Importing useRouter for navigation
 import Billing from './AdminAccounts.vue';
 import AdminAccounts from "@/views/AdminAccounts.vue";
+import Reports from '@/components/Reports.vue';
 
 // Injecting axios and toast services
 const $axios = inject('$axios');
