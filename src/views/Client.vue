@@ -43,7 +43,7 @@
                 :text="`${hasValuesProfile ? 'Edit' : 'Start'} Values Profile`"
                 @click="navigate"
             >
-            </v-btn>
+            </v-btn>            
             <PDFBuilder v-if="(screenWidth > 700)" pdfElementId="values-profile" class="mx-4 btn"></PDFBuilder>
           </router-link>
         </div>
@@ -128,7 +128,22 @@
 
           <hr/>
           <div class="my-8 table-content">
-            <div class="text-h4">Allocations</div>
+            <div v-on:mouseover="hover = true" v-on:mouseleave="hover = false" class="text-h4">Allocations
+              <v-tooltip
+                  v-if="hover"
+                  text="Pomarium builds client portfolios by starting with the largest 1,000 U.S. stocks, excluding any based on client preferences or lack of sufficient data. Stocks are then scored based on client values and advisor investment preferences. The algorithm combines these scores to create a custom portfolio, prioritizing stocks with higher values alignment. Finally, the portfolio is adjusted according to the client’s risk level and asset allocation preferences at the account level."
+                  location="top"
+              >
+                <template v-slot:activator="{ props }">
+                  <v-icon
+                      v-bind="props"
+                      size="20"
+                      color="grayblue"
+                      class="ml-1 translate">mdi-information
+                  </v-icon>
+                </template>
+              </v-tooltip>
+            </div>
   
             <div style="display: flex;" class="my-3">
               <v-card
@@ -517,6 +532,8 @@ const hovering = {
   'Values Fit': false,
   'Investment Fit': false,
 }
+
+const hover = ref(false);
 
 const {
   user: {id: advisor_id},
