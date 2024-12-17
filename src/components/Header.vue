@@ -149,12 +149,14 @@ const appBarStyle = computed(() => {
 const logos = ref({});
 const goodLogo = ref(false);
 const getFirmLogo = async () => {
-  try {
-    const response = await $axios.get(`/api/firms/${user.value.firm.id}/logo/`);
-    logos.value = response.data;
-    logos.value['firm_logo'].includes('media') || logos.value['firm_logo'].includes('storage') ? goodLogo.value = true : goodLogo.value = false;
-  } catch (error) {
-    console.error('Error fetching firm logo:', error);
+  if (isLoggedIn.value) {
+    try {
+      const response = await $axios.get(`/api/firms/${user.value.firm.id}/logo/`);
+      logos.value = response.data;
+      logos.value['firm_logo'].includes('media') || logos.value['firm_logo'].includes('storage') ? goodLogo.value = true : goodLogo.value = false;
+    } catch (error) {
+      console.error('Error fetching firm logo:', error);
+    }
   }
 };
 
