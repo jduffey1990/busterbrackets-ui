@@ -171,10 +171,9 @@ const fetchPD = async () => {
                 type: key,
             });
         });
-        //get the average portfolio_data.market_investment_fit and portfolio_data.market_values_fit
-        const valueFitSum = response.data.reduce((acc, portfolio) => acc + portfolio.portfolio_data.market_values_fit, 0);
+        const valueFitSum = response.data.reduce((acc, portfolio) => acc + portfolio.portfolio_data.overall_values_fit, 0);
         valueFitAvg.value = valueFitSum / response.data.length;
-        const investmentFitSum = response.data.reduce((acc, portfolio) => acc + portfolio.portfolio_data.market_investment_fit, 0);
+        const investmentFitSum = response.data.reduce((acc, portfolio) => acc + portfolio.portfolio_data.overall_investment_fit, 0);
         investmentFitAvg.value = investmentFitSum / response.data.length;
         console.log(investmentFitAvg.value);
         console.log(valueFitAvg.value);
