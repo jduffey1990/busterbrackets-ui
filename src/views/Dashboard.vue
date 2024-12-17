@@ -147,6 +147,16 @@
 
       <!-- Prospects tab content -->
       <v-tabs-window-item :key="1">
+
+        <v-alert
+            title="View Firm Clients"
+            type="secondary"
+            class="my-4"
+        >
+          If an advisor in your firm has enabled the option to share their client list, you can select their name
+          here to view their clients.
+        </v-alert>
+
         <div class="client_display">
           <v-text-field
               v-model="advisorSearchInput"
@@ -206,7 +216,7 @@
             </template>
             <template v-slot:item.accounts="{item}">
               <template v-if="item.role === 'Active'">
-                {{ accounts[findAccIndex(clients, item.id)] }}
+                {{ otherAccounts[findAccIndex(otherClientsShown, item.id)] }}
               </template>
             </template>
             <template #bottom v-if="otherClientsShown.length < 10"></template>
@@ -528,7 +538,6 @@ const editClient = (item, role) => {
 };
 
 const submitEditedClient = async (id) => {
-  console.log("Saving client data:", clientToEdit.value);
   try {
     const result = await $axios.patch(
         `/api/advisors/${advisor_id}/${editingRole.value}/${id}/`,
@@ -538,7 +547,6 @@ const submitEditedClient = async (id) => {
           email: clientToEdit.value.email.toLowerCase(),
         }
     );
-    console.log("Client data saved successfully:", result);
     openEditClientModal.value = false;
     resetEditForm();
     window.location.reload();
