@@ -987,8 +987,9 @@ const sendEmail = async () => {
     const advisorResponse = await $axios.get(`/api/users/advisor/${advisor_id}`);
     const advisorEmail = advisorResponse.data.email;
     const advisorWantsEmail = advisorResponse.data.email_surveys;
-
-    if (!advisorWantsEmail) {
+    console.log("advisor email check", advisorEmail)
+    console.log("do the want it?", advisorWantsEmail)
+    if (advisorWantsEmail === false) {
       return;
     }
     //If the advisor takes this from client route, they won't need an update.  This comes from prospect.
