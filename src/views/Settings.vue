@@ -91,7 +91,7 @@
             <v-card-subtitle class="sub_header">Survey Changes</v-card-subtitle>
 
           </div>
-          <p>See client demographics</p>
+          <p>Show my clients the demographic question in the survey</p>
           <v-switch
               v-model="clientDemo"
               :label="clientDemo ? 'Yes' : 'No'"
@@ -102,7 +102,7 @@
               :readonly="!isEditing"
               @click="preventClickWhenReadOnly"
           ></v-switch>
-          <p>See client risk questions</p>
+          <p>Show my clients the risk questions in the survey</p>
           <v-switch
               v-model="clientRisk"
               :label="clientRisk ? 'Yes' : 'No'"
