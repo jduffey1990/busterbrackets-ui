@@ -996,7 +996,7 @@ const sendEmail = async () => {
     let message = `
       <div style="background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%); width: 100%; padding: 20px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="https://cdn.prod.website-files.com/66744d2aa5d5744840adb0ba/6684129b2cc873f72527a2e2_Small.svg"
+          <img src="https://storage.googleapis.com/pomarium-dev-logos/pomarium-logo-text.png"
               alt="Pomarium Logo"
               style="max-width: 200px; height: auto;">
         </div>
