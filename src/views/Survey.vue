@@ -984,7 +984,7 @@ const sendFreeResponse = async (prospect_id = null) => {
 const sendEmail = async () => {
   try {
     // Fetch advisor details
-    const advisorResponse = await $axios.get(`/api/users/advisor/${advisor_id}`);
+    const advisorResponse = await $axios.get(`/api/users/advisor/${advisor}`);
     const advisorEmail = advisorResponse.data.email;
     const advisorWantsEmail = advisorResponse.data.email_surveys;
     console.log("advisor email check", advisorEmail)
