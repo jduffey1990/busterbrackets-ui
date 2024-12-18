@@ -1229,8 +1229,6 @@ const submitSurvey = () => {
 
 // Lifecycle Hooks
 onMounted(async () => {
-  console.log("we got it", advisor_id)
-  console.log("They've got it", advisor)
   let useful_id
   if (advisor_id) {
     useful_id = advisor_id //on the app, advisor_id is a store var

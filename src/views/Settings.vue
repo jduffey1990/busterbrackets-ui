@@ -325,7 +325,6 @@ const pageToVersion = () => {
 };
 
 const versionToPage = () => {
-  console.log(survey_version)
   if (survey_version === 1) {
     // Do nothing; both values remain true
   } else if (survey_version === 2) {
