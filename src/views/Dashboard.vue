@@ -76,16 +76,6 @@
                         :mobile-breakpoint="700">
             <template v-slot:item.actions="{ item }">
               <template v-if="item.role === 'Active'">
-                <!-- Active Client Actions -->
-                <v-btn
-                    color="secondary"
-                    class="ml-2 secondary-btn"
-                    size="small"
-                    @click="archiveClient(item)"
-                >
-                  Archive
-                </v-btn>
-
                 <v-icon
                     icon="mdi-pencil"
                     color="primary"
@@ -95,25 +85,6 @@
                 ></v-icon>
               </template>
               <template v-else-if="item.role === 'New (prospect)'">
-                <!-- Prospect Actions -->
-                <v-btn
-                    color="secondary"
-                    class="ml-2 secondary-btn"
-                    size="small"
-                    @click="acceptProspect(item)"
-                >
-                  Accept
-                </v-btn>
-
-                <v-btn
-                    color="secondary"
-                    class="ml-2 secondary-btn"
-                    size="small"
-                    @click="archiveProspect(item)"
-                >
-                  Archive
-                </v-btn>
-
                 <v-icon
                     icon="mdi-pencil"
                     color="secondary-btn"
@@ -287,6 +258,14 @@
               type="email"
               v-model="clientToEdit.email"
           ></v-text-field>
+          <v-select
+              label="Change Client Status"
+              class="my-4"
+              v-model="clientToEdit.role"
+              :items="rolesList"
+              item-title="title"
+              item-value="value"
+          ></v-select>
         </v-card-text>
 
         <v-card-actions>
@@ -343,6 +322,7 @@ const clientToEdit = ref({
   first_name: "",
   last_name: "",
   email: "",
+  role: ""
 });
 // Survey link
 const surveyLink = `/survey?advisor=${advisor_id}`;
@@ -387,7 +367,7 @@ const headers = [
   {title: 'Email', key: 'email', width: 0, nowrap: true},
   {title: 'Last Survey Date', key: 'last_survey_taken_date', width: 0, nowrap: true},
   {title: 'Accounts', key: 'accounts', width: 0, nowrap: true},
-  {key: 'actions', sortable: false, width: 0, nowrap: true},
+  {title: 'Edit Client', key: 'actions', sortable: false, width: 0, nowrap: true},
   {}
 ];
 
@@ -395,7 +375,13 @@ const advisorHeaders = [
   {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
   {title: 'Email', key: 'email', width: 0, nowrap: true},
   {key: 'actions', sortable: false, width: 0, nowrap: true},
-  {}
+
+]
+
+const rolesList = [
+  {title: 'Active', value: 'client'},
+  {title: 'New (prospect)', value: 'prospect'},
+  {title: 'Archived', value: 'archived'}
 ]
 
 // Fetch clients data
@@ -479,56 +465,7 @@ const goToClient = ({id}) => {
   router.push(`/clients/${id}#values`);
 };
 
-// Prospect actions
-const acceptProspect = async ({id}) => {
-  if (confirm('Are you sure you want to accept this prospect as a client?')) {
-    try {
-      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {role: 'client'});
-      await $axios.post(`/api/advisors/${advisor_id}/clients/${id}/portfolio/`);
-
-      show({message: 'Client created!'});
-
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000); // 1 second
-    } catch (error) {
-      show({message: parseError(error), error: true});
-    }
-  }
-};
-
-const archiveProspect = async ({id}) => {
-  if (confirm('Are you sure you want to archive this prospect?')) {
-    try {
-      await $axios.patch(`/api/advisors/${advisor_id}/prospects/${id}/`, {is_archived: true});
-
-      show({message: 'Prospect archived!'});
-
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000); // 1 second
-    } catch (error) {
-      show({message: parseError(error), error: true});
-    }
-  }
-};
-
-// Client actions
-const archiveClient = async ({id}) => {
-  if (confirm('Are you sure you want to archive this client?')) {
-    try {
-      await $axios.patch(`/api/advisors/${advisor_id}/clients/${id}/`, {is_archived: true});
-      show({message: 'Client archived!'});
-
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000); // 1 second
-    } catch (error) {
-      show({message: parseError(error), error: true});
-    }
-  }
-};
-
+//Client Actions
 const editClient = (item, role) => {
   // Populate the `clientToEdit` with the selected client's details
   editingRole.value = role;
@@ -542,14 +479,25 @@ const editClient = (item, role) => {
 };
 
 const submitEditedClient = async (id) => {
+  let clientProfile = {}
+  if (clientToEdit.value.role === 'archived') {
+    clientProfile = {
+      first_name: clientToEdit.value.first_name,
+      last_name: clientToEdit.value.last_name,
+      email: clientToEdit.value.email.toLowerCase(),
+      is_archived: true
+    }
+  } else {
+    clientProfile = {
+      first_name: clientToEdit.value.first_name,
+      last_name: clientToEdit.value.last_name,
+      email: clientToEdit.value.email.toLowerCase(),
+      role: clientToEdit.value.role
+    }
+  }
   try {
     const result = await $axios.patch(
-        `/api/advisors/${advisor_id}/${editingRole.value}/${id}/`,
-        {
-          first_name: clientToEdit.value.first_name,
-          last_name: clientToEdit.value.last_name,
-          email: clientToEdit.value.email.toLowerCase(),
-        }
+        `/api/advisors/${advisor_id}/${editingRole.value}/${id}/`, clientProfile
     );
     openEditClientModal.value = false;
     resetEditForm();
@@ -571,7 +519,7 @@ const submitEditedClient = async (id) => {
       alert("An unexpected error occurred. Please contact support.");
     }
   }
-};
+}
 
 
 const copyText = () => {
@@ -626,7 +574,7 @@ const findAdvisor = (search) => {
 };
 
 const clientsToShow = () => {
-  return displayState.searched ? clientsShown.value = foundClient.value : clientsShown.value = allRolesClients.value;
+  return displayState.searched ? clientsShown.value = foundClient.value : clientsShown.value = allRolesClients.value
 };
 
 const otherClientsToShow = () => {

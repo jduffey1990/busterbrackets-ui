@@ -998,7 +998,7 @@ const sendEmail = async () => {
         <div style="text-align: center; margin-bottom: 20px;">
           <img src="https://storage.googleapis.com/pomarium-dev-logos/pomarium-logo-text.png"
               alt="Pomarium Logo"
-              style="max-width: 200px; height: auto;">
+              style="max-width: 100px; height: auto;">
         </div>
         <p style="font-size: 16px; color: #333;">Hi ${advisorResponse.data.full_name},</p>
 
