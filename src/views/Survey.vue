@@ -995,6 +995,11 @@ const sendEmail = async () => {
     //If the advisor takes this from client route, they won't need an update.  This comes from prospect.
     let message = `
       <div style="background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%); width: 100%; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://cdn.prod.website-files.com/66744d2aa5d5744840adb0ba/6684129b2cc873f72527a2e2_Small.svg"
+              alt="Pomarium Logo"
+              style="max-width: 200px; height: auto;">
+        </div>
         <p style="font-size: 16px; color: #333;">Hi ${advisorResponse.data.full_name},</p>
 
         <p style="font-size: 16px; color: #333;">Great news - you’ve got a new prospect! 🎉 ${newProspect.first_name} ${newProspect.last_name} completed a
@@ -1006,7 +1011,9 @@ const sendEmail = async () => {
           <li>Reach out to them at <a href="mailto:${newProspect.email}" style="color: #007BFF;">${newProspect.email}</a> with a sneak peek.</li>
           <li>Schedule a call to review their results together!</li>
         </ul>
-
+        <p style="font-size: 16px; color: #333;">Warm Regards,</p>
+        <p style="font-size: 16px; color: #333;">Your Friends at Pomarium</p>
+        <div style="min-height: 40px;"></div>
         <p style="font-size: 16px; color: #333;">PS: Keep sharing your link, it’s working! 👍🏽</p>
       </div>
     `;
