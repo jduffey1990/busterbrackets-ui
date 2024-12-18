@@ -994,7 +994,7 @@ const sendEmail = async () => {
     }
     //If the advisor takes this from client route, they won't need an update.  This comes from prospect.
     let message = `
-      <div style="background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%); min-height: 87vh; width: 100%; padding: 20px;">
+      <div style="background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%); width: 100%; padding: 20px;">
         <p style="font-size: 16px; color: #333;">Hi ${advisorResponse.data.full_name},</p>
 
         <p style="font-size: 16px; color: #333;">Great news - you’ve got a new prospect! 🎉 ${newProspect.first_name} ${newProspect.last_name} completed a
