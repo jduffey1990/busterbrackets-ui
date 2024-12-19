@@ -397,6 +397,12 @@ const metricTableData = computed(() => {
       iwb: props.metrics.IWB["beta"].toFixed(2),
     },
     {
+      metric: 'Yield (12mo)',
+      pomariumValue: toPercentage(props.metrics.pomarium["yield"]),
+      marketValue: toPercentage(props.metrics.market["yield"]),
+      iwb: toPercentage(props.metrics.IWB["yield"]),
+    },
+    {
       metric: 'Tracking Error',
       pomariumValue: toPercentage(props.metrics.pomarium["tracking_error"]),
       marketValue: toPercentage(props.metrics.market["tracking_error"]),
@@ -496,6 +502,30 @@ const wholeTableData = computed(() => {
       "Bonds (BND)": props.metrics.full_portfolio['BND']['sharpe ratio'].toFixed(2),
       "Cash (SHV)": props.metrics.full_portfolio['SHV']['sharpe ratio'].toFixed(2),
     },
+    {
+      metric: 'Yield (12mo)',
+      veryLow: toPercentage(props.metrics.full_portfolio[0]['yield']),
+      low: toPercentage(props.metrics.full_portfolio[1]['yield']),
+      medium: toPercentage(props.metrics.full_portfolio[2]['yield']),
+      high: toPercentage(props.metrics.full_portfolio[3]['yield']),
+      veryHigh: toPercentage(props.metrics.full_portfolio[4]['yield']),
+      "US Stocks (VTI)": toPercentage(props.metrics.full_portfolio['VTI']["yield"]),
+      "Int Stocks (VXUS)": toPercentage(props.metrics.full_portfolio['VXUS']["yield"]),
+      "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']["yield"]),
+      "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']["yield"]),
+    },
+    {
+      metric: 'Expense Ratio',
+      veryLow: toPercentage(props.metrics.full_portfolio[0]['expense ratio'],2),
+      low: toPercentage(props.metrics.full_portfolio[1]['expense ratio'],2),
+      medium: toPercentage(props.metrics.full_portfolio[2]['expense ratio'],2),
+      high: toPercentage(props.metrics.full_portfolio[3]['expense ratio'],2),
+      veryHigh: toPercentage(props.metrics.full_portfolio[4]['expense ratio'],2),
+      "US Stocks (VTI)": toPercentage(props.metrics.full_portfolio['VTI']["expense ratio"],2),
+      "Int Stocks (VXUS)": toPercentage(props.metrics.full_portfolio['VXUS']["expense ratio"],2),
+      "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']["expense ratio"],2),
+      "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']["expense ratio"],2),
+    },
   ];
 });
 
@@ -588,8 +618,8 @@ function formatDate(dateString) {
   return date.toLocaleDateString('en-US', options);
 }
 
-function toPercentage(value) {
-  return `${(value * 100).toFixed(1)}%`;
+function toPercentage(value, decimals=1) {
+  return `${(value * 100).toFixed(decimals)}%`;
 }
 
 const bigOptions = {

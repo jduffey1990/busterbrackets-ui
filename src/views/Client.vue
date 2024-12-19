@@ -1181,7 +1181,7 @@ const noMetrics = ref(true)
 const getMetrics = async () => {
   metricsLoading.value = true;
   try {
-    const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/metrics`);
+    const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/metrics/`);
     metrics.value = data;
     noMetrics.value = false; // Set to false if metrics are successfully fetched
   } catch (error) {
