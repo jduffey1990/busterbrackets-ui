@@ -987,8 +987,6 @@ const sendEmail = async () => {
     const advisorResponse = await $axios.get(`/api/users/advisor/${advisor}`);
     const advisorEmail = advisorResponse.data.email;
     const advisorWantsEmail = advisorResponse.data.email_surveys;
-    console.log("advisor email check", advisorEmail)
-    console.log("do the want it?", advisorWantsEmail)
     if (advisorWantsEmail === false) {
       return;
     }
