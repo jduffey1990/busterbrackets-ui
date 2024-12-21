@@ -101,16 +101,16 @@ deploy-predev:
 build-dev:
   extends: .build
   stage: build-dev
-  only:
-    - development
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
   variables:
     IMAGE: $UI_IMAGE
 
 deploy-dev:
   extends: .deploy
   stage: deploy-dev
-  only:
-    - development
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
   needs:
     - build-dev
   variables:
