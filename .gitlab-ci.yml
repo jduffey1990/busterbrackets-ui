@@ -9,6 +9,7 @@ workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 # ---- caches ----
 
@@ -100,18 +101,18 @@ deploy-predev:
 build-dev:
   extends: .build
   stage: build-dev
-  rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" && $CI_PIPELINE_SOURCE == 'merge_request_event'
+  only:
+    - development
   variables:
     IMAGE: $UI_IMAGE
 
 deploy-dev:
   extends: .deploy
   stage: deploy-dev
+  only:
+    - development
   needs:
     - build-dev
-  rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" && $CI_PIPELINE_SOURCE == 'merge_request_event'
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: $UI_IMAGE
