@@ -100,9 +100,9 @@ deploy-predev:
 build-dev:
   extends: .build
   stage: build-dev
-  only:
-    - development
-  when: always
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
+      when: always
   variables:
     IMAGE: $UI_IMAGE
 
@@ -111,9 +111,9 @@ deploy-dev:
   stage: deploy-dev
   needs:
     - build-dev
-  only:
-    - development
-  when: always
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
+      when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: $UI_IMAGE
