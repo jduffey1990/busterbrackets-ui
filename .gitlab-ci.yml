@@ -9,7 +9,7 @@ workflow:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "web"'
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_PIPELINE_SOURCE == "push"
 
 # ---- caches ----
 
@@ -101,16 +101,16 @@ deploy-predev:
 build-dev:
   extends: .build
   stage: build-dev
-  rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+  only:
+    - development
   variables:
     IMAGE: $UI_IMAGE
 
 deploy-dev:
   extends: .deploy
   stage: deploy-dev
-  rules:
-    - if: $CI_COMMIT_BRANCH == "development"
+  only:
+    - development
   needs:
     - build-dev
   variables:
