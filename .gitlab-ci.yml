@@ -73,7 +73,9 @@ build-predev:
       when: never
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
       when: never
-    - when: always
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+      when: always
+    - when: manual
   variables:
     IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_REF_NAME"
 
