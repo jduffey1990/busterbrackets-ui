@@ -102,6 +102,7 @@ build-dev:
   stage: build-dev
   only:
     - development
+  when: always
   variables:
     IMAGE: $UI_IMAGE
 
@@ -112,6 +113,7 @@ deploy-dev:
     - build-dev
   only:
     - development
+  when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: $UI_IMAGE
