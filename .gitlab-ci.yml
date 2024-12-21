@@ -101,8 +101,7 @@ build-dev:
   extends: .build
   stage: build-dev
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
-      when: always
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" && $CI_PIPELINE_SOURCE == 'merge_request_event'
   variables:
     IMAGE: $UI_IMAGE
 
@@ -112,8 +111,7 @@ deploy-dev:
   needs:
     - build-dev
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development"
-      when: always
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" && $CI_PIPELINE_SOURCE == 'merge_request_event'
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: $UI_IMAGE
