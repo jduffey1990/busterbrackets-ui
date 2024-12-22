@@ -1,7 +1,7 @@
 <template>
   <div class="success-page">
     <div class="success-container">
-      <h1 class="mb-4">Welcome to Ephemeral Environment Testing!</h1>
+      <h1 class="mb-4">Welcome to Pomarium!</h1>
 
       <p class="mt-6">
         Your subscription is now active though it may take a moment for
