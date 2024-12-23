@@ -90,6 +90,7 @@ const setupBtnDisabled = ref(false);
 const stateClient = ref({});
 let stripe;
 let elements;
+const messages = ref([]);
 
 const appearance = {
   theme: 'stripe',
