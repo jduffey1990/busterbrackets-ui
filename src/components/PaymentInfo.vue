@@ -20,7 +20,7 @@
         </button>
 
         <!-- Display messages -->
-        <sr-messages :messages="messages"/>
+        <sr-messages :messages="messages" class="small"/>
       </form>
 
       <div v-if="unpaidInvoices.length" class="my-5">
@@ -90,6 +90,8 @@ const setupBtnDisabled = ref(false);
 const stateClient = ref({});
 let stripe;
 let elements;
+const messages = ref([]);
+
 
 const appearance = {
   theme: 'stripe',

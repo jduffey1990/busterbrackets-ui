@@ -12,7 +12,6 @@ const messagesRef = toRef(props, 'messages');
 
 const splitMessages = computed(() => {
   return messagesRef.value.map((x) => {
-    console.log("here is message", x)
     const paymentIntentRe = /(pi_(\S*)\b)/
     const paymentIntentMatch = x.match(paymentIntentRe)
     return {
