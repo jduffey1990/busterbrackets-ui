@@ -18,7 +18,34 @@
       </v-btn>
     </router-link>
   </div>
+  <div
+      v-else-if="isLoading"
+      class="text-center"
+  >
+    <v-progress-linear
+        color="primary"
+        indeterminate
+        class="mb-2"
+    ></v-progress-linear>
+
+    <div class="text-h4">Loading...</div>
+  </div>
   <div v-else>
+    <div v-if="client.needs_refreshed === true" class="refresh-div">
+      <v-alert title="Preferences have changed" type="secondary">
+        <br>
+        <span>You have changed your investment preferences. If you would like this client to have their portfolio updated
+          to reflect these changes, click "Refresh Portfolio" to apply.</span>
+
+      </v-alert>
+      <v-btn
+          color="primary"
+          text="Refresh Portfolio"
+          @click=refreshPortfolio()
+          class="mt-3"
+      >
+      </v-btn>
+    </div>
 
     <div class="scatter_section mt-10">
       <h5 class="graph_title">Whole Portfolio Analysis</h5>
@@ -44,7 +71,7 @@
         </v-toolbar>
       </template>
       <template v-slot:item.metric="{ item }">
-        
+
         <p v-on:mouseover="hovering[item.metric] = true" v-on:mouseleave="hovering[item.metric] = false">
           {{ item.metric }}
           <v-tooltip
@@ -107,7 +134,7 @@
         </v-toolbar>
       </template>
       <template v-slot:item.metric="{ item }">
-        
+
         <p v-on:mouseover="hovering[item.metric] = true" v-on:mouseleave="hovering[item.metric] = false">
           {{ item.metric }}
           <v-tooltip
@@ -157,20 +184,25 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import {storeToRefs} from "pinia";
 import {useUserStore} from "@/store/user";
 
+const {show} = inject('toast');
+const $axios = inject('$axios');
+
 import ScatterChart from '../components/ScatterChart.vue';
 import LineChart from '../components/LineChart.vue';
+import {parseError} from "@/utils/error";
 
 const screenWidth = window.innerWidth;
 const {user} = storeToRefs(useUserStore());
-const hovering = ref({ 
-  'Volatility': false, 
-  '3 Year Return (Net of fees)': false, 
-  'Max Drawdown': false, 
-  'Sharpe Ratio': false, 
+const isLoading = ref(false)
+const hovering = ref({
+  'Volatility': false,
+  '3 Year Return (Net of fees)': false,
+  'Max Drawdown': false,
+  'Sharpe Ratio': false,
   "Investment Fit Score": false,
   "Values Fit Score": false,
   "1yr Return": false,
@@ -195,6 +227,7 @@ const props = defineProps({
   noMetrics: Boolean,
   getUniqueRandomColor: Function,
   brandColors: Array,
+
 });
 
 // Use a computed property to safely access client
@@ -242,6 +275,37 @@ const lineDatasets = computed(() => {
 
   return datasets;
 });
+
+const refreshPortfolio = async () => {
+  if (!confirm('By choosing to continue, you will reload the current page and may lose your existing portfolio ' +
+      'allocations. Are you sure you want to continue?')) {
+    return;  // Exit if user cancels the operation
+  }
+
+  isLoading.value = true
+
+  try {
+    let user_id = client.value.id
+    let advisor_id = user.value.id
+    await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
+    await updateClientRefreshField();  // Call patch request after POST succeeds
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+
+  location.reload();  // Reload only after all async operations complete successfully
+};
+
+const updateClientRefreshField = async () => {
+  try {
+    // Ensure that the correct data format is sent to the backend
+    console.log("This is called")
+    await $axios.patch(`/api/users/refresh-portfolio/${client.value.id}/`);
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+}
+
 
 const getAdvisorFee = () => {
   clientLoaded.value = true
@@ -516,15 +580,15 @@ const wholeTableData = computed(() => {
     },
     {
       metric: 'Expense Ratio',
-      veryLow: toPercentage(props.metrics.full_portfolio[0]['expense ratio'],2),
-      low: toPercentage(props.metrics.full_portfolio[1]['expense ratio'],2),
-      medium: toPercentage(props.metrics.full_portfolio[2]['expense ratio'],2),
-      high: toPercentage(props.metrics.full_portfolio[3]['expense ratio'],2),
-      veryHigh: toPercentage(props.metrics.full_portfolio[4]['expense ratio'],2),
-      "US Stocks (VTI)": toPercentage(props.metrics.full_portfolio['VTI']["expense ratio"],2),
-      "Int Stocks (VXUS)": toPercentage(props.metrics.full_portfolio['VXUS']["expense ratio"],2),
-      "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']["expense ratio"],2),
-      "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']["expense ratio"],2),
+      veryLow: toPercentage(props.metrics.full_portfolio[0]['expense ratio'], 2),
+      low: toPercentage(props.metrics.full_portfolio[1]['expense ratio'], 2),
+      medium: toPercentage(props.metrics.full_portfolio[2]['expense ratio'], 2),
+      high: toPercentage(props.metrics.full_portfolio[3]['expense ratio'], 2),
+      veryHigh: toPercentage(props.metrics.full_portfolio[4]['expense ratio'], 2),
+      "US Stocks (VTI)": toPercentage(props.metrics.full_portfolio['VTI']["expense ratio"], 2),
+      "Int Stocks (VXUS)": toPercentage(props.metrics.full_portfolio['VXUS']["expense ratio"], 2),
+      "Bonds (BND)": toPercentage(props.metrics.full_portfolio['BND']["expense ratio"], 2),
+      "Cash (SHV)": toPercentage(props.metrics.full_portfolio['SHV']["expense ratio"], 2),
     },
   ];
 });
@@ -618,7 +682,7 @@ function formatDate(dateString) {
   return date.toLocaleDateString('en-US', options);
 }
 
-function toPercentage(value, decimals=1) {
+function toPercentage(value, decimals = 1) {
   return `${(value * 100).toFixed(decimals)}%`;
 }
 
@@ -675,9 +739,17 @@ const littleOptions = {
   }
 };
 
+console.log("needs refreshed", client.value)
 </script>
 
 <style>
+.refresh-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .scatter_section {
   display: flex;
   flex-direction: column;

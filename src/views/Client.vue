@@ -486,7 +486,9 @@
             :no-metrics="noMetrics"
             :client="client"
             :brand-colors="brandColors"
-            :get-unique-random-color="getUniqueRandomColor"/>
+            :get-unique-random-color="getUniqueRandomColor"
+            :user-id="user_id"
+            :advisor-id="advisor_id"/>
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
