@@ -439,9 +439,12 @@ import {onMounted} from 'vue';
 import {ref} from 'vue';
 import {inject} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
+
+
 import BarChart from '@/components/BarChart.vue';
 import PieChart from '../components/PieChart.vue';
 import {parseError} from "@/utils/error";
+import {updateClientRefreshField} from "@/utils/general-api-functions";
 
 const router = useRouter();
 const {show} = inject('toast');
@@ -811,7 +814,7 @@ const saveFactorLevers = async () => {
         {aggregate: JSON.stringify(factorLeversAggregate.value)}
     );
 
-    await updateClientRefreshField()
+    await updateClientRefreshField($axios, user_id || advisor_id, show)
     editLevers.value = false;
 
     show({message: 'Factor levers saved!'});
@@ -822,16 +825,6 @@ const saveFactorLevers = async () => {
     });
   }
 };
-
-const updateClientRefreshField = async () => {
-  try {
-    // Ensure that the correct data format is sent to the backend
-    console.log("This is called")
-    await $axios.patch(`/api/users/refresh-portfolio/${user_id || advisor_id}/`);
-  } catch (error) {
-    show({message: parseError(error), error: true});
-  }
-}
 
 const leverGraphItems = ref([])
 

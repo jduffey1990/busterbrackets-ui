@@ -194,6 +194,7 @@ const $axios = inject('$axios');
 import ScatterChart from '../components/ScatterChart.vue';
 import LineChart from '../components/LineChart.vue';
 import {parseError} from "@/utils/error";
+import {updateClientRefreshField} from "@/utils/general-api-functions";
 
 const screenWidth = window.innerWidth;
 const {user} = storeToRefs(useUserStore());
@@ -288,23 +289,13 @@ const refreshPortfolio = async () => {
     let user_id = client.value.id
     let advisor_id = user.value.id
     await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
-    await updateClientRefreshField();  // Call patch request after POST succeeds
+    await updateClientRefreshField($axios, client.value.id, show);// Call patch request after POST succeeds
   } catch (error) {
     show({message: parseError(error), error: true});
   }
 
   location.reload();  // Reload only after all async operations complete successfully
 };
-
-const updateClientRefreshField = async () => {
-  try {
-    // Ensure that the correct data format is sent to the backend
-    console.log("This is called")
-    await $axios.patch(`/api/users/refresh-portfolio/${client.value.id}/`);
-  } catch (error) {
-    show({message: parseError(error), error: true});
-  }
-}
 
 
 const getAdvisorFee = () => {
