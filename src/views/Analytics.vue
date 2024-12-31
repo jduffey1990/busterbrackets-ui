@@ -289,11 +289,12 @@ const refreshPortfolio = async () => {
     let user_id = client.value.id
     let advisor_id = user.value.id
     await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
-    await updateClientRefreshField($axios, client.value.id, show);// Call patch request after POST succeeds
+    //this is in ../utils/general-api-function
+    await updateClientRefreshField($axios, client.value.id, show);
   } catch (error) {
     show({message: parseError(error), error: true});
   }
-
+  isLoading.value = false
   location.reload();  // Reload only after all async operations complete successfully
 };
 
