@@ -90,6 +90,22 @@
         </v-alert>
 
         <div v-else>
+          <div v-if="client.needs_refreshed === true" class="refresh-div">
+            <v-alert title="Preferences have changed" type="secondary">
+              <br>
+              <span>You have changed your investment preferences. If you would like this client to have their portfolio updated
+                to reflect these changes, click "Refresh Portfolio" to apply.</span>
+
+            </v-alert>
+            <v-btn
+                color="primary"
+                :text="refreshBtnText"
+                @click=refreshPortfolio()
+                :disabled="refreshBtnDisabled"
+                class="mt-3"
+            >
+            </v-btn>
+          </div>
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
             <div v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
@@ -510,6 +526,8 @@ import Analytics from "@/views/Analytics.vue";
 import LazyImage from '@/components/LazyImage.vue';
 import PDFBuilder from '@/components/PDFBuilder.vue';
 import CsvBuilder from '@/components/CsvBuilder.vue';
+import {updateClientRefreshField} from "@/utils/general-api-functions";
+import {funLookAtFunction} from "@/utils/string";
 
 const screenWidth = window.innerWidth;
 
@@ -543,6 +561,8 @@ const worstCompanies = ref({})
 const eliminatedCount = ref({})
 const orderedColorsSectors = ref([])
 const orderedColorsElim = ref([])
+const refreshBtnDisabled = ref(false)
+const refreshBtnText = ref("Refresh Portfolio")
 
 const hasValuesProfile = computed(
     () => !!Object.keys(valuesProfile.value).length
@@ -982,6 +1002,25 @@ const downloadAccountCSVAll = async () => {
   window.open(
       `${import.meta.env.VITE_BASE_URL}/api/accounts/${user_id}/download-all/`
   );
+};
+
+const refreshPortfolio = async () => {
+  if (!confirm('By choosing to continue, you will reload the current page and may lose your existing portfolio ' +
+      'allocations. Are you sure you want to continue?')) {
+    return;  // Exit if user cancels the operation
+  }
+  refreshBtnDisabled.value = true
+  refreshBtnText.value = "Loading..."
+  try {
+    await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
+    //this below is in ../utils/general-api-function
+    await updateClientRefreshField($axios, client.value.id, show);
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+  refreshBtnDisabled.value = false
+  refreshBtnText.value = "Refresh Portfolio"
+  location.reload();  // Reload only after all async operations complete successfully
 };
 
 const deleteAccount = async (account) => {
