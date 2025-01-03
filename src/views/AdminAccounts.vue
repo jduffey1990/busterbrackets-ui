@@ -5,37 +5,37 @@
     <v-row class="card-group">
       <!-- Advisors Card -->
 
-      <v-card class="square-card" elevation="3">
-        <v-card-title class="card-title">Advisors</v-card-title>
-        <v-card-subtitle>
-          <div class="circle">
-            <span>{{ advisorsLength }}</span>
-          </div>
-        </v-card-subtitle>
+      <v-card
+        :title="advisorsLength"
+        text="Advisors"
+        width="200"
+        style="text-align: center;"
+        class="mx-6"
+      >
       </v-card>
 
 
       <!-- Clients Card -->
 
-      <v-card class="square-card" elevation="3">
-        <v-card-title class="card-title">Clients with Accounts</v-card-title>
-        <v-card-subtitle>
-          <div class="circle">
-            <span>{{ clientsLength }}</span>
-          </div>
-        </v-card-subtitle>
+      <v-card
+        :title="clientsLength"
+        text="Clients with Accounts"
+        width="200"
+        style="text-align: center;"
+        class="mx-6"
+      >
       </v-card>
 
 
       <!-- Accounts Card -->
 
-      <v-card class="square-card" elevation="3">
-        <v-card-title class="card-title">Accounts</v-card-title>
-        <v-card-subtitle>
-          <div class="circle">
-            <span>{{ accountsLength }}</span>
-          </div>
-        </v-card-subtitle>
+      <v-card
+        :title="accountsLength"
+        text="Accounts"
+        width="200"
+        style="text-align: center;"
+        class="mx-6"
+      >
       </v-card>
 
     </v-row>
