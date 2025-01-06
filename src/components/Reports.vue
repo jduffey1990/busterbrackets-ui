@@ -230,7 +230,7 @@ const billingHeaders = [
 
 const fetchAccountsForErik = async () => {
     try {
-        const url = props.advisorPage ? `/api/reports/all-accounts-report/${user.value.firm.id}/` : '/api/reports/all-accounts-report/';
+        const url = props.advisorPage ? `/api/reports/firm-accounts-report/${user.value.firm.id}/` : '/api/reports/all-accounts-report/';
 
         const response = await $axios.get(url);
 
@@ -264,7 +264,7 @@ const fetchAccountsForErik = async () => {
 
 const fetchPD = async () => {
     try{
-        const url = props.advisorPage ? `/api/reports/pd/${user.value.firm.id}/` : '/api/reports/pd/';
+        const url = props.advisorPage ? `/api/reports/pd-firm/${user.value.firm.id}/` : '/api/reports/pd/';
         const response = await $axios.get(url);
 
         props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((portfolio) => portfolio.firm_id === props.chosenFirmId.id) : response.data;
