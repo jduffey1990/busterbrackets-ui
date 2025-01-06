@@ -1,5 +1,30 @@
 <template>
-    <!-- <v-btn @click="clg(billingDataSuper)">test</v-btn> -->
+    <div class="d-flex mt-8">
+        <v-card
+            :title="props.advisorLength"
+            text="Advisors"
+            width="200px"
+            style="text-align: center;"
+            class="mr-4"
+        >
+        </v-card>
+        <v-card
+            :title="clientsWithAccts"
+            text="Clients with Accounts"
+            width="200px"
+            style="text-align: center;"
+            class="mx-4"
+        >
+        </v-card>
+        <v-card
+            :title="numOfAccts"
+            text="Number of Accounts"
+            width="200px"
+            style="text-align: center;"
+            class="mx-4"
+        >
+        </v-card>
+    </div>
     <div class="d-flex mt-8">
         <v-card
             :title="addCommas(totalAccValue)"
@@ -86,6 +111,7 @@
                 @click="(item.strikethrough = !item.strikethrough), (esgBarData = filterData(esgBarData, esgBarDataCopy, esgPieTitles))"
                 :class="{'text-decoration-line-through': item.strikethrough}"
                 class="mx-2 my-2"
+                :style="{backgroundColor: item.title === 'Reset' ? '#07152A' : '', color: item.title === 'Reset' ? 'white' : ''}"
             >
                 {{item.title}}
             </v-chip>
@@ -96,7 +122,6 @@
             style="max-height: 70vh;"
             :options="{responsive: true, plugins: {legend: {display: false,}}}"
         />
-        <!-- list with typesmap names that get crossed out when clicked -->
         <div class="d-flex flex-wrap my-6">
             <v-chip
                 v-for="(item, index) in pieTitles"
@@ -104,6 +129,7 @@
                 @click="(item.strikethrough = !item.strikethrough), (elimBarData = filterData(elimBarData, elimBarDataCopy, pieTitles))"
                 :class="{'text-decoration-line-through': item.strikethrough}"
                 class="mx-2 my-2"
+                :style="{backgroundColor: item.title === 'Reset' ? '#07152A' : '', color: item.title === 'Reset' ? 'white' : ''}"
             >
                 {{item.title}}
             </v-chip>
@@ -143,16 +169,19 @@ const {user} = storeToRefs(useUserStore());
 
 const router = useRouter();
 
-//add a prop for selected advisor_id
 const props = defineProps({
     chosenAdvisorId: {
         type: [Object],
         default: null
     },
     chosenFirmId: {
-        type: [String],
+        type: [Object],
         default: null
-    }
+    },
+    advisorLength: {
+        type: Number,
+        default: 0
+    },
 });
 
 
@@ -181,6 +210,8 @@ const pieTitles = ref({});
 const esgPieTitles = ref({});
 const elimBarDataCopy = ref([]);
 const esgBarDataCopy = ref([]);
+const numOfAccts = ref(0);
+const clientsWithAccts = ref(0);
 
 const billingHeaders = [
 {title: 'Firm', key: 'firm_name'},
@@ -196,10 +227,10 @@ const billingHeaders = [
 const fetchAccountsForErik = async () => {
     try {
         const response = await $axios.get('/api/reports/all-accounts-report/');
-        console.log(props.chosenAdvisorId, 'props.chosenAdvisorId');
-        console.log(response.data, 'response.data before filter');
-        props.chosenAdvisorId ? response.data = response.data.filter((account) => account.advisor_id === props.chosenAdvisorId.id) : response.data;
-        console.log(response.data, 'response.data');
+
+        props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((account) => account.firm_id === props.chosenFirmId.id) : response.data;
+        props.chosenAdvisorId && props.chosenAdvisorId.id ? response.data = response.data.filter((account) => account.advisor_id === props.chosenAdvisorId.id) : response.data;
+
         const newData = response.data.map((data) => {
             const createdAt = formatDate(data.created_at);
             const valueWithCommas = addCommas(Number(data.value), true);
@@ -209,10 +240,16 @@ const fetchAccountsForErik = async () => {
                 value: valueWithCommas,
             };
         });
+
         billingDataSuper.value = billingDataSuper.value.concat(newData);
         dataCopy.value = billingDataSuper.value;
-        console.log(billingDataSuper, 'billingDataSuper');
         getTotalAccValue();
+
+        const uniqueClients = new Set();
+        response.data.forEach((account) => {
+            uniqueClients.add(account.user);
+        });
+        clientsWithAccts.value = uniqueClients.size;
     }
     catch (error) {
         parseError(error);
@@ -222,15 +259,18 @@ const fetchAccountsForErik = async () => {
 const fetchPD = async () => {
     try{
         const response = await $axios.get('/api/reports/pd/');
-        props.chosenAdvisorId ? response.data = response.data.filter((portfolio) => portfolio.advisor_id === props.chosenAdvisorId.id) : response.data;
-        console.log(response.data, "look at this data");
-        console.log(props.chosenAdvisorId, 'props.chosenAdvisorId');
+
+        props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((portfolio) => portfolio.firm_id === props.chosenFirmId.id) : response.data;
+        props.chosenAdvisorId && props.chosenAdvisorId.id ? response.data = response.data.filter((portfolio) => portfolio.advisor_id === props.chosenAdvisorId.id) : response.data;
+
         response.data.forEach((portfolio) => {
             esgNames.value.push(portfolio.portfolio_data.esg_factor_data.esg_names);
         });
+
         response.data.forEach((portfolio) => {
             eliminationNames.value.push(portfolio.portfolio_data.eliminations)
         });
+
         esgNames.value.forEach((esgName) => {
             esgName.forEach((name) => {
                 if (esgCount.value[name]) {
@@ -240,6 +280,7 @@ const fetchPD = async () => {
                 }
             });
         });
+
         eliminationNames.value.forEach((elimName) => {
             Object.keys(elimName).forEach((key) => {
             if (eliminationCount.value[key]) {
@@ -249,6 +290,7 @@ const fetchPD = async () => {
             }
             });
         });
+
         Object.keys(esgCount.value).forEach((key) => {
             for (const [title, keys] of Object.entries(esgTypesMap)) {
                 if (keys.includes(key)) {
@@ -261,9 +303,9 @@ const fetchPD = async () => {
                 }
             }
         });
+
         Object.keys(eliminationCount.value).forEach((key) => {
             for (const [title, keys] of Object.entries(typesMap)) {
-                // console.log(keys, 'keys');
                 if (keys.includes(key)) {
                         elimBarData.value.push({
                         title: Object.keys(typesMap).find(type => typesMap[type].includes(key)) || key,
@@ -274,36 +316,40 @@ const fetchPD = async () => {
                 }
             }
         });
-        // console.log(elimBarData.value, 'elimBarData');
+
         valueFitAvg.value = calculateAverage(response.data, 'overall_values_fit');
         investmentFitAvg.value = calculateAverage(response.data, 'overall_investment_fit');
         marketVfitAvg.value = calculateAverage(response.data, 'market_values_fit');
         marketIFitAvg.value = calculateAverage(response.data, 'market_investment_fit');
-        // put all of the investment fit scores in the subtractedIFitScores object with the structure {metric: "Investment Fit", client1: (overall_investment_fit - market_investment_fit), client2: (overall_investment_fit - market_investment_fit), ...}
+
         subtractedIFitScores.value = {
             metric: "Investment Fit"
         };
+
         response.data.forEach((portfolio, index) => {
             subtractedIFitScores.value[`client${index + 1}`] = portfolio.portfolio_data.overall_investment_fit - portfolio.portfolio_data.market_investment_fit;
         });
+
         subtractedVFitScores.value = {
             metric: "Values Fit"
         };
+
         response.data.forEach((portfolio, index) => {
             subtractedVFitScores.value[`client${index + 1}`] = portfolio.portfolio_data.overall_values_fit - portfolio.portfolio_data.market_values_fit;
         });
-        //get the different titles in elimBarData and put them in the pieTitles object with the structure {title: title, strikethrough: false}
+
+        pieTitles.value['Reset'] = {title: 'Reset', strikethrough: false};
         elimBarData.value.forEach((item) => {
             pieTitles.value[item.title] = {title: item.title, strikethrough: false};
         });
+
+        esgPieTitles.value['Reset'] = {title: 'Reset', strikethrough: false};
         esgBarData.value.forEach((item) => {
             esgPieTitles.value[item.title] = {title: item.title, strikethrough: false};
         });
+
         elimBarDataCopy.value = elimBarData.value;
         esgBarDataCopy.value = esgBarData.value;
-        // console.log(subtractedIFitScores.value);
-        // console.log(subtractedVFitScores.value);
-        // console.log(esgBarData.value, 'esgBarData');
 
         loadBar.value = true;
     } catch (error) {
@@ -320,9 +366,7 @@ const getAllAccounts = async () => {
     try {
         const response = await $axios.get('/api/accounts/all-accounts/');
         accounts.value = response.data;
-        console.log(accounts.value, 'accounts');
         getTotalAccValue();
-        getAverageAccValue();
     }
     catch (error) {
         parseError(error);
@@ -332,12 +376,13 @@ const getAllAccounts = async () => {
 const getTotalAccValue = () => {
     const data = billingDataSuper.value.filter((account) => account.is_archived === false);
     const dataLength = data.length;
+    numOfAccts.value = dataLength;
     totalAccValue.value = data.reduce((acc, account) => acc + Number(account.value.replace(/,/g, '')), 0);
     getAverageAccValue(dataLength);
 };
 
 const getAverageAccValue = (dataLength) => {
-    averageAccValue.value = totalAccValue.value / accounts.value.length;
+    averageAccValue.value = totalAccValue.value / dataLength;
 };
 
 const filterItems = ['Archived', 'Not Archived'];
@@ -392,10 +437,9 @@ const getBarChart = (data) => {
         };
     }
     const usedColors = new Set();
-    // const sortedData = data.sort((a, b) => b.value - a.value);
 
     const datasets = [];
-    //create a data set for each data.type and push it to the datasets array with the structure {label: data.type, data: [data.value], backgroundColor: randomColor}
+
     const labels = [...new Set(data.map(item => item.title))];
     data.forEach((item) => {
         const dataArray = new Array(labels.length).fill(0);
@@ -416,12 +460,7 @@ const getBarChart = (data) => {
     };
 }
 
-
-
-
-//getscatterchart with x axis being investement fit and y axis being values fit using subtractedIFitScores and subtractedVFitScores
 const getScatterChart = (data) => {
-    // console.log(data);
     const valuesEntry = data.find(metric => metric.metric === "Values Fit");
     const investmentEntry = data.find(metric => metric.metric === "Investment Fit");
     const usedColors = new Set();
@@ -430,7 +469,7 @@ const getScatterChart = (data) => {
             datasets: [],
         };
     }
-    // create the dataset for the scatter chart with the x axis being investment fit and the y axis being values fit and the label being the client number
+
     const theData = Object.keys(valuesEntry).map((key) => {
         if (key !== "metric") {
             return {
@@ -451,12 +490,11 @@ const getScatterChart = (data) => {
 const getPieChart = (data) => {
     const labels = data.map(item => item.type);
     const usedColors = new Set();
-    //make a colors array with the same length as the labels array and fill it with random colors that are not already in the usedColors set
+
     const orderedColors = {
         value: labels.map(() => getUniqueRandomColor(brandColors, usedColors)),
     };
-    // console.log(orderedColors.value, 'orderedColors');
-    
+
     return {
         labels: labels,
         datasets: [
@@ -468,16 +506,23 @@ const getPieChart = (data) => {
     };
 }
 
-//filter the data by the selected titles in the pieTitles object
+
 const filterData = (data, copy, pietitles) => {
     data = copy;
-    console.log(data,'filterData');
     if (!data) return [];
-    const filteredData = data.filter((item) => {
-        return !Object.values(pietitles).some((title) => title.title === item.title && title.strikethrough);
-    });
-    getPieChart(filteredData);
-    return filteredData;
+    if (pietitles.Reset.strikethrough) {
+        const filteredData = copy;
+
+        for (const title in pietitles) {
+            pietitles[title].strikethrough = false;
+        }
+        return filteredData;
+    } else{
+        const filteredData = data.filter((item) => {
+            return !Object.values(pietitles).some((title) => title.title === item.title && title.strikethrough);
+        });
+        return filteredData;
+    }
 };
 
 

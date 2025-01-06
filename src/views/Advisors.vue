@@ -13,6 +13,7 @@
             label="Select a Firm"
             return-object
             class="advisor-select"
+            @update:model-value="resetToAll()"
         ></v-select>
       </div>
       <!-- Dropdown to select an advisor -->
@@ -52,93 +53,7 @@
           </v-btn>
         </template>
       </v-data-table>
-
-    <div class="d-flex mt-8">    
-        
-
-        <!-- Data table to display the accounts for the chosen advisor -->
-        <!-- <div class="csv-download">
-          <v-btn
-              color="primary"
-              @click="downloadCSV(allData, accountHeaders, 'billing')"
-              size="small"
-              class="mb-4 mt-4 float-right"
-          >Download CSV firm data
-          </v-btn>
-
-        </div> -->
-        <!-- <v-data-table
-            v-if="chosenAdvisor && accountsData[chosenAdvisor.id]"
-            :headers="accountHeaders"
-            :items="accountsData[chosenAdvisor.id]"
-            class="elevation-1"
-            :no-data-text="noResultsText"
-        >
-          <template v-slot:item.value="{ item }">
-            {{ addCommas(item.value) }}
-          </template>
-          <template v-slot:item.deleted_at="{ item }">
-            {{ item.deleted_at === "Invalid date" ? "Active Account" : formatDate(item.deleted_at) }}
-          </template>
-          <template v-slot:item.created_at="{ item }">
-            {{ formatDate(item.created_at) }}
-          </template>
-          <template #item.account_name="{ item }">
-            <router-link
-                :to="{
-              name: 'Accounts',
-              params: { user_id: item.user_id },
-              query: { account_id: item.id },
-            }">
-              {{ item.account_name }}
-            </router-link>
-          </template>
-
-        </v-data-table> -->
-        <!-- <v-alert
-            v-else
-            title="Select an advisor to see associated accounts"
-            type="secondary"
-            class="my-4"
-        >
-          If an advisor has no associated clients, they can add clients by taking a survey with the client from the
-          <router-link :to="{ name: 'Dashboard' }">Dashboard</router-link>
-        </v-alert> -->
-      
-      <v-card
-        :title="advisorsLength"
-        text="Advisors"
-        width="200"
-        style="text-align: center;"
-        class="mr-4"
-      >
-      </v-card>
-
-
-      <!-- Clients Card -->
-
-      <v-card
-        :title="clientsLength"
-        text="Clients with Accounts"
-        width="200"
-        style="text-align: center;"
-        class="mx-4"
-      >
-      </v-card>
-
-
-      <!-- Accounts Card -->
-
-      <v-card
-        :title="accountsLength"
-        text="Accounts"
-        width="200"
-        style="text-align: center;"
-        class="mx-4"
-      >
-      </v-card>
-    </div>
-      <Reports v-if="loadReports" :chosenAdvisorId="chosenAdvisor"/>
+      <Reports v-if="loadReports" :chosenAdvisorId="chosenAdvisor" :chosenFirmId="chosenFirm" :advisorLength="advisorsLength"/>
 </template>
 
 <script setup>
@@ -207,13 +122,17 @@ getAdvisors();
 
 // Function to filter the list of advisors based on the selected advisor
 const filterAdvisors = (advisor) => {
-  console.log(advisor);
-  console.log(advisors.value);
   if (advisor) {
     advisors.value = advisorsCopy.value.filter((item) => item.id === advisor);
   } else {
     advisors.value = advisorsCopy.value;
   }
+  relaodReports();
+};
+
+const resetToAll = () => {
+  advisors.value = advisorsCopy.value;
+  chosenAdvisor.value = null;
   relaodReports();
 };
 
@@ -243,37 +162,17 @@ const advisorsLength = ref(0)
 const clientsLength = ref(0)
 const accountsLength = ref(0)
 
-const accountHeaders = [
-  {title: 'Client', key: 'user_name'},
-  {title: 'Account', key: 'account_name'},
-  {title: 'Last Four', key: 'last_four'},
-  {title: 'Acc Start', key: 'created_at'},
-  {title: 'Acc End', key: 'deleted_at'},
-  {title: 'Acc Value', key: 'value'}
-];
-
 const fetchAdminData = async () => {
   try {
-
-    const response = await $axios.get(`/api/firms/${firmId.value}/advisors-and-admin/`);
-    firmAdvisorList.value = response.data;
+    const url = chosenFirm.value === null || chosenFirm.value.id  === null ? `/api/firms/${user.value.firm.id}/advisors-and-admin/` : `/api/firms/${firmId.value}/advisors-and-admin/`;
+    const response = await $axios.get(url);
+    if (chosenFirm.value === null || chosenFirm.value.id === null) {
+      firmAdvisorList.value = response.data;
+      advisorsLength.value = firmAdvisorList.value.length;
+    } else {
+    firmAdvisorList.value = response.data.filter((advisor) => advisor.firm.id === firmId.value);
     advisorsLength.value = firmAdvisorList.value.length;
-
-    let accountsArray = [];
-    let clientsSet = new Set();
-
-    // Use Promise.all to wait for all asynchronous fetches
-    await Promise.all(
-        firmAdvisorList.value.map((advisor) =>
-            fetchAdvisorClients(advisor.id, accountsArray, clientsSet)
-        )
-    );
-
-    // Update the total accounts and clients
-    accountsLength.value = accountsArray.length;
-    clientsLength.value = clientsSet.size;
-
-    // Log final accounts data object (keyed by advisor ID)
+    }
 
   } catch (error) {
     console.error('Error fetching billing data:', error);
@@ -282,40 +181,6 @@ const fetchAdminData = async () => {
   }
 };
 
-const flattenAccountsData = (accountsData) => {
-  // Flatten the accountsData object into a single array of accounts
-  return Object.values(accountsData).flat();
-};
-
-const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
-  try {
-    const response = await $axios.get(`/api/billing/${advisor_id}/account-data/`);
-
-    // Store accounts in accountsData by advisor ID
-    accountsData.value[advisor_id] = response.data;
-    response.data.forEach((data) => {
-      data.created_at = formatDate(data.created_at);
-      data.value = addCommas(data.value, true);
-      data.deleted_at = data.deleted_at === "Invalid date" ? "Active Account" : formatDate(data.deleted_at);
-
-      allData.value.push(data)
-    });
-
-
-    // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
-    response.data.forEach((account) => {
-      if (!clientsSet.has(account.user_name)) {
-        clientsSet.add(account.user_name);
-      }
-      accountsArray.push(account);  // Add account to the total accountsArray
-    });
-
-  } catch (error) {
-    console.error('Error fetching accounts data:', error);
-    const parsedError = parseError(error);
-    show({type: 'error', message: parsedError.message});
-  }
-};
 
 const isSuper = ref(false);
 
@@ -330,6 +195,7 @@ const fetchFirms = async () => {
   try {
     const response = await $axios.get('/api/firms/');
     allFirms.value = response.data
+    allFirms.value.push({id: null, name: 'All Firms'});
     await fetchAdminData()
   } catch (error) {
     console.error('Error fetching firms:', error);
