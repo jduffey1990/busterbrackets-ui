@@ -103,7 +103,7 @@ export const useUserStore = defineStore('user', {
                     url: '/api/users/login/',
                     data: credentials,
                 });
-
+                
                 await this.getSession();
             } catch (error) {
                 // Re-throw the error to be caught in `loginUser`

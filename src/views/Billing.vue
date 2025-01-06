@@ -241,49 +241,116 @@
         >
           <div id="link-authentication-element"/>
           <div id="payment-element"/>
-          <button
-              id="submit"
-              :disabled="isPaymentButtonDisabled || isLoading"
-              class="intent-button"
-          >
-            {{ intentButtonText }}
-          </button>
-          <sr-messages :messages="messages" class="small"/>
+          <div>
+            <button
+                id="submit"
+                :disabled="isPaymentButtonDisabled || isLoading"
+                class="intent-button mt-4"
+            >
+              {{ intentButtonText }}
+            </button>
+            <sr-messages :messages="messages" class="small"/>
+          </div>
         </form>
       </div>
       <!-- List of unpaid invoices -->
       <div v-if="unpaidInvoices.length" class="my-5">
-        <h5>Outstanding Invoices</h5>
-        <v-list class="bg-transparent">
-          <v-list-item
-              v-for="(invoice, index) in unpaidInvoices"
-              :key="index"
-              class="d-flex justify-space-between"
-          >
-            <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
-            <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
-            <a :href="invoice.invoice_url" target="_blank" @click="isPaymentButtonDisabled = true" class="mr-3">
-              Invoice Link
-            </a>
-            <a :href="invoice.invoice_pdf" target="_blank">
-              Invoice PDF
-            </a>
-          </v-list-item>
-        </v-list>
+        <h5 class="mb-4">Outstanding Invoices</h5>
+        <v-data-table
+            :items="unpaidInvoices"
+            :headers="[
+                { title:'Invoice Date', value:'created_at'},
+                { title: 'Amount Due', value: 'amount' },
+                { title: 'Invoice Url', value: 'invoice_url' },
+                { title: 'Invoice PDF', value: 'invoice_pdf' }
+            ]"
+            class="elevation-1 outstanding"
+            hide-default-footer
+            :mobile-breakpoint="500"
+        >
+          <template #item.created_at="{ item }">
+            <span>{{ item.created_at }}</span>
+          </template>
+          <template #item.amount="{ item }">
+            <span>{{ item.amount }}</span>
+          </template>
+          <template #item.invoice_url="{ item }">
+            <a :href="item.invoice_url" target="_blank">Stripe Link</a>
+          </template>
+          <template #item.invoice_pdf="{ item }">
+            <a :href="item.invoice_pdf" target="_blank">Invoice PDF</a>
+          </template>
+          <template #bottom></template>
+        </v-data-table>
       </div>
       <div v-if="futureInvoices.length && !stripeIsPaused" class="my-5">
-        <h5>Upcoming Invoices</h5>
-        <v-list class="bg-transparent">
-          <v-list-item
-              v-for="(invoice, index) in futureInvoices"
-              :key="index"
-              class="d-flex justify-space-between"
-          >
-            <span class="small mr-3">Invoice Date: {{ invoice.created_at }}</span>
-            <span class="small mr-3">Amount Due: ${{ invoice.amount }}</span>
-          </v-list-item>
-        </v-list>
+        <h5 class="mb-4">Upcoming Invoices</h5>
+        <v-data-table
+            :items="futureInvoices"
+            :headers="[
+                        { title:'Invoice Date', value:'created_at'},
+                        { title: 'Amount Due', value: 'amount' },
+                    ]"
+            class="elevation-1 upcoming"
+            hide-default-footer
+            :mobile-breakpoint="100"
+        >
+          <template #item.created_at="{ item }">
+            <span>{{ item.created_at }}</span>
+          </template>
+          <template #item.amount_due="{ item }">
+            <span>{{ item.amount_due }}</span>
+          </template>
+          <template #bottom></template>
+        </v-data-table>
       </div>
+      <div class="my-5">
+        <h5 class="mb-4">Paid Invoices</h5>
+        <div v-if="!attemptedReceipts">
+          <v-btn color="primary" @click="fetchPaidInvoices()" class="mb-4">Show Receipts</v-btn>
+        </div>
+        <div
+            v-if="receiptsLoading"
+            class="text-center"
+        >
+          <v-progress-linear
+              color="primary"
+              indeterminate
+              class="mb-2"
+          ></v-progress-linear>
+
+          <div class="text-h4">Loading...</div>
+        </div>
+        <v-data-table
+            v-if="!receiptsLoading && paidInvoices.length"
+            :items="paidInvoices"
+            :headers="[
+                { title:'Invoice Created', value:'created_at'},
+                { title: 'Invoice Payment date', value: 'paid_at' },
+                { title: 'Amount Paid', value: 'amount_paid' },
+                { title: 'Receipt URL', value: 'receipt_url' }
+            ]"
+            class="elevation-1 paid"
+            hide-default-footer
+            :mobile-breakpoint="500"
+            no-data-text="There are no paid invoices to show"
+        >
+          <template #item.created_at="{ item }">
+            <span>{{ item.created_at }}</span>
+          </template>
+          <template #item.paid_at="{ item }">
+            <span>{{ item.paid_at }}</span>
+          </template>
+          <template #item.amount_paid="{ item }">
+            <span>${{ item.amount_paid }}</span>
+          </template>
+          <template #item.receipt_url="{ item }">
+            <a :href="item.receipt_url" target="_blank">Receipt URL</a>
+          </template>
+          <template #bottom></template>
+        </v-data-table>
+      </div>
+
     </section>
   </template>
   <div v-if="!stripeIsPaused  && stripeAccountAssociated" class="end-sub">
@@ -330,6 +397,9 @@ const buttonText = ref('Edit Stripe User Profile');
 const intentButtonText = ref('$0 due');
 let unpaidInvoices = ref([])
 let futureInvoices = ref({})
+let paidInvoices = ref([])
+let attemptedReceipts = ref(false)
+let receiptsLoading = ref(false)
 let dateOfBlock = ref("")
 let hoverAdmin = ref(false)
 let hoverAddress = ref(false)
@@ -485,7 +555,6 @@ const getNextInvoice = async () => {
       futureInvoices.value = [{
         amount: (parseInt(response.data.amount_due) / 100).toFixed(2),
         created_at: new Date(response.data.created_at * 1000).toLocaleDateString(),
-        invoice_url: response.data.invoice_url
       }];
     } else {
       throw new Error("Invoice data not found");
@@ -493,6 +562,26 @@ const getNextInvoice = async () => {
   } catch (error) {
     console.error("Error fetching upcoming invoice:", error);
     errorMessage.value = "An error occurred while fetching upcoming invoice data.";
+  }
+};
+
+const fetchPaidInvoices = async () => {
+  attemptedReceipts.value = true
+  receiptsLoading.value = true
+  try {
+    const response = await $axios.get("/api/billing/retrieve-past-invoices");
+    // Populate the paidInvoices array with the response data
+    paidInvoices.value = response.data.map((invoice) => ({
+      ...invoice,
+      created_at: new Date(invoice.created_at * 1000).toLocaleDateString(),
+      paid_at: new Date(invoice.paid_at * 1000).toLocaleDateString(),
+      amount_paid: (invoice.amount_paid / 100).toFixed(2),
+    }));
+    console.log("Processed Invoices:", paidInvoices.value);
+  } catch (error) {
+    console.error("Error fetching invoices:", error.response?.data || error.message);
+  } finally {
+    receiptsLoading.value = false
   }
 };
 
@@ -548,6 +637,8 @@ const submitSubscription = async () => {
   } catch (error) {
     console.error("Error creating subscription:", error);
     show({type: "error", message: "There was an error creating the subscription. Please try again later."});
+  } finally {
+    createSubscriptionDisabled.value = false;
   }
 };
 
@@ -772,7 +863,6 @@ onMounted(async () => {
 
   // Initialize Stripe elements
   stripe = await loadStripe(stripePublicKey.value);
-  // Fetch client secret from backend
 
   formatDate()
   if (stripeAccountAssociated) {
@@ -850,7 +940,7 @@ watch(total, (newTotal) => {
 
 /* Form styling */
 .payment-form {
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
@@ -907,6 +997,13 @@ watch(total, (newTotal) => {
   pointer-events: none;
 }
 
+.center-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .intent-button {
   background-color: #07152A;
   color: #ffffff;
@@ -942,5 +1039,17 @@ watch(total, (newTotal) => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.paid {
+  max-width: 900px;
+}
+
+.outstanding {
+  max-width: 900px;
+}
+
+.upcoming {
+  max-width: 500px;
 }
 </style>

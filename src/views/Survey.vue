@@ -101,7 +101,8 @@
                   >
                     <!-- Loop through each question in the group -->
                     <div class="autocomplete-div">
-                      <span class="my-2 text-h5" v-for="q in group.survey_questions" v-html="formatLabel(q.question.text)"></span>
+                      <span class="my-2 text-h5" v-for="q in group.survey_questions"
+                            v-html="formatLabel(q.question.text)"></span>
                       <v-autocomplete
                           v-for="q in group.survey_questions"
                           :key="q.question.id"
@@ -118,7 +119,8 @@
                           class="autocomplete"
                       >
                         <template v-slot:label>
-                          <span class="auto-complete" v-html="'Start typing the names of companies or tickers here'"></span>
+                          <span class="auto-complete"
+                                v-html="'Start typing the names of companies or tickers here'"></span>
                         </template>
 
                         <template v-slot:chip="{ props, item }">
@@ -568,15 +570,15 @@
                               {{ q.question.text }}
                             </div>
                             <v-radio-group
-                              v-model="q.question.default_value"
-                              v-for="(option, index) in q.question.slider_ticks"
+                                v-model="q.question.default_value"
+                                v-for="(option, index) in q.question.slider_ticks"
                             >
                               <v-radio
-                                :label="newRadioLabels[index]"
-                                :value="index"
-                                @change="updateResponse(q, section.tag)"
-                                class="my-2"
-                                style="margin-left: 10px;"
+                                  :label="newRadioLabels[index]"
+                                  :value="index"
+                                  @change="updateResponse(q, section.tag)"
+                                  class="my-2"
+                                  style="margin-left: 10px;"
                               ></v-radio>
                               <p style="font-size: 14px;" class="ml-12">{{ radioDescriprions[index] }}</p>
                             </v-radio-group>
@@ -982,29 +984,36 @@ const sendFreeResponse = async (prospect_id = null) => {
 const sendEmail = async () => {
   try {
     // Fetch advisor details
-    const advisorResponse = await $axios.get(`/api/users/advisor/${advisor_id}`);
+    const advisorResponse = await $axios.get(`/api/users/advisor/${advisor}`);
     const advisorEmail = advisorResponse.data.email;
     const advisorWantsEmail = advisorResponse.data.email_surveys;
-
-    if (!advisorWantsEmail) {
+    if (advisorWantsEmail === false) {
       return;
     }
     //If the advisor takes this from client route, they won't need an update.  This comes from prospect.
     let message = `
-      <p>Hi ${advisorResponse.data.full_name},</p>
+      <div style="background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%); width: 100%; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://storage.googleapis.com/pomarium-dev-logos/pomarium-logo-text.png"
+              alt="Pomarium Logo"
+              style="max-width: 100px; height: auto;">
+        </div>
+        <p style="font-size: 16px; color: #333;">Hi ${advisorResponse.data.full_name},</p>
 
-      <p>Great news - you’ve got a new prospect! 🎉 ${newProspect.first_name} ${newProspect.last_name} completed a
-      Pomarium survey from your unique advisor link.</p>
+        <p style="font-size: 16px; color: #333;">Great news - you’ve got a new prospect! 🎉 ${newProspect.first_name} ${newProspect.last_name} completed a
+        Pomarium survey from your unique advisor link.</p>
 
-
-      <p>Here are your next steps:</p>
-      <ul>
-        <li>Review their results here @ <a href="https://app.getpomarium.com">Pomarium</a>.</li>
-        <li>Reach out to them at <a href="mailto:${newProspect.email}">${newProspect.email}</a> with a sneak peek.</li>
-        <li>Schedule a call to review their results together!</li>
-      </ul>
-
-      <p>PS: Keep sharing your link, it’s working! 👍🏽</p>
+        <p style="font-size: 16px; color: #333;">Here are your next steps:</p>
+        <ul style="font-size: 16px; color: #333;">
+          <li>Review their results here @ <a href="https://app.getpomarium.com" style="color: #007BFF;">Pomarium</a>.</li>
+          <li>Reach out to them at <a href="mailto:${newProspect.email}" style="color: #007BFF;">${newProspect.email}</a> with a sneak peek.</li>
+          <li>Schedule a call to review their results together!</li>
+        </ul>
+        <p style="font-size: 16px; color: #333;">Warm Regards,</p>
+        <p style="font-size: 16px; color: #333;">Your Friends at Pomarium</p>
+        <div style="min-height: 40px;"></div>
+        <p style="font-size: 16px; color: #333;">PS: Keep sharing your link, it’s working! 👍🏽</p>
+      </div>
     `;
     let subject = "New Prospect Alert! ✨ A Potential Client Just Completed Your Survey";
 
@@ -1068,7 +1077,7 @@ const getElims = async () => {
     try {
       // Send the mapped responses to the backend
       const result = await $axios.post(
-          `/api/advisors/${advisor_id}/clients/${user_id}/eliminations/`,
+          `/api/advisors/eliminations/`,
           allWeeds //finalResponses
       );
 
@@ -1227,7 +1236,14 @@ const submitSurvey = () => {
 
 // Lifecycle Hooks
 onMounted(async () => {
-  const {data: surveyData} = await $axios.get('/api/surveys/');
+  let useful_id
+  if (advisor_id) {
+    useful_id = advisor_id //on the app, advisor_id is a store var
+  } else {
+    useful_id = advisor //for the link, advisor is the route params advisor id
+  }
+
+  const {data: surveyData} = await $axios.get(`/api/surveys/?advisor_id=${useful_id}`);
   let valuesProfile = [];
 
   for (let section of surveyData.survey_sections) {
@@ -1328,7 +1344,7 @@ window.addEventListener('beforeunload', (event) => {
   }
 });
 
-const radioValue = [0,1,2]
+const radioValue = [0, 1, 2]
 
 const newRadioLabels = ["Personal Values", 'Balance', "Market Focus"]
 const radioDescriprions = ["Prioritize investments in companies that align with your values", "Find a middle ground between your values and traditional investment scores", "Prioritize investments based on traditional investment scores"]
@@ -1737,6 +1753,7 @@ const radioDescriprions = ["Prioritize investments in companies that align with 
     width: 120%;
     transform: translatex(-40px);
   }
+
   .auto-complete {
     text-wrap: wrap;
     font-size: 14px;
@@ -1745,11 +1762,12 @@ const radioDescriprions = ["Prioritize investments in companies that align with 
 }
 
 @media only screen and (max-width: 400px) {
-  .slider{
+  .slider {
     max-width: 100%;
     width: 110%;
     transform: translatex(-7.5%);
   }
+
   .autocomplete-div {
     transform: translateX(10%);
   }

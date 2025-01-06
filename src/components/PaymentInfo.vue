@@ -77,6 +77,7 @@ import {loadStripe} from '@stripe/stripe-js';
 import {inject, onMounted, ref} from 'vue';
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from "pinia";
+import SrMessages from "@/components/SrMessages.vue";
 
 const {stripeAccountAssociated, stripeIsPaused} = useUserStore();
 const {stripePublicKey} = storeToRefs(useUserStore())
@@ -89,6 +90,7 @@ const setupBtnDisabled = ref(false);
 const stateClient = ref({});
 let stripe;
 let elements;
+const messages = ref([]);
 
 const appearance = {
   theme: 'stripe',

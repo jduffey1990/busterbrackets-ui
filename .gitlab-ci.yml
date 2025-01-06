@@ -60,7 +60,7 @@ stages:
     - cat .secure_files/google-ui-service-account.json | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev
     - gcloud auth activate-service-account --key-file .secure_files/$SERVICE_ACCOUNT.json
     - gcloud config set project $PROJECT
-    - gcloud run deploy $CLOUD_RUN_SERVICE --image $IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated  
+    - gcloud run deploy $CLOUD_RUN_SERVICE --image $IMAGE:$CI_COMMIT_SHORT_SHA --region=us-central1 --platform managed --allow-unauthenticated
 
 # ---- Cloud Run Pre-Dev ----
 
@@ -70,9 +70,8 @@ build-predev:
   rules:
     - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
       when: never
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-      when: never
-    - when: always
+    - if: $CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "web"
+      when: always
   variables:
     IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_REF_NAME"
 
@@ -84,11 +83,8 @@ deploy-predev:
   rules:
     - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
       when: never
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-      when: never
-    - if: $DEPLOY_PREDEV_UI == "false"
-      when: never
-    - when: always
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: "$UI_PREDEV_IMAGE-$CI_COMMIT_REF_NAME"
@@ -100,18 +96,22 @@ deploy-predev:
 build-dev:
   extends: .build
   stage: build-dev
-  only:
-    - development
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "push"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "web"
+      when: always
   variables:
     IMAGE: $UI_IMAGE
 
 deploy-dev:
   extends: .deploy
   stage: deploy-dev
-  needs:
-    - build-dev
-  only:
-    - development
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "push"
+      when: always
+    - if: $CI_COMMIT_BRANCH == "development" && $CI_PIPELINE_SOURCE == "web"
+      when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_DEV_PROJECT
     IMAGE: $UI_IMAGE
@@ -123,9 +123,9 @@ deploy-dev:
 deploy-beta:
   extends: .deploy
   stage: deploy-beta
-  only:
-    - main
-  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"
+      when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
     IMAGE: $UI_IMAGE
@@ -137,10 +137,9 @@ deploy-beta:
 deploy-demo:
   extends: .deploy
   stage: deploy-demo
-  only:
-    - main
-  needs:
-    - deploy-beta
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"
+      when: always
   variables:
     PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
     IMAGE: $UI_IMAGE

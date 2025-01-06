@@ -89,10 +89,27 @@
         </v-alert>
 
         <div v-else>
+          <div v-if="client.needs_refreshed === true" class="refresh-div">
+            <v-alert title="Preferences have changed" type="secondary">
+              <br>
+              <span>You have changed your investment preferences. If you would like this client to have their portfolio updated
+                to reflect these changes, click "Refresh Portfolio" to apply.</span>
+
+            </v-alert>
+            <v-btn
+                color="primary"
+                :text="refreshBtnText"
+                @click=refreshPortfolio()
+                :disabled="refreshBtnDisabled"
+                class="mt-3"
+            >
+            </v-btn>
+          </div>
 
           <div class="my-8 canvas-item" v-if="portfolioValues">
             <div v-if="(screenWidth > 700)" class="d-flex justify-end mx-7">
-              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders" :tableHeaders="pdfTableHeaders"/>
+              <PDFBuilder pdfElementId="recommendations" canvasClass="canvas-item" :excludeColumns="excludedHeaders"
+                          :tableHeaders="pdfTableHeaders"/>
             </div>
 
             <div class="text-h4">Portfolio vs. Market</div>
@@ -147,25 +164,25 @@
   
             <div style="display: flex;" class="my-3">
               <v-card
-                :title="allocations.length"
-                text="Companies"
-                width="200px"
-                style="text-align: center;"
-                class="mx-6"
+                  :title="allocations.length"
+                  text="Companies"
+                  width="200px"
+                  style="text-align: center;"
+                  class="mx-6"
               ></v-card>
               <v-card
-                :title="averageVFit"
-                text="Values Score"
-                width="200px"
-                style="text-align: center;"
-                class="mx-6"
+                  :title="averageVFit"
+                  text="Values Score"
+                  width="200px"
+                  style="text-align: center;"
+                  class="mx-6"
               ></v-card>
               <v-card
-                :title="averageIFit"
-                text="Investment Score"
-                width="200px"
-                style="text-align: center;"
-                class="mx-6"
+                  :title="averageIFit"
+                  text="Investment Score"
+                  width="200px"
+                  style="text-align: center;"
+                  class="mx-6"
               ></v-card>
             </div>
             <div class="d-flex justify-end" v-if="!edditingAllocations">
@@ -209,9 +226,9 @@
               <template v-slot:item="{ item }">
                 <tr>
                   <td>
-                    <v-checkbox-btn 
-                      v-if="edditingAllocations"
-                      @input="addOrRemoveAllocationToDelete(item.ticker)"
+                    <v-checkbox-btn
+                        v-if="edditingAllocations"
+                        @input="addOrRemoveAllocationToDelete(item.ticker)"
                     >
                     </v-checkbox-btn>
                   </td>
@@ -273,70 +290,70 @@
           </div>
 
           <hr/>
-              <div class="my-8 table-content">
-                <div class="d-flex justify-start flex-row">
-                  <v-tooltip
-                      text="These companies were excluded from your portfolio, likely among others."
-                      location="top">
-                    <template v-slot:activator="{ props }">
-                      <div class="text-h4" v-bind="props">Excluded Companies (10 lowest Values Score)</div>
-                      <v-icon
-                          v-bind="props"
-                          size="20"
-                          color="grayblue"
-                          class="ml-1 translate">mdi-information
-                      </v-icon>
-                    </template>
-                  </v-tooltip>
-                </div>
+          <div class="my-8 table-content">
+            <div class="d-flex justify-start flex-row">
+              <v-tooltip
+                  text="These companies were excluded from your portfolio, likely among others."
+                  location="top">
+                <template v-slot:activator="{ props }">
+                  <div class="text-h4" v-bind="props">Excluded Companies (10 lowest Values Score)</div>
+                  <v-icon
+                      v-bind="props"
+                      size="20"
+                      color="grayblue"
+                      class="ml-1 translate">mdi-information
+                  </v-icon>
+                </template>
+              </v-tooltip>
+            </div>
 
-                <v-data-table
-                    :items="worstCompanies"
-                    :headers="worstHeaders"
-                    :items-per-page="-1"
-                    hide-default-header
-                    mobile-breakpoint="700"
-                    class="worst-companies"
+            <v-data-table
+                :items="worstCompanies"
+                :headers="worstHeaders"
+                :items-per-page="-1"
+                hide-default-header
+                mobile-breakpoint="700"
+                class="worst-companies"
+            >
+              <!-- Custom Header Slot -->
+              <template
+                  v-for="header in worstHeaders"
+                  :key="header.key"
+                  v-slot:[`header.${header.key}`]="{ column }">
+                <span>{{ column.title }}</span>
+                <v-tooltip
+                    v-if="column.tooltip"
+                    :text="column.tooltip"
+                    location="top"
                 >
-                  <!-- Custom Header Slot -->
-                  <template
-                      v-for="header in worstHeaders"
-                      :key="header.key"
-                      v-slot:[`header.${header.key}`]="{ column }">
-                    <span>{{ column.title }}</span>
-                    <v-tooltip
-                        v-if="column.tooltip"
-                        :text="column.tooltip"
-                        location="top"
-                    >
-                      <template v-slot:activator="{ props }">
-                        <v-icon
-                            v-bind="props"
-                            small
-                            color="grayblue"
-                            class="ml-1">mdi-information
-                        </v-icon>
-                      </template>
-                    </v-tooltip>
+                  <template v-slot:activator="{ props }">
+                    <v-icon
+                        v-bind="props"
+                        small
+                        color="grayblue"
+                        class="ml-1">mdi-information
+                    </v-icon>
                   </template>
+                </v-tooltip>
+              </template>
 
 
-                  <template v-slot:item="{ item }">
-                    <tr>
-                      <td style="padding: 0px;">
-                        <LazyImage
-                            :src="item.image"
-                            :alt="item.ticker"
-                            style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
-                      </td>
-                      <td style="white-space: nowrap;">{{ item.name }}</td>
-                      <td>{{ item.ticker }}</td>
-                      <td>{{ item.worst_value }}</td>
-                    </tr>
-                  </template>
-                  <template #bottom></template>
-                </v-data-table>
-              </div>
+              <template v-slot:item="{ item }">
+                <tr>
+                  <td style="padding: 0px;">
+                    <LazyImage
+                        :src="item.image"
+                        :alt="item.ticker"
+                        style="display: flex; margin: auto; max-height: 20px; max-width: 40px;"/>
+                  </td>
+                  <td style="white-space: nowrap;">{{ item.name }}</td>
+                  <td>{{ item.ticker }}</td>
+                  <td>{{ item.worst_value }}</td>
+                </tr>
+              </template>
+              <template #bottom></template>
+            </v-data-table>
+          </div>
 
           <div class="my-8 canvas-item" v-if="Object.keys(eliminatedCount).length">
             <div class="text-h4">All Excluded Companies</div>
@@ -499,7 +516,9 @@
             :no-metrics="noMetrics"
             :client="client"
             :brand-colors="brandColors"
-            :get-unique-random-color="getUniqueRandomColor"/>
+            :get-unique-random-color="getUniqueRandomColor"
+            :user-id="user_id"
+            :advisor-id="advisor_id"/>
       </v-tabs-window-item>
     </v-tabs-window>
   </div>
@@ -521,6 +540,8 @@ import Analytics from "@/views/Analytics.vue";
 import LazyImage from '@/components/LazyImage.vue';
 import PDFBuilder from '@/components/PDFBuilder.vue';
 import CsvBuilder from '@/components/CsvBuilder.vue';
+import {updateClientRefreshField} from "@/utils/general-api-functions";
+import {funLookAtFunction} from "@/utils/string";
 
 const screenWidth = window.innerWidth;
 
@@ -556,6 +577,8 @@ const worstCompanies = ref({})
 const eliminatedCount = ref({})
 const orderedColorsSectors = ref([])
 const orderedColorsElim = ref([])
+const refreshBtnDisabled = ref(false)
+const refreshBtnText = ref("Refresh Portfolio")
 
 const hasValuesProfile = computed(
     () => !!Object.keys(valuesProfile.value).length
@@ -997,6 +1020,25 @@ const downloadAccountCSVAll = async () => {
   );
 };
 
+const refreshPortfolio = async () => {
+  if (!confirm('By choosing to continue, you will reload the current page and may lose your existing portfolio ' +
+      'allocations. Are you sure you want to continue?')) {
+    return;  // Exit if user cancels the operation
+  }
+  refreshBtnDisabled.value = true
+  refreshBtnText.value = "Loading..."
+  try {
+    await $axios.post(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/`);
+    //this below is in ../utils/general-api-function
+    await updateClientRefreshField($axios, client.value.id, show);
+  } catch (error) {
+    show({message: parseError(error), error: true});
+  }
+  refreshBtnDisabled.value = false
+  refreshBtnText.value = "Refresh Portfolio"
+  location.reload();  // Reload only after all async operations complete successfully
+};
+
 const deleteAccount = async (account) => {
   // pop up a confirmation dialog
   if (!confirm('Are you sure you want to delete this account?')) {
@@ -1197,7 +1239,7 @@ const noMetrics = ref(true)
 const getMetrics = async () => {
   metricsLoading.value = true;
   try {
-    const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/metrics`);
+    const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${user_id}/portfolio/metrics/`);
     metrics.value = data;
     noMetrics.value = false; // Set to false if metrics are successfully fetched
   } catch (error) {
@@ -1301,23 +1343,23 @@ const refresh = () => {
 const templateItems = [{
   title: 'Standard',
   value: 'standard'
-}, 
-{
-  title: 'iRebal',
-  value: 'irebal'
-}, 
-{
-  title: 'LPL Financial',
-  value: 'lpl_financial'
-}, 
-{
-  title: 'Orion',
-  value: 'orion'
-}, 
-{
-  title: 'Raymond James',
-  value: 'rj'
-}];
+},
+  {
+    title: 'iRebal',
+    value: 'irebal'
+  },
+  {
+    title: 'LPL Financial',
+    value: 'lpl_financial'
+  },
+  {
+    title: 'Orion',
+    value: 'orion'
+  },
+  {
+    title: 'Raymond James',
+    value: 'rj'
+  }];
 
 const barOptions = {
   responsive: true,
