@@ -1,44 +1,5 @@
 <template>
-  <div>
-    <!-- Cards displaying counts for advisors, clients, and accounts -->
-    <!-- Cards displaying counts for advisors, clients, and accounts -->
-    <v-row class="card-group">
-      <!-- Advisors Card -->
-
-      <v-card
-        :title="advisorsLength"
-        text="Advisors"
-        width="200"
-        style="text-align: center;"
-        class="mx-6"
-      >
-      </v-card>
-
-
-      <!-- Clients Card -->
-
-      <v-card
-        :title="clientsLength"
-        text="Clients with Accounts"
-        width="200"
-        style="text-align: center;"
-        class="mx-6"
-      >
-      </v-card>
-
-
-      <!-- Accounts Card -->
-
-      <v-card
-        :title="accountsLength"
-        text="Accounts"
-        width="200"
-        style="text-align: center;"
-        class="mx-6"
-      >
-      </v-card>
-
-    </v-row>
+  <div class="mt-6">
     <div class="advisor-select-group">
       <v-select
           v-if="isSuper"
@@ -61,58 +22,14 @@
           label="Select an Advisor"
           return-object
           class="advisor-select"
+          @update:model-value="resetToAll($event)"
       ></v-select>
     </div>
-
-    <!-- Data table to display the accounts for the chosen advisor -->
-    <div class="csv-download">
-      <v-btn
-          color="primary"
-          @click="downloadCSV(allData, accountHeaders, 'billing')"
-          size="small"
-          class="mb-4 mt-4 float-right"
-      >Download CSV firm data
-      </v-btn>
-
-    </div>
-    <v-data-table
-        v-if="chosenAdvisor && accountsData[chosenAdvisor.id]"
-        :headers="accountHeaders"
-        :items="accountsData[chosenAdvisor.id]"
-        class="elevation-1"
-        :no-data-text="noResultsText"
-    >
-      <template v-slot:item.value="{ item }">
-        {{ addCommas(item.value) }}
-      </template>
-      <template v-slot:item.deleted_at="{ item }">
-        {{ item.deleted_at === "Invalid date" ? "Active Account" : formatDate(item.deleted_at) }}
-      </template>
-      <template v-slot:item.created_at="{ item }">
-        {{ formatDate(item.created_at) }}
-      </template>
-      <template #item.account_name="{ item }">
-        <router-link
-            :to="{
-          name: 'Accounts',
-          params: { user_id: item.user_id },
-          query: { account_id: item.id },
-        }">
-          {{ item.account_name }}
-        </router-link>
-      </template>
-
-    </v-data-table>
-    <v-alert
-        v-else
-        title="Select an advisor to see associated accounts"
-        type="secondary"
-        class="my-4"
-    >
-      If an advisor has no associated clients, they can add clients by taking a survey with the client from the
-      <router-link :to="{ name: 'Dashboard' }">Dashboard</router-link>
-    </v-alert>
   </div>
+  <div v-if="loadReports">
+    <Reports advisorPage="true" :advisorLength="advisorsLength" :chosenAdvisorId="chosenAdvisor"/>
+  </div>
+  
 </template>
 
 <script setup>
@@ -122,6 +39,7 @@ import {storeToRefs} from 'pinia';
 import {parseError} from '@/utils/error';
 import {addCommas, formatDate, funLookAtFunction} from '@/utils/string';
 import {downloadCSV} from '@/utils/file';
+import Reports from '@/components/Reports.vue';
 
 const $axios = inject('$axios');
 const {show} = inject('toast');
@@ -129,6 +47,19 @@ const {show} = inject('toast');
 const {user} = storeToRefs(useUserStore());
 const firmId = computed(() => chosenFirm.value ? chosenFirm.value.id : user.value.firm.id);
 
+const loadReports = ref(true);
+
+const relaodReports = () => {
+  loadReports.value = false;
+  setTimeout(() => {
+    loadReports.value = true;
+  }, 100);
+};
+
+const resetToAll = (data) => {
+  data === 'All Advisors' ? chosenAdvisor.value = null : null;
+  relaodReports();
+};
 
 const accountsData = ref({});
 const allFirms = ref([]);
@@ -158,16 +89,10 @@ const fetchAdminData = async () => {
     const response = await $axios.get(`/api/firms/${firmId.value}/advisors-and-admin/`);
     firmAdvisorList.value = response.data;
     advisorsLength.value = firmAdvisorList.value.length;
+    firmAdvisorList.value.push({id: null, full_name: 'All Advisors'});
 
     let accountsArray = [];
     let clientsSet = new Set();
-
-    // Use Promise.all to wait for all asynchronous fetches
-    await Promise.all(
-        firmAdvisorList.value.map((advisor) =>
-            fetchAdvisorClients(advisor.id, accountsArray, clientsSet)
-        )
-    );
 
     // Update the total accounts and clients
     accountsLength.value = accountsArray.length;
@@ -187,35 +112,6 @@ const flattenAccountsData = (accountsData) => {
   return Object.values(accountsData).flat();
 };
 
-const fetchAdvisorClients = async (advisor_id, accountsArray, clientsSet) => {
-  try {
-    const response = await $axios.get(`/api/billing/${advisor_id}/account-data/`);
-
-    // Store accounts in accountsData by advisor ID
-    accountsData.value[advisor_id] = response.data;
-    response.data.forEach((data) => {
-      data.created_at = formatDate(data.created_at);
-      data.value = addCommas(data.value, true);
-      data.deleted_at = data.deleted_at === "Invalid date" ? "Active Account" : formatDate(data.deleted_at);
-
-      allData.value.push(data)
-    });
-
-
-    // Add the accounts to the accountsArray for length calculation and ensure no duplicate clients
-    response.data.forEach((account) => {
-      if (!clientsSet.has(account.user_name)) {
-        clientsSet.add(account.user_name);
-      }
-      accountsArray.push(account);  // Add account to the total accountsArray
-    });
-
-  } catch (error) {
-    console.error('Error fetching accounts data:', error);
-    const parsedError = parseError(error);
-    show({type: 'error', message: parsedError.message});
-  }
-};
 
 const isSuper = ref(false);
 

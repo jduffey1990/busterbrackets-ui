@@ -182,6 +182,10 @@ const props = defineProps({
         type: Number,
         default: 0
     },
+    advisorPage: {
+        type: Boolean,
+        default: false
+    }
 });
 
 
@@ -226,7 +230,9 @@ const billingHeaders = [
 
 const fetchAccountsForErik = async () => {
     try {
-        const response = await $axios.get('/api/reports/all-accounts-report/');
+        const url = props.advisorPage ? `/api/reports/all-accounts-report/${user.value.firm.id}/` : '/api/reports/all-accounts-report/';
+
+        const response = await $axios.get(url);
 
         props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((account) => account.firm_id === props.chosenFirmId.id) : response.data;
         props.chosenAdvisorId && props.chosenAdvisorId.id ? response.data = response.data.filter((account) => account.advisor_id === props.chosenAdvisorId.id) : response.data;
@@ -258,7 +264,8 @@ const fetchAccountsForErik = async () => {
 
 const fetchPD = async () => {
     try{
-        const response = await $axios.get('/api/reports/pd/');
+        const url = props.advisorPage ? `/api/reports/pd/${user.value.firm.id}/` : '/api/reports/pd/';
+        const response = await $axios.get(url);
 
         props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((portfolio) => portfolio.firm_id === props.chosenFirmId.id) : response.data;
         props.chosenAdvisorId && props.chosenAdvisorId.id ? response.data = response.data.filter((portfolio) => portfolio.advisor_id === props.chosenAdvisorId.id) : response.data;
@@ -362,16 +369,16 @@ const calculateAverage = (data, key) => {
     return sum / data.length;
 };
 
-const getAllAccounts = async () => {
-    try {
-        const response = await $axios.get('/api/accounts/all-accounts/');
-        accounts.value = response.data;
-        getTotalAccValue();
-    }
-    catch (error) {
-        parseError(error);
-    };
-};
+// const getAllAccounts = async () => {
+//     try {
+//         const response = await $axios.get('/api/accounts/all-accounts/');
+//         accounts.value = response.data;
+//         getTotalAccValue();
+//     }
+//     catch (error) {
+//         parseError(error);
+//     };
+// };
 
 const getTotalAccValue = () => {
     const data = billingDataSuper.value.filter((account) => account.is_archived === false);
@@ -692,7 +699,7 @@ const screenWidth = window.innerWidth;
 onMounted(() => {
     fetchAccountsForErik();
     fetchPD();
-    getAllAccounts();
+    // getAllAccounts();
 });
 
 </script>
