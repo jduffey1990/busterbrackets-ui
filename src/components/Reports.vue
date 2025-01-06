@@ -367,8 +367,9 @@ const fetchPD = async () => {
 
 const calculateAverage = (data, key) => {
     console.log(data, 'average data');
-    const sum = data.reduce((acc, portfolio) => acc + portfolio.portfolio_data[key], 0);
-    return sum / data.length;
+    const filteredData = data.filter(portfolio => portfolio.portfolio_data[key] !== undefined);
+    const sum = filteredData.reduce((acc, portfolio) => acc + portfolio.portfolio_data[key], 0);
+    return sum / filteredData.length;
 };
 
 // const getAllAccounts = async () => {
