@@ -233,7 +233,7 @@ const fetchAccountsForErik = async () => {
         const url = props.advisorPage ? `/api/reports/firm-accounts-report/${user.value.firm.id}/` : '/api/reports/all-accounts-report/';
 
         const response = await $axios.get(url);
-
+        console.log(response.data, 'accounts data');
         props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((account) => account.firm_id === props.chosenFirmId.id) : response.data;
         props.chosenAdvisorId && props.chosenAdvisorId.id ? response.data = response.data.filter((account) => account.advisor_id === props.chosenAdvisorId.id) : response.data;
 
@@ -266,6 +266,7 @@ const fetchPD = async () => {
     try{
         const url = props.advisorPage ? `/api/reports/pd-firm/${user.value.firm.id}/` : '/api/reports/pd/';
         const response = await $axios.get(url);
+        console.log(response.data, 'pd data');
 
         props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((portfolio) => portfolio.firm_id === props.chosenFirmId.id) : response.data;
         props.chosenAdvisorId && props.chosenAdvisorId.id ? response.data = response.data.filter((portfolio) => portfolio.advisor_id === props.chosenAdvisorId.id) : response.data;
@@ -365,6 +366,7 @@ const fetchPD = async () => {
 };
 
 const calculateAverage = (data, key) => {
+    console.log(data, 'average data');
     const sum = data.reduce((acc, portfolio) => acc + portfolio.portfolio_data[key], 0);
     return sum / data.length;
 };
