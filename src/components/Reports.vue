@@ -266,6 +266,7 @@ const fetchPD = async () => {
     try{
         const url = props.advisorPage ? `/api/reports/pd-firm/${user.value.firm.id}/` : '/api/reports/pd/';
         const response = await $axios.get(url);
+        // console.log(response.data, 'pdData');
 
         props.chosenFirmId && props.chosenFirmId.id ? response.data = response.data.filter((portfolio) => portfolio.firm_id === props.chosenFirmId.id) : response.data;
         props.chosenAdvisorId && props.chosenAdvisorId.id ? response.data = response.data.filter((portfolio) => portfolio.advisor_id === props.chosenAdvisorId.id) : response.data;
@@ -324,6 +325,11 @@ const fetchPD = async () => {
             }
         });
 
+        
+        // delete response.data[3].portfolio_data
+
+        // console.log(response.data, 'pdData splice');
+
         valueFitAvg.value = calculateAverage(response.data, 'overall_values_fit');
         investmentFitAvg.value = calculateAverage(response.data, 'overall_investment_fit');
         marketVfitAvg.value = calculateAverage(response.data, 'market_values_fit');
@@ -365,21 +371,14 @@ const fetchPD = async () => {
 };
 
 const calculateAverage = (data, key) => {
-    const filteredData = data.filter(portfolio => portfolio.portfolio_data[key] !== undefined);
+    // console.log(data, 'averageData');
+    //get only data that contains portfolio_data
+    // const filterPortfolioData = data.filter(portfolio => portfolio.portfolio_data !== undefined);
+    const filteredData = data.filter(portfolio =>portfolio.portfolio_data !== undefined && portfolio.portfolio_data[key] !== undefined);
+    console.log(filteredData, 'filteredData');
     const sum = filteredData.reduce((acc, portfolio) => acc + portfolio.portfolio_data[key], 0);
     return sum / filteredData.length;
 };
-
-// const getAllAccounts = async () => {
-//     try {
-//         const response = await $axios.get('/api/accounts/all-accounts/');
-//         accounts.value = response.data;
-//         getTotalAccValue();
-//     }
-//     catch (error) {
-//         parseError(error);
-//     };
-// };
 
 const getTotalAccValue = () => {
     const data = billingDataSuper.value.filter((account) => account.is_archived === false);
