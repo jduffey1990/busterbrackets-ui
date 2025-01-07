@@ -20,7 +20,7 @@
         </button>
 
         <!-- Display messages -->
-        <sr-messages :messages="messages"/>
+        <sr-messages :messages="messages" class="small"/>
       </form>
 
       <div v-if="unpaidInvoices.length" class="my-5">
