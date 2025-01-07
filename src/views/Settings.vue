@@ -27,7 +27,7 @@
               variant="elevated"
               @click="startEditing"
           >
-            Edit
+            Edit Settings
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
@@ -63,7 +63,7 @@
           <v-switch
               v-model="account.email_surveys"
               label="A prospect completes a survey"
-              color="success"
+              :color="isEditing ? 'success' : '#AAAFB4'"
               :false-value="false"
               :true-value="true"
               inset
@@ -78,7 +78,7 @@
           <v-switch
               v-model="account.share_clients"
               :label="account.share_clients ? 'Yes' : 'No'"
-              color="success"
+              :color="isEditing ? 'success' : '#AAAFB4'"
               :false-value="false"
               :true-value="true"
               inset
@@ -95,7 +95,7 @@
           <v-switch
               v-model="clientDemo"
               :label="clientDemo ? 'Yes' : 'No'"
-              color="success"
+              :color="isEditing ? 'success' : '#AAAFB4'"
               :false-value="false"
               :true-value="true"
               inset
@@ -106,7 +106,7 @@
           <v-switch
               v-model="clientRisk"
               :label="clientRisk ? 'Yes' : 'No'"
-              color="success"
+              :color="isEditing ? 'success' : '#AAAFB4'"
               :false-value="false"
               :true-value="true"
               inset
