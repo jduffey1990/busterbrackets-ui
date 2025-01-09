@@ -25,11 +25,61 @@
           @update:model-value="resetToAll($event)"
       ></v-select>
     </div>
+    <div v-if="chosenAdvisor !== null">
+      <v-btn
+          class="btn"
+          color="primary"
+          :text="`Edit ${chosenAdvisor.full_name}'s Profile`"
+          @click="openEditAdvisorModal=true, advisorToEdit=chosenAdvisor"
+      >
+      </v-btn>
+    </div>
   </div>
+
+  <v-dialog max-width="500" v-model="openEditAdvisorModal">
+    <v-card title="Edit Advisor Details">
+      <v-card-text>
+        <!-- Input fields for new advisor details -->
+        <v-text-field
+            v-model="advisorToEdit.first_name"
+            label="First name"
+        ></v-text-field>
+        <br/>
+        <v-text-field
+            v-model="advisorToEdit.last_name"
+            label="Last name"
+        ></v-text-field>
+        <br/>
+        <v-text-field
+            label="Email"
+            type="email"
+            v-model="advisorToEdit.email"
+        ></v-text-field>
+        <v-select
+            label="Change Client Status"
+            class="my-4"
+            v-model="advisorToEdit.role"
+            :items="rolesList"
+            item-title="title"
+            item-value="value"
+        ></v-select>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <!-- Buttons to cancel or save the new advisor -->
+        <v-btn text color="error" @click="() => { openEditAdvisorModal = false; resetEditForm(); }">
+          Cancel
+        </v-btn>
+        <v-btn text="Save" color="primary" @click="submitEditedAdvisor(advisorToEdit.id)"></v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <div v-if="loadReports">
     <Reports advisorPage="true" :advisorLength="advisorsLength" :chosenAdvisorId="chosenAdvisor"/>
   </div>
-  
+
 </template>
 
 <script setup>
@@ -49,7 +99,7 @@ const firmId = computed(() => chosenFirm.value ? chosenFirm.value.id : user.valu
 
 const loadReports = ref(true);
 
-const relaodReports = () => {
+const reloadReports = () => {
   loadReports.value = false;
   setTimeout(() => {
     loadReports.value = true;
@@ -58,7 +108,7 @@ const relaodReports = () => {
 
 const resetToAll = (data) => {
   data === 'All Advisors' ? chosenAdvisor.value = null : null;
-  relaodReports();
+  reloadReports();
 };
 
 const accountsData = ref({});
@@ -69,6 +119,7 @@ const chosenFirm = ref(null);
 const emit = defineEmits(['updateChosenFirm']);
 const allData = ref([])
 const noResultsText = ref("This advisor has no active accounts under advisement")
+const openEditAdvisorModal = ref(false)
 
 const advisorsLength = ref(0)
 const clientsLength = ref(0)
@@ -82,6 +133,20 @@ const accountHeaders = [
   {title: 'Acc End', key: 'deleted_at'},
   {title: 'Acc Value', key: 'value'}
 ];
+
+const rolesList = [
+  {title: 'Firm Administrator', value: 'firm_admin'},
+  {title: 'Advisor', value: 'advisor'},
+  {title: 'Archived', value: 'archived'}
+]
+
+const advisorToEdit = ref({
+  id: "",
+  first_name: "",
+  last_name: "",
+  email: "",
+  role: ""
+});
 
 const fetchAdminData = async () => {
   try {
@@ -107,9 +172,75 @@ const fetchAdminData = async () => {
   }
 };
 
-const flattenAccountsData = (accountsData) => {
-  // Flatten the accountsData object into a single array of accounts
-  return Object.values(accountsData).flat();
+const submitEditedAdvisor = async (id) => {
+  let advisorProfile = {}
+  if (advisorToEdit.value.role === 'archived') {
+    await archiveAdvisor(advisorToEdit.value.id)
+    openEditAdvisorModal.value = false;
+    resetEditForm();
+    window.location.reload();
+  } else {
+    advisorProfile = {
+      first_name: advisorToEdit.value.first_name,
+      last_name: advisorToEdit.value.last_name,
+      email: advisorToEdit.value.email.toLowerCase(),
+      role: advisorToEdit.value.role
+    }
+  }
+  try {
+    const result = await $axios.patch(
+        `api/users/update-user/${advisorToEdit.value.id}/`, advisorProfile
+    );
+    openEditAdvisorModal.value = false;
+    resetEditForm();
+    window.location.reload();
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      // Check if the error is related to a duplicate email
+      const emailErrors = error.response.data.email;
+      if (emailErrors && emailErrors.includes("User with this email already exists.")) {
+        show({
+          message: "A user with this email already exists. " +
+              "Please use another email to update this user.", error: true
+        });
+      } else {
+        show({message: "An error occurred while updating the user. Please try again.", error: true});
+      }
+    } else {
+      console.error("Unexpected error:", error);
+      alert("An unexpected error occurred. Please contact support.");
+    }
+  }
+}
+
+const archiveAdvisor = async (id) => {
+  const confirmation = confirm(
+      "Archiving a user does not delete them from the database. However, they will lose access to Pomarium. " +
+      "All clients remaining to this advisor will also be archived. Continue?"
+  );
+
+  if (confirmation) {
+    try {
+      const response = await $axios.patch(`/api/users/archive-user/${id}/`);
+
+      if (response.status === 200) {
+
+        //remove advisor from stripe subscription
+        await $axios.post(`/api/billing/subscription-quantity-update/`);
+
+        // Log the user out and redirect to the login page
+        setTimeout(async () => {
+          location.reload()
+        }, 1000)
+      } else {
+        console.error("Unexpected response status:", response.status);
+        alert("An unexpected error occurred while archiving the user.");
+      }
+    } catch (error) {
+      console.error("Error archiving user:", error);
+      alert("Failed to archive the user. Please try again later.");
+    }
+  }
 };
 
 
@@ -134,19 +265,16 @@ const fetchFirms = async () => {
   }
 };
 
-//get billing data for all firms for super users
+const resetEditForm = () => {
+  advisorToEdit.value = {
+    id: null,
+    first_name: "",
+    last_name: "",
+    email: "",
+    role: ""
+  };
+}
 
-const totalCalc = (value, fee_rate) => {
-  return (value * fee_rate).toFixed(2);
-};
-
-const deleteArchived = (data) => {
-  data.value = data.value.filter((item) => !item.is_archived);
-};
-
-const deleteInActive = (data) => {
-  data.value = data.value.filter((item) => item.is_active);
-};
 
 // Fetch billing data based on the user role
 onMounted(() => {

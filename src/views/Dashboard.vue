@@ -444,6 +444,7 @@ const resetEditForm = () => {
     first_name: "",
     last_name: "",
     email: "",
+    role: ""
   };
 }
 
@@ -481,12 +482,10 @@ const editClient = (item, role) => {
 const submitEditedClient = async (id) => {
   let clientProfile = {}
   if (clientToEdit.value.role === 'archived') {
-    clientProfile = {
-      first_name: clientToEdit.value.first_name,
-      last_name: clientToEdit.value.last_name,
-      email: clientToEdit.value.email.toLowerCase(),
-      is_archived: true
-    }
+    await $axios.patch(`/api/users/archive-user/${clientToEdit.value.id}/`)
+    openEditClientModal.value = false;
+    resetEditForm();
+    window.location.reload();
   } else {
     clientProfile = {
       first_name: clientToEdit.value.first_name,

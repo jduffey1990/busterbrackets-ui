@@ -285,7 +285,7 @@ const archiveUser = async () => {
 
   if (confirmation) {
     try {
-      const response = await $axios.patch('/api/users/archive-user');
+      const response = await $axios.patch(`/api/users/archive-user/${user.value.id}/`);
 
       if (response.status === 200) {
         show({message: "You have been archived. You will now be logged out."});
