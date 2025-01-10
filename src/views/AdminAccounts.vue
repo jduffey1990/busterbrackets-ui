@@ -33,6 +33,13 @@
           @click="openEditAdvisorModal=true, advisorToEdit=chosenAdvisor"
       >
       </v-btn>
+      <v-btn
+          class="btn"
+          color="primary"
+          :text="`Move ${chosenAdvisor.full_name}'s Clients`"
+          @click="openSwapClientsModal=true, getClients(chosenAdvisor.id), getProspects(chosenAdvisor.id)"
+      >
+      </v-btn>
     </div>
   </div>
 
@@ -76,6 +83,59 @@
     </v-card>
   </v-dialog>
 
+
+  <v-dialog max-width="500" v-model="openSwapClientsModal">
+    <v-card title="Swap Clients">
+      <v-card-text>
+        <!-- Checkbox to select all clients -->
+        <v-checkbox
+            label="Select All Clients"
+            @change="handleAllClientsSelected"
+        ></v-checkbox>
+        <br/>
+        <v-autocomplete
+            v-if="allClientsSelected === false"
+            v-model="selectedSwapClients"
+            label="Select Client to swap"
+            :items="advisorClientList"
+            chips
+            closable-chips
+            multiple
+            clear-on-select
+            item-title="full_name"
+            item-value="id"
+            class="advisor-select"
+        ></v-autocomplete>
+        <br/>
+        <v-select
+            v-model="swapToAdvisor"
+            :items="justAdvisorsList"
+            item-title="full_name"
+            item-value="id"
+            label="Advisor Receiving Clients"
+            return-object
+            class="advisor-select"
+        ></v-select>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <!-- Buttons to cancel or save the new advisor -->
+        <v-btn text color="error" @click="() => { openSwapClientsModal = false; resetSwapForm(); }">
+          Cancel
+        </v-btn>
+        <v-btn
+            :loading="isSubmitting"
+            color="primary"
+            @click="submitSwap"
+            :disabled="!swapReady"
+        >Submit Client Swap
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+
   <div v-if="loadReports">
     <Reports advisorPage="true" :advisorLength="advisorsLength" :chosenAdvisorId="chosenAdvisor"/>
   </div>
@@ -90,6 +150,7 @@ import {parseError} from '@/utils/error';
 import {addCommas, formatDate, funLookAtFunction} from '@/utils/string';
 import {downloadCSV} from '@/utils/file';
 import Reports from '@/components/Reports.vue';
+import moment from "moment/moment";
 
 const $axios = inject('$axios');
 const {show} = inject('toast');
@@ -114,12 +175,20 @@ const resetToAll = (data) => {
 const accountsData = ref({});
 const allFirms = ref([]);
 const firmAdvisorList = ref([]);
+const justAdvisorsList = ref([])
+const advisorClientList = ref([])
 const chosenAdvisor = ref(null);
+const swapToAdvisor = ref(null)
+const selectedSwapClients = ref([])
 const chosenFirm = ref(null);
 const emit = defineEmits(['updateChosenFirm']);
 const allData = ref([])
 const noResultsText = ref("This advisor has no active accounts under advisement")
 const openEditAdvisorModal = ref(false)
+const openSwapClientsModal = ref(false)
+const allClientsSelected = ref(false)
+const isSubmitting = ref(false);
+const swapReady = ref(false)
 
 const advisorsLength = ref(0)
 const clientsLength = ref(0)
@@ -153,6 +222,7 @@ const fetchAdminData = async () => {
 
     const response = await $axios.get(`/api/firms/${firmId.value}/advisors-and-admin/`);
     firmAdvisorList.value = response.data;
+    justAdvisorsList.value = new Array(...firmAdvisorList.value);
     advisorsLength.value = firmAdvisorList.value.length;
     firmAdvisorList.value.push({id: null, full_name: 'All Advisors'});
 
@@ -169,6 +239,34 @@ const fetchAdminData = async () => {
     console.error('Error fetching billing data:', error);
     const parsedError = parseError(error);
     show({type: 'error', message: parsedError.message});
+  }
+};
+
+const getClients = async (a) => {
+  try {
+    const {data} = await $axios.get(`/api/advisors/${a}/clients/`);
+    let fetchedClientList = data.map(client => ({
+      ...client,
+      full_name: `${client.first_name} ${client.last_name}` // Constructing full name if needed
+    }));
+
+    advisorClientList.value = advisorClientList.value.concat(fetchedClientList)
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+  }
+};
+
+const getProspects = async (a) => {
+  try {
+    const {data} = await $axios.get(`/api/advisors/${a}/prospects/`);
+    let fetchedProspectList = data.map(client => ({
+      ...client,
+      full_name: `${client.first_name} ${client.last_name}` // Constructing full name if needed
+    }));
+
+    advisorClientList.value = advisorClientList.value.concat(fetchedProspectList)
+  } catch (error) {
+    console.error('Error fetching clients:', error);
   }
 };
 
@@ -213,6 +311,36 @@ const submitEditedAdvisor = async (id) => {
   }
 }
 
+const submitSwap = async () => {
+  isSubmitting.value = true;
+  // Extract only the ids from selectedSwapClients.value
+  try {
+    const payload = {
+      current_advisor_id: chosenAdvisor.value.id,
+      new_advisor_id: swapToAdvisor.value.id,
+      clients_to_move: selectedSwapClients.value
+    };
+
+    console.log("woof", payload)
+
+    await $axios.patch(`/api/users/transfer-clients/`, payload);
+    let finishedMessage = "clients transferred successfully!"
+    if (payload.clients_to_move.length === 1) {
+      finishedMessage.split("").splice(6, 1).join("")
+    }
+    show({type: 'success', message: finishedMessage});
+    setTimeout(() => {
+      location.reload()
+    }, 1000);
+  } catch (error) {
+    console.error('Error transferring clients:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  } finally {
+    openSwapClientsModal.value = false
+  }
+}
+
 const archiveAdvisor = async (id) => {
   const confirmation = confirm(
       "Archiving a user does not delete them from the database. However, they will lose access to Pomarium. " +
@@ -243,6 +371,19 @@ const archiveAdvisor = async (id) => {
   }
 };
 
+const handleAllClientsSelected = () => {
+  allClientsSelected.value = !allClientsSelected.value
+  selectedSwapClients.value = advisorClientList.value
+}
+
+const checkSwapReady = () => {
+  let thisBool = false
+  let clientsAreSelected = allClientsSelected.value === true || selectedSwapClients.value.length !== 0
+  if (swapToAdvisor.value !== null && clientsAreSelected) {
+    thisBool = true
+  }
+  swapReady.value = thisBool
+}
 
 const isSuper = ref(false);
 
@@ -275,6 +416,14 @@ const resetEditForm = () => {
   };
 }
 
+const resetSwapForm = () => {
+  allClientsSelected.value = false
+  selectedSwapClients.value = []
+  advisorClientList.value = []
+  swapToAdvisor.value = null
+  isSubmitting.value = false
+}
+
 
 // Fetch billing data based on the user role
 onMounted(() => {
@@ -289,6 +438,24 @@ watch(chosenFirm, async (newFirm) => {
   if (newFirm) {
     emit('updateChosenFirm', newFirm);
     await fetchAdminData();  // Fetch data for the newly selected firm
+  }
+});
+
+watch(swapToAdvisor, async (newAdvisor) => {
+  if (newAdvisor) {
+    checkSwapReady()
+  }
+});
+
+watch(allClientsSelected, async (newBoolValue) => {
+  if (newBoolValue) {
+    checkSwapReady()
+  }
+});
+
+watch(selectedSwapClients, async (newSwapList) => {
+  if (newSwapList) {
+    checkSwapReady()
   }
 });
 </script>

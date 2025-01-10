@@ -118,8 +118,13 @@
           <hr class=my-4>
 
           <div v-if="isAdvisorOrGreater" class="client-move">
-            <p class="my-4">Move all clients to new manager</p>
-            <v-btn @click="openClientModal()" color="primary">Transfer All Clients</v-btn>
+            <p class="my-4">Move Clients</p>
+            <v-btn
+                class="btn"
+                color="primary"
+                :text="`Move Your Clients`"
+                @click="openSwapClientsModal=true; getClients(user.id); getProspects(user.id)"
+            ></v-btn>
           </div>
           <hr class=my-4>
 
@@ -129,32 +134,52 @@
           </div>
 
 
-          <v-dialog v-model="showClientModal" max-width="600">
-            <v-card>
-              <v-card-title>
-                <span class="text-h5">Transfer Clients</span>
-              </v-card-title>
-
+          <v-dialog max-width="500" v-model="openSwapClientsModal">
+            <v-card title="Swap Clients">
               <v-card-text>
+                <!-- Checkbox to select all clients -->
+                <v-checkbox
+                    label="Select All Clients"
+                    @change="handleAllClientsSelected"
+                ></v-checkbox>
+                <br/>
+                <v-autocomplete
+                    v-if="allClientsSelected === false"
+                    v-model="selectedSwapClients"
+                    label="Select Client to swap"
+                    :items="advisorClientList"
+                    chips
+                    closable-chips
+                    multiple
+                    clear-on-select
+                    item-title="full_name"
+                    item-value="id"
+                    class="advisor-select"
+                ></v-autocomplete>
+                <br/>
                 <v-select
-                    label="Choose advisor to accept your clients"
-                    class="mb-4"
-                    v-model="selectedAdvisor"
-                    :items="advisors"
-                    item-title="title"
-                    item-value="value"
+                    v-model="swapToAdvisor"
+                    :items="justAdvisorsList"
+                    item-title="full_name"
+                    item-value="id"
+                    label="Advisor Receiving Clients"
+                    return-object
+                    class="advisor-select"
                 ></v-select>
               </v-card-text>
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn @click="resetForm()">Cancel</v-btn>
+                <!-- Buttons to cancel or save the new advisor -->
+                <v-btn text color="error" @click="() => { openSwapClientsModal = false; resetSwapForm(); }">
+                  Cancel
+                </v-btn>
                 <v-btn
-                    :loading="isSubmitting"
-                    :disabled="!selectedAdvisor"
-                    @click="submitChanges()"
-                >
-                  Submit Changes
+                    :loading="swapIsSubmitting"
+                    color="primary"
+                    @click="submitSwap"
+                    :disabled="!swapReady"
+                >Submit Client Swap
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -168,7 +193,7 @@
 
 <script setup>
 import {useUserStore} from '@/store/user';
-import {reactive, onBeforeUnmount, onMounted, ref} from 'vue';
+import {reactive, onBeforeUnmount, onMounted, ref, watch} from 'vue';
 import {inject} from 'vue';
 import {parseError} from '@/utils/error';
 import {storeToRefs} from "pinia";
@@ -215,45 +240,6 @@ const cancelEdit = () => {
   isEditing.value = false;
   // Reset the account to the saved state
   Object.assign(account, accountCopy);
-};
-
-const openClientModal = async () => {
-  showClientModal.value = true;
-  try {
-    const firm_id = user.value.firm.id
-    const response = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
-    const fetchedAdvisors = response.data;
-
-    advisors.value = fetchedAdvisors.map(advisor => ({
-      title: advisor.full_name,
-      value: advisor.id,
-    }));
-  } catch (error) {
-    console.error('Error fetching advisors:', error);
-    const parsedError = parseError(error);
-    show({type: 'error', message: parsedError.message});
-  }
-};
-
-const submitChanges = async () => {
-  isSubmitting.value = true;
-  try {
-    const payload = {
-      current_advisor_id: user.value.id,
-      new_advisor_id: selectedAdvisor.value,
-    };
-
-    await $axios.patch(`/api/users/transfer-clients/`, payload);
-
-    show({type: 'success', message: 'Clients successfully transferred!'});
-    resetForm();
-  } catch (error) {
-    console.error('Error transferring clients:', error);
-    const parsedError = parseError(error);
-    show({type: 'error', message: parsedError.message});
-  } finally {
-    isSubmitting.value = false;
-  }
 };
 
 // Function to check if there are unsaved changes
@@ -353,14 +339,135 @@ const preventClickWhenReadOnly = (event) => {
   }
 }
 
+const openSwapClientsModal = ref(false)
+const allClientsSelected = ref(false)
+const swapIsSubmitting = ref(false);
+const swapReady = ref(false)
+const swapToAdvisor = ref(null)
+const selectedSwapClients = ref([])
+const advisorClientList = ref([])
+const justAdvisorsList = ref([])
+
+const getClients = async (a) => {
+  try {
+    const {data} = await $axios.get(`/api/advisors/${a}/clients/`);
+    let fetchedClientList = data.map(client => ({
+      ...client,
+      full_name: `${client.first_name} ${client.last_name}` // Constructing full name if needed
+    }));
+
+    advisorClientList.value = advisorClientList.value.concat(fetchedClientList)
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+  }
+};
+
+const getProspects = async (a) => {
+  try {
+    const {data} = await $axios.get(`/api/advisors/${a}/prospects/`);
+    let fetchedProspectList = data.map(client => ({
+      ...client,
+      full_name: `${client.first_name} ${client.last_name}` // Constructing full name if needed
+    }));
+
+    advisorClientList.value = advisorClientList.value.concat(fetchedProspectList)
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+  }
+};
+
+const fetchAdminData = async () => {
+  try {
+
+    const response = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
+    justAdvisorsList.value = response.data;
+
+  } catch (error) {
+    console.error('Error fetching admin data:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  }
+};
+
+const submitSwap = async () => {
+  isSubmitting.value = true;
+  // Extract only the ids from selectedSwapClients.value
+  try {
+    const payload = {
+      current_advisor_id: user.value.id,
+      new_advisor_id: swapToAdvisor.value.id,
+      clients_to_move: selectedSwapClients.value
+    };
+
+    console.log("woof", payload)
+
+    await $axios.patch(`/api/users/transfer-clients/`, payload);
+    let finishedMessage = "clients transferred successfully!"
+    if (payload.clients_to_move.length === 1) {
+      finishedMessage.split("").splice(6, 1).join("")
+    }
+    show({type: 'success', message: finishedMessage});
+    setTimeout(() => {
+      location.reload()
+    }, 1000);
+  } catch (error) {
+    console.error('Error transferring clients:', error);
+    const parsedError = parseError(error);
+    show({type: 'error', message: parsedError.message});
+  } finally {
+    openSwapClientsModal.value = false
+  }
+}
+
+const handleAllClientsSelected = () => {
+  allClientsSelected.value = !allClientsSelected.value
+  selectedSwapClients.value = advisorClientList.value
+}
+
+const checkSwapReady = () => {
+  let thisBool = false
+  let clientsAreSelected = allClientsSelected.value === true || selectedSwapClients.value.length !== 0
+  if (swapToAdvisor.value !== null && clientsAreSelected) {
+    thisBool = true
+  }
+  swapReady.value = thisBool
+}
+
+const resetSwapForm = () => {
+  allClientsSelected.value = false
+  selectedSwapClients.value = []
+  advisorClientList.value = []
+  swapToAdvisor.value = null
+  swapIsSubmitting.value = false
+}
+
 // Register the event listener on mounted and remove it on unmount
-onMounted(() => {
+onMounted(async () => {
   versionToPage()
+  await fetchAdminData()
   window.addEventListener('beforeunload', beforeUnloadHandler);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', beforeUnloadHandler);
+});
+
+watch(swapToAdvisor, async (newAdvisor) => {
+  if (newAdvisor) {
+    checkSwapReady()
+  }
+});
+
+watch(allClientsSelected, async (newBoolValue) => {
+  if (newBoolValue) {
+    checkSwapReady()
+  }
+});
+
+watch(selectedSwapClients, async (newSwapList) => {
+  if (newSwapList) {
+    checkSwapReady()
+  }
 });
 
 // need watch function here:
