@@ -404,10 +404,9 @@ const submitSwap = async () => {
     console.log("woof", payload)
 
     await $axios.patch(`/api/users/transfer-clients/`, payload);
-    let finishedMessage = "clients transferred successfully!"
-    if (payload.clients_to_move.length === 1) {
-      finishedMessage.split("").splice(6, 1).join("")
-    }
+    let finishedMessage = payload.clients_to_move.length === 1 ?
+        "Client Transferred Successfully!" :
+        "Clients Transferred Successfully!";
     show({type: 'success', message: finishedMessage});
     setTimeout(() => {
       location.reload()
