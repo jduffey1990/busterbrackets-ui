@@ -155,6 +155,7 @@
                     item-title="full_name"
                     item-value="id"
                     class="advisor-select"
+                    no-data-text="No Clients Available"
                 ></v-autocomplete>
                 <br/>
                 <v-select
@@ -165,6 +166,7 @@
                     label="Advisor Receiving Clients"
                     return-object
                     class="advisor-select"
+                    no-data-text="No Advisors to Select"
                 ></v-select>
               </v-card-text>
 
