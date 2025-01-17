@@ -19,3 +19,8 @@ export const funLookAtFunction = (param1, param2 = null) => {
     }
     return param1
 }
+
+export function stringIsEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
