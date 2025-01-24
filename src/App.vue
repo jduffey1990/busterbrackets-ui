@@ -1,5 +1,5 @@
 <template>
-  <v-app :class="[ onSurvey ? (theme === 1 ? appBackground : whiteBackground) : appBackground ]">
+  <v-app >
     <Header v-if="screenWidth < 700" style="transform: translateY(-30px);"/>
     <Header v-else/>
 
@@ -49,42 +49,15 @@ const router = useRouter();
 
 const screenWidth = window.innerWidth;
 
-const theme = ref(null);
-const getTheme = async () => {
-  try {
-    const response = await $axios.get(`/api/firms/${user.value.firm.id}/firmSettings/`);
-    theme.value = response.data.theme;
-  } catch (error) {
-  }
-};
-
 
 // Define the classes for the background
 const appBackground = 'appBackground';
 const whiteBackground = 'whiteBackground';
 
-const onSurvey = ref(false);
-//check if url contains survey every time the route changes
-const checkSurvey = () => {
-  if (window.location.href.includes('survey')) {
-    onSurvey.value = true;
-  } else {
-    onSurvey.value = false;
-  }
-};
 import {onMounted, watch} from 'vue';
 import {useRoute} from 'vue-router';
 
 const route = useRoute();
-
-onMounted(() => {
-  getTheme();
-  checkSurvey();
-});
-
-watch(route, () => {
-  checkSurvey();
-});
 
 let timeout;
 let debounceTimeout;

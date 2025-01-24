@@ -2,14 +2,9 @@
 
 1. install yarn
 2. run `yarn`
-3. create .env file with `VITE_BASE_URL=http://localhost:8000`
-4. run `yarn dev` to expose port 3000
+3. create .env file with `VITE_BASE_URL=http://localhost:8001`
+4. run `yarn dev` to expose port 3001
 
-## Development Environment
-
-The development environment for the UI is currently deployed to Firebase Hosting. Firebase is also handling user authentication.
-
-Firebase uses a NoSQL database in Firestore.
 
 ## Development Pipeline
 

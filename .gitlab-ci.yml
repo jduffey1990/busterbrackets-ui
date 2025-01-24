@@ -130,16 +130,3 @@ deploy-beta:
     CLOUD_RUN_SERVICE: "ui"
     SERVICE_ACCOUNT: "beta-google-service-account"
 
-# # ---- Cloud Run Demo ----
-
-deploy-demo:
-  extends: .deploy
-  stage: deploy-demo
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"
-      when: always
-  variables:
-    PROJECT: $GOOGLE_CLOUD_BETA_PROJECT
-    IMAGE: $UI_IMAGE
-    CLOUD_RUN_SERVICE: "ui-demo"
-    SERVICE_ACCOUNT: "beta-google-service-account"

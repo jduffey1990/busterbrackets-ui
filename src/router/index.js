@@ -29,14 +29,18 @@ const router = createRouter({
             name: 'Home',
             component: Home,
             beforeEnter: (to, from, next) => {
-                const {isLoggedIn} = useUserStore();
+                const {isLoggedIn, isAdvisorOrGreater, user} = useUserStore();
 
 
                 if (!isLoggedIn) {
                     return next();
                 }
 
-                next('/dashboard');
+                if (isAdvisorOrGreater) {
+                    next('/dashboard')
+                } else {
+                    next(`/clients/${user.id}`)
+                }
             },
         },
         {
@@ -153,16 +157,7 @@ const router = createRouter({
                     name: 'Accounts',
                     component: Accounts,
                 },
-            ],
-            beforeEnter: (to, from, next) => {
-                const {isAdvisorOrGreater} = useUserStore();
-
-                if (isAdvisorOrGreater) {
-                    return next();
-                }
-
-                next('/');
-            },
+            ]
         },
         {
             path: "/success",
