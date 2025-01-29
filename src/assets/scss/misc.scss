@@ -4,7 +4,7 @@ hr {
   border-color: rgba(0, 0, 0, 0.12);
 }
 
-p, li, {
+p, li {
   color: var(--Primary-Dark, #07152A);
   font-family: "halyard-text" !important;
   font-size: 20px;
@@ -62,7 +62,7 @@ h5, .text-h5 {
   letter-spacing: 0.5px;
 }
 
-h6, .text-h6, .v-card, .v-alert__content, .v-field, {
+h6, .text-h6, .v-card, .v-alert__content, .v-field {
   color: var(--Primary-Dark, #07152A);
   leading-trim: both;
   text-edge: cap;
@@ -75,7 +75,7 @@ h6, .text-h6, .v-card, .v-alert__content, .v-field, {
   text-transform: uppercase;
 }
 
-.small, .v-btn, .v-overlay, .v-data-table, .v-checkbox, .v-slider-track, .text-no-wrap, .v-row, {
+.small, .v-btn, .v-overlay, .v-data-table, .v-checkbox, .v-slider-track, .text-no-wrap, .v-row {
   color: var(--Primary-Dark, #07152A);
   font-family: "halyard-text" !important;
   font-size: 14px;
