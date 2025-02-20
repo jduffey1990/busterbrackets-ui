@@ -167,25 +167,6 @@ const timeUntilSubOver = (currentUnixTime, subscriptionEndDate) => {
 const loginUser = async () => {
   try {
     await login(credentials);
-
-    const now = Math.floor(Date.now() / 1000); // Current Unix time in seconds
-    const subscriptionEndDate = user.value.firm.subscription_end_date;
-
-    const [bool, daysRemaining] = timeUntilSubOver(now, subscriptionEndDate);
-
-    if (bool) {
-      show({
-        message: `You have ${daysRemaining} day${daysRemaining > 1 ? 's' : ''} until your subscription lapses. ` +
-            `Go to <a href="/billing">Billing</a> to pay your outstanding invoice.`,
-        html: true, // Allows HTML in the message
-      });
-    }
-
-    if (stripeAccountAssociated.value === true && cardOnFile.value === false) {
-      router.push('/payment-info')
-    } else {
-      router.push('/dashboard');
-    }
   } catch (error) {
     // Check if the error response contains a message from the backend
     if (error.response && error.response.data && error.response.data.detail) {
