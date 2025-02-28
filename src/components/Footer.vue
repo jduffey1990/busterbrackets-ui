@@ -1,21 +1,7 @@
 <template>
   <v-footer color="translucent">
-
-    <v-btn variant="text" color="primary" href="https://www.getpomarium.com/terms" target="_blank" class="footer-text">
-      Terms & Conditions
-    </v-btn>
-
-    <v-btn
-        href="https://www.linkedin.com/company/getpomarium"
-        target="_blank"
-        rel="noopener noreferrer"
-        icon="mdi-linkedin"
-        class="footer-text"
-        color="primary"
-        variant="text"
-    ></v-btn>
     <div class="footer-text px-4">
-      {{ new Date().getFullYear() }} — <strong>Pomarium</strong>
+      {{ new Date().getFullYear() }} — <strong>Buster Brackets</strong>
     </div>
 
 
@@ -38,7 +24,7 @@
   max-height: 70%;
 }
 
-.header_text {
+.footer-text {
   line-height: 1.1 !important; /* Ensure proper vertical spacing */
   white-space: normal; /* Allow text to wrap */
   display: block; /* Ensure block-level display */

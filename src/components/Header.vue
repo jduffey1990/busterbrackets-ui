@@ -1,22 +1,15 @@
 <template>
-  <v-app-bar fixed :style="appBarStyle" :elevation="0" height="60">
-    <v-container>
+  <v-app-bar fixed :style="appBarStyle" :elevation="0" height="150">
+    <v-container color="translucent">
       <div class="nav_bar">
         <v-app-bar-title>
           <router-link to="/" custom v-slot="{ navigate }">
-            <v-img v-if="onSurvey && goodLogo"
+            <v-img
                    :width="166"
-                   :src="logos.firm_logo"
+                   src="@/assets/buster.png"
                    @click="navigate"
                    class="cursor-pointer"
-                   style="max-height: 35px;"
-            ></v-img>
-            <v-img v-else
-                   :width="166"
-                   src="@/assets/pomarium.svg"
-                   @click="navigate"
-                   class="cursor-pointer"
-                   style="max-height: 35px;"
+                   style="max-height: 120px;"
             ></v-img>
 
           </router-link>
@@ -40,9 +33,7 @@
             <v-menu :elevation="0">
               <template v-slot:activator="{ props }">
                 <v-btn v-bind="props" class="text-disabled">
-                  {{ user.full_name || user.email }} ({{
-                    user.role.replace('_', ' ')
-                  }})
+                  {{ user.name || user.email }}
                 </v-btn>
               </template>
               <v-list :elevation="0">
@@ -129,7 +120,7 @@ const opacity = ref(0);
 
 const handleScroll = () => {
   scrollPosition.value = window.scrollY;
-  opacity.value = scrollPosition.value > 0 ? 0.95 : 0;
+  opacity.value = scrollPosition.value > 0 ? 0.5 : 0;
 };
 
 onMounted(() => {
@@ -148,20 +139,9 @@ const appBarStyle = computed(() => {
 
 const logos = ref({});
 const goodLogo = ref(false);
-const getFirmLogo = async () => {
-  if (isLoggedIn.value) {
-    try {
-      const response = await $axios.get(`/api/firms/${user.value.firm.id}/logo/`);
-      logos.value = response.data;
-      logos.value['firm_logo'].includes('media') || logos.value['firm_logo'].includes('storage') ? goodLogo.value = true : goodLogo.value = false;
-    } catch (error) {
-      console.error('Error fetching firm logo:', error);
-    }
-  }
-};
+
 
 onMounted(() => {
-  getFirmLogo();
 });
 
 const onSurvey = ref(false);
@@ -192,6 +172,7 @@ watch(route, () => {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  min-height: 150px;
 }
 
 .nav-bar-mobile {

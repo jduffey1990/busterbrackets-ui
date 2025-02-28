@@ -1,3 +1,4 @@
+import router from '@/router';
 import {defineStore} from 'pinia';
 
 import {useCookies} from 'vue3-cookies';
@@ -7,7 +8,7 @@ import {useCookies} from 'vue3-cookies';
 export const useUserStore = defineStore('user', {
     state: () => ({
         user: {},
-        stripePublicKey: "",
+        token: localStorage.getItem('token') || null,
     }),
     getters: {
         isLoggedIn(state) {
@@ -15,51 +16,61 @@ export const useUserStore = defineStore('user', {
         }
     },
     actions: {
-
-        async getSession() {
-            const {data} = await this.$axios('/api/users/session/');
-            this.user = data;
-    
-        },
-        async register(credentials) {
-            await this.$axios({
-                method: 'post',
-                url: '/api/auth/register',
-                data: credentials,
-            });
-
-            await this.getSession();
-        },
         async login(credentials) {
             try {
-                await this.$axios({
+                const response = await this.$users({
                     method: 'post',
-                    url: '/api/users/login/',
+                    url: '/login',
                     data: credentials,
                 });
+                const tokenReturned = response.data.token;
+                const userReturned = response.data.user
                 
-                await this.getSession();
+                localStorage.setItem('token', tokenReturned);
+                this.user = userReturned
+                this.token = tokenReturned
+
+                // 3) (Optional) Attach token to axios defaults so all future requests include it
+                this.$users.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+                this.$brackets.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+
+                router.push('/dashboard');
             } catch (error) {
                 // Re-throw the error to be caught in `loginUser`
                 throw error;
+                console.error(error)
             }
         },
-        async logout() {
-            await this.$axios('/api/users/logout/');
-
-            const {cookies} = useCookies();
-
-            cookies.remove('sessionid');
-            cookies.remove('csrftoken');
-
-            this.user = {};
-            window.location.href = '/login';
+        async getSession() {
+            if (!this.token) return;
+                // Set the token to axios defaults
+            this.$users.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            this.$brackets.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            try {
+                // Request an endpoint that verifies the token and returns user info
+                const response = await this.$users.get('/session');
+                console.log("session response", response.data)
+                this.user = response.data.user;
+            } catch (error) {
+                // If the token is invalid or expired, clear stored info
+                this.token = null;
+                this.user = {};
+                localStorage.removeItem('token');
+            }
         },
-        async fetchUserData() {
-            console.log("we are fetching!")
-            const {data} = await this.$axios('/api/users/me');
-            console.log("user data", data)
-            this.user = data;
+        async logout(apiInstance) {
+            this.user = {};
+            this.token = null;
+
+            // 3) Remove token from local storage 
+            localStorage.removeItem('token');
+
+            // 4) Remove Authorization header from Axios (optional)
+            delete this.$users.defaults.headers.common['Authorization'];
+            delete this.$brackets.defaults.headers.common['Authorization'];
+
+            // 5) Redirect to login
+            router.push('/login');
         },
     },
 });

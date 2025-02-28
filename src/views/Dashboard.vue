@@ -1,676 +1,248 @@
 <template>
-  <div>
-    <!-- Top section with user dashboard header and buttons -->
-    <div class="top_line_dash mb-6">
+  <v-container fluid>
+
+    <!-- Top section with user dashboard header -->
+    <div class="top_line_dash mb-6 d-flex align-center">
       <div>
         <!-- User dashboard title displaying either full name or email -->
-        <div class="text-h4 mb-2 justify-center">
-          {{ user.full_name || user.email }}'s Dashboard
+        <div class="text-h4 mb-2 dashboard-title">
+          {{ user.name ? user.name + "'s Dashboard" : user.email + "'s Dashboard" }}
         </div>
       </div>
       <v-spacer></v-spacer>
-
-      <!-- Button to copy the survey link -->
-      <v-btn
-          @click="copyText()"
-          color="secondary"
-          text="Copy Survey Link"
-          class="survey_button secondary-btn"
-      ></v-btn>
-
-      <!-- Button to open the modal for creating a new client -->
-      <v-btn
-          @click="openCreateNewClientModal = true"
-          color="primary"
-          text="Take Survey with Client"
-          class="survey_button"
-      ></v-btn>
     </div>
 
-    <!-- Tabs for switching between clients and prospects -->
-    <v-tabs v-model="currentTab">
-      <v-tab @click="resetDisplayState">Clients ({{ allRolesClients.length }})</v-tab>
-      <v-tab @click="resetDisplayState">My Firm ({{ advisors.length }})</v-tab>
-      <v-tab v-if="isAdvisorOrGreater && !isSuper" @click="resetDisplayState">Investment Preferences</v-tab>
+    <!-- Tabs for switching between brackets and news -->
+    <v-tabs v-model="currentTab" background-color="primary" class="white--text">
+      <v-tab>
+        My Brackets
+      </v-tab>
+      <v-tab>
+        News
+      </v-tab>
     </v-tabs>
 
     <!-- Content of the selected tab -->
-    <v-tabs-window v-model="currentTab">
-      <!-- Clients tab content -->
-      <v-tabs-window-item :key="0">
-        <!-- Alert if there are no clients -->
-        <v-alert
-            title="No clients yet..."
-            type="secondary"
-            v-if="!allRolesClients.length"
-            class="my-4"
-        >
-          Click "Take Survey with Client" to start adding clients to your list.
-        </v-alert>
-
-        <!-- Clients display section -->
-        <div v-else class="client_display">
-          <!-- Button to toggle the display of clients -->
-          <v-btn color="primary" @click="toggleClients" class="client_button">
-            {{ !displayState.showClients ? `${displayState.hidden}` : `${displayState.shown}` }}
-          </v-btn>
-          <!--              needs Fixing!-->
-          <v-text-field
-
-              v-model="searchInput"
-              append-inner-icon="mdi-magnify"
-              append-icon="mdi-close"
-              density="compact"
-              label="Search for a client"
-              variant="solo"
-              hide-details
-              single-line
-              @click:append-inner="findClient(searchInput)"
-              @keydown.enter="findClient(searchInput)"
-              @click:append="searchInput = ''"
-              class="mb-4 search"
-          ></v-text-field>
-
-          <!-- Data table for clients -->
-          <v-data-table v-if="displayState.showClients" :headers="headers" :items="clientsShown"
-                        :mobile-breakpoint="700">
-            <template v-slot:item.actions="{ item }">
-              <template v-if="item.role === 'Active'">
-                <v-icon
-                    icon="mdi-pencil"
-                    color="primary"
-                    class="ml-4"
-                    size="small"
-                    @click="editClient(item, 'clients')"
-                ></v-icon>
-              </template>
-              <template v-else-if="item.role === 'New (prospect)'">
-                <v-icon
-                    icon="mdi-pencil"
-                    color="secondary-btn"
-                    class="ml-2"
-                    size="small"
-                    @click="editClient(item, 'prospects')"
-                ></v-icon>
-              </template>
+    <v-tabs-window v-model="currentTab" class="mt-4">
+      <!-- My Brackets tab content -->
+      <v-tabs-window-item>
+        <v-card elevation="3" class="p-4 mt-4 card">
+          <div class="d-flex justify-space-between align-center pb-4" style="background-color: whitesmoke;">
+            <div class="text-h6 ml-4 mt-2">Manage Your Brackets</div>
+            <v-btn
+              color="warning"
+              class="build-bracket-btn mt-4 mr-4"
+              href="/bracket-builder"
+              elevation="2"
+            >
+              Build me a bracket!
+            </v-btn>
+          </div>
+          
+          <!-- Table of the user's brackets -->
+          <v-data-table
+            :headers="bracketHeaders"
+            :items="brackets"
+            :items-per-page="5"
+            class="elevation-1"
+          >
+            <!-- Define how each row looks in the table body (optional slot) -->
+            <template #item.name="{ item }">
+              {{ item.name || 'Untitled Bracket' }}
             </template>
-            <template v-slot:item.full_name="{ item }">
-              <template v-if="item.role === 'Active'">
-                <v-btn variant="text" @click="goToClient(item)">
-                  {{ item.full_name }}
-                </v-btn>
-              </template>
-              <template v-else>
-                <v-btn variant="text" disabled>
-                  {{ item.full_name }}
-                </v-btn>
-              </template>
+            <template #item.createdAt="{ item }">
+              {{ formatDate(item.createdAt) }}
             </template>
-            <template v-slot:item.accounts="{item}">
-              <template v-if="item.role === 'Active'">
-                {{ accounts[findAccIndex(clients, item.id)] }}
-              </template>
+            <template #item.updatedAt="{ item }">
+              {{ formatDate(item.updatedAt) }}
             </template>
-            <template #bottom v-if="clients.length < 10"></template>
+            <!-- Provide a slot for actions or other columns if needed -->
           </v-data-table>
-        </div>
+        </v-card>
       </v-tabs-window-item>
 
-      <!-- Prospects tab content -->
-      <v-tabs-window-item :key="1">
+      <!-- News tab content -->
+      <v-tabs-window-item>
+        <v-card elevation="3" class="p-4">
+          <div class="text-h6 mb-4">Latest College Basketball Headlines</div>
+          
+          <!-- If we're still loading articles, show a skeleton loader -->
+          <template v-if="loadingNews">
+            <v-skeleton-loader
+              class="mx-auto"
+              type="table"
+              :loading="true"
+              elevation="0"
+            />
+          </template>
 
-        <v-alert
-            title="View Firm Clients"
-            type="secondary"
-            class="my-4"
-        >
-          If an advisor in your firm has enabled the option to share their client list, you can select their name
-          here to view their clients.
-        </v-alert>
-
-        <div class="client_display">
-          <v-text-field
-              v-model="advisorSearchInput"
-              append-inner-icon="mdi-magnify"
-              append-icon="mdi-close"
-              density="compact"
-              label="Search for a fellow advisor"
-              variant="solo"
-              hide-details
-              single-line
-              @click:append-inner="findAdvisor(advisorSearchInput)"
-              @keydown.enter="findAdvisor(advisorSearchInput)"
-              @click:append="advisorSearchInput = '', findAdvisor(advisorSearchInput)"
-              class="mb-4 search"
-          ></v-text-field>
-          <v-data-table :items="advisorsShown" :headers="advisorHeaders" :mobile-breakpoint="700">
-            <template v-slot:item.actions="{ item }">
-              <v-btn
-                  color="primary"
-                  @click="getClients(item.id), getProspects(item.id), changeAdvisorViewing(item.id)"
-                  :disabled="displayState.currentAdvisorViewing !== null && displayState.currentAdvisorViewing !== item.id"
+          <template v-else>
+            <div v-if="newsArticles.length === 0">
+              <em>No news articles found. Check again later!</em>
+            </div>
+            <!-- Display articles in a list or cards -->
+            <v-row v-else dense>
+              <v-col
+                v-for="(article, i) in newsArticles"
+                :key="i"
+                cols="12"
+                md="6"
+                lg="4"
               >
-                {{
-                  displayState.showOtherClients && displayState.currentAdvisorViewing === item.id ? 'Hide Clients' : 'Display Clients'
-                }}
-              </v-btn>
-            </template>
-            <template #bottom v-if="advisorsShown.length < 10"></template>
-          </v-data-table>
-          <v-text-field
-              v-if="displayState.showOtherClients"
-              v-model="otherSearchInput"
-              append-inner-icon="mdi-magnify"
-              append-icon="mdi-close"
-              density="compact"
-              label="Search for a client"
-              variant="solo"
-              hide-details
-              single-line
-              @click:append-inner="findOtherClient(otherSearchInput)"
-              @click:append="otherSearchInput = ''"
-              class="mt-8 mb-4 search"
-          ></v-text-field>
-          <v-data-table v-if="displayState.showOtherClients" :items="otherClientsShown" :headers="headers"
-                        :mobile-breakpoint="700">
-            <template v-slot:item.full_name="{ item }">
-              <template v-if="item.role === 'Active'">
-                <v-btn variant="text" @click="goToClient(item)">
-                  {{ item.full_name }}
-                </v-btn>
-              </template>
-              <template v-else>
-                <v-btn variant="text" disabled>
-                  {{ item.full_name }}
-                </v-btn>
-              </template>
-            </template>
-            <template v-slot:item.accounts="{item}">
-              <template v-if="item.role === 'Active'">
-                {{ otherAccounts[findAccIndex(otherClientsShown, item.id)] }}
-              </template>
-            </template>
-            <template #bottom v-if="otherClientsShown.length < 10"></template>
-          </v-data-table>
-        </div>
-
-      </v-tabs-window-item>
-      <v-tabs-window-item :key="2">
-        <InvestmentPreferences/>
+                <v-card class="mb-4" elevation="2">
+                  <v-card-title class="headline">
+                    {{ article.title }}
+                  </v-card-title>
+                  <v-card-subtitle v-if="article.snippet">
+                    {{ article.snippet }}
+                  </v-card-subtitle>
+                  <v-card-actions>
+                    <v-btn
+                      :href="article.link"
+                      target="_blank"
+                      color="secondary"
+                      text
+                    >
+                      Read More
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-col>
+            </v-row>
+          </template>
+        </v-card>
       </v-tabs-window-item>
     </v-tabs-window>
-
-    <!-- Dialog for creating a new client -->
-    <v-dialog max-width="500" v-model="openCreateNewClientModal">
-      <v-card title="Create New Client">
-        <v-card-text>
-          <!-- Input fields for new client details -->
-          <v-text-field
-              v-model="newClient.first_name"
-              label="First name"
-          ></v-text-field>
-          <br/>
-          <v-text-field
-              v-model="newClient.last_name"
-              label="Last name"
-          ></v-text-field>
-          <br/>
-          <v-text-field
-              label="Email"
-              type="email"
-              v-model="newClient.email"
-          ></v-text-field>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <!-- Button to cancel client creation and reset the form -->
-          <v-btn
-              text="Cancel"
-              @click="
-              openCreateNewClientModal = false;
-              resetForm();
-            "
-          ></v-btn>
-          <!-- Button to save the new client -->
-          <v-btn text="Save" color="primary" @click="createNewClient()"></v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!-- Dialog for creating a new advisor -->
-    <v-dialog max-width="500" v-model="openEditClientModal">
-      <v-card title="Edit Client Details">
-        <v-card-text>
-          <!-- Input fields for new advisor details -->
-          <v-text-field
-              v-model="clientToEdit.first_name"
-              label="First name"
-          ></v-text-field>
-          <br/>
-          <v-text-field
-              v-model="clientToEdit.last_name"
-              label="Last name"
-          ></v-text-field>
-          <br/>
-          <v-text-field
-              label="Email"
-              type="email"
-              v-model="clientToEdit.email"
-          ></v-text-field>
-          <v-select
-              label="Change Client Status"
-              class="my-4"
-              v-model="clientToEdit.role"
-              :items="rolesList"
-              item-title="title"
-              item-value="value"
-          ></v-select>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <!-- Buttons to cancel or save the new advisor -->
-          <v-btn text color="error" @click="() => { openEditClientModal = false; resetEditForm(); }">
-            Cancel
-          </v-btn>
-          <v-btn text="Save" color="primary" @click="submitEditedClient(clientToEdit.id)"></v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-  </div>
+  </v-container>
 </template>
 
-
 <script setup>
-import {useUserStore} from '@/store/user';
-import {storeToRefs} from 'pinia';
-import {ref, reactive, computed, inject, onMounted} from 'vue';
-import {useRouter} from 'vue-router';
-import moment from 'moment';
-import {parseError} from '@/utils/error';
-import InvestmentPreferences from "@/views/InvestmentPreferences.vue";
+/* Imports */
+import { ref, onMounted, watch, inject } from 'vue'
+import { useUserStore } from '@/store/user'
+import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
+import moment from 'moment'
 
-// Injected dependencies
-const $axios = inject('$axios');
-const {show} = inject('toast');
+/* Inject your bracket & toast APIs if desired */
+const { show } = inject('toast')
+const $brackets = inject('$bracketsApi')
+const $users = inject('$usersApi')
 
-// Router instance
-const router = useRouter();
+/* Pull user info from store */
+const userStore = useUserStore()
+const { user } = storeToRefs(userStore)
 
-// User store
-const userStore = useUserStore();
-const {isAdvisorOrGreater, isSuper} = useUserStore()
-const {user} = storeToRefs(userStore);
+/* Local state */
+const currentTab = ref(0)
+const brackets = ref([])
+const basicBrackets = ref([])
+const offshootBrackets = ref([])
+const loadingNews = ref(true)
+const newsArticles = ref([])
 
-
-// User info
-const {id: advisor_id} = user.value;
-
-// State variables
-const openCreateNewClientModal = ref(false);
-const openEditClientModal = ref(false);
-const currentTab = ref(0);
-const initialState = {
-  first_name: undefined,
-  last_name: undefined,
-  email: undefined,
-};
-const clientToEdit = ref({
-  id: "",
-  first_name: "",
-  last_name: "",
-  email: "",
-  role: ""
-});
-// Survey link
-const surveyLink = `/survey?advisor=${advisor_id}`;
-
-const newClient = reactive({...initialState});
-const clients = ref([]);
-const otherClients = ref([]);
-const otherClientsShown = ref([]);
-const otherSearchInput = ref('');
-const otherFoundClient = ref([]);
-const advisorSearchInput = ref('');
-const advisors = ref([]);
-const advisorsShown = ref([]);
-const prospects = ref([]);
-const clientsShown = ref([]);
-const searchInput = ref('');
-const foundClient = ref([]);
-const editingRole = ref("")
-const accounts = ref([]);
-const otherAccounts = ref([]);
-const allRolesClients = ref([])
-
-// Display state
-const displayState = reactive({
-  showClients: false,
-  showProspects: false,
-  showOtherClients: false,
-  hidden: 'Display Clients',
-  shown: 'Hide Clients',
-  hiddenProspects: 'Display Prospects',
-  shownProspects: 'Hide Prospects',
-  searched: false,
-  searchedProspects: false,
-  searchedOtherClients: false,
-  currentAdvisorViewing: null,
-});
-
-// Data tables headers
-const headers = [
-  {title: 'Status', key: 'role', width: 0, nowrap: true},
-  {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
-  {title: 'Email', key: 'email', width: 0, nowrap: true},
-  {title: 'Last Survey Date', key: 'last_survey_taken_date', width: 0, nowrap: true},
-  {title: 'Accounts', key: 'accounts', width: 0, nowrap: true},
-  {title: 'Edit Client', key: 'actions', sortable: false, width: 0, nowrap: true},
-  {}
-];
-
-const advisorHeaders = [
-  {title: 'Full Name', key: 'full_name', width: 0, nowrap: true},
-  {title: 'Email', key: 'email', width: 0, nowrap: true},
-  {key: 'actions', sortable: false, width: 0, nowrap: true},
-
+/* Define table headers for brackets */
+const bracketHeaders = [
+  { title: 'Bracket Name', value: 'name' },
+  { title: 'Created On', value: 'createdAt' },
+  { title: 'Last Updated', value: 'updatedAt' },
 ]
 
-const rolesList = [
-  {title: 'Active', value: 'client'},
-  {title: 'New (prospect)', value: 'prospect'},
-  {title: 'Archived', value: 'archived'}
-]
-
-// Fetch clients data
-const getClients = async (a) => {
-  const {data} = await $axios.get(`/api/advisors/${a}/clients/`);
-  const formattedClients = data.map((d) => ({
-    ...d,
-    last_survey_taken_date: d.last_survey_taken_date
-        ? moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma')
-        : 'N/A', // Default value if date is missing
-    role: "Active", // Default role if undefined
-  }));
-
-  if (a === advisor_id) {
-    clients.value = formattedClients;
-    await getAccountsForAllClients(clients, accounts);
-  } else {
-    otherClients.value = formattedClients;
-    await getAccountsForAllClients(otherClients, otherAccounts);
-    otherClientsShown.value = otherClientsShown.value.concat(otherClients.value);
-    otherClientsShown.value.sort((a, b) => a.role.localeCompare(b.role));
-  }
-};
-
-const getAdvisors = async () => {
-  const {data} = await $axios.get(`/api/firms/${user.value.firm.id}/advisors-and-admin/`);
-  advisors.value = data.filter(advisor => advisor.share_clients === true);
-  advisors.value = advisors.value.filter(advisor => advisor.id !== advisor_id);
-  advisorsShown.value = advisors.value;
-};
-
-// Fetch prospects data
-const getProspects = async (theirAdvisor = null) => {
-  let advisor
-  theirAdvisor ? advisor = theirAdvisor : advisor = advisor_id
-  const {data} = await $axios.get(`/api/advisors/${advisor}/prospects/`);
-  prospects.value = data.map((d) => ({
-    ...d,
-    last_survey_taken_date: d.last_survey_taken_date
-        ? moment(d.last_survey_taken_date).format('MM/DD/YYYY hh:mma')
-        : 'N/A', // Default value if date is missing
-    role: "New (prospect)"
-  }));
-  if (theirAdvisor) {
-    //Skipping otherClients because it is just a middle man to get to otherClientsShown here
-    otherClientsShown.value = otherClientsShown.value.concat(prospects.value);
-    otherClientsShown.value.sort((a, b) => a.role.localeCompare(b.role));
-  }
-};
-
-// Form reset
-const resetForm = () => {
-  Object.assign(newClient, initialState);
-};
-
-//edit form reset
-const resetEditForm = () => {
-  clientToEdit.value = {
-    id: null,
-    first_name: "",
-    last_name: "",
-    email: "",
-    role: ""
-  };
-}
-
-
-// Create new client
-const createNewClient = async () => {
-  try {
-    const {data: {id}} = await $axios.post(`/api/advisors/${advisor_id}/clients/`, newClient);
-    openCreateNewClientModal.value = false;
-    show({message: 'Client created!'});
-    router.push(`/survey?user_id=${id}`);
-  } catch (error) {
-    show({message: parseError(error), error: true});
-  }
-};
-
-// Navigation functions
-const goToClient = ({id}) => {
-  router.push(`/clients/${id}#values`);
-};
-
-//Client Actions
-const editClient = (item, role) => {
-  // Populate the `clientToEdit` with the selected client's details
-  editingRole.value = role;
-  clientToEdit.value = {
-    id: item.id,
-    first_name: item.first_name,
-    last_name: item.last_name,
-    email: item.email,
-  };
-  openEditClientModal.value = true;
-};
-
-const submitEditedClient = async (id) => {
-  let clientProfile = {}
-  if (clientToEdit.value.role === 'archived') {
-    await $axios.patch(`/api/users/archive-user/${clientToEdit.value.id}/`)
-    openEditClientModal.value = false;
-    resetEditForm();
-    window.location.reload();
-  } else {
-    clientProfile = {
-      first_name: clientToEdit.value.first_name,
-      last_name: clientToEdit.value.last_name,
-      email: clientToEdit.value.email.toLowerCase(),
-      role: clientToEdit.value.role
-    }
-  }
-  try {
-    const result = await $axios.patch(
-        `/api/advisors/${advisor_id}/${editingRole.value}/${id}/`, clientProfile
-    );
-    openEditClientModal.value = false;
-    resetEditForm();
-    window.location.reload();
-  } catch (error) {
-    if (error.response && error.response.status === 400) {
-      // Check if the error is related to a duplicate email
-      const emailErrors = error.response.data.email;
-      if (emailErrors && emailErrors.includes("User with this email already exists.")) {
-        show({
-          message: "A user with this email already exists. " +
-              "Please use another email to update this user.", error: true
-        });
-      } else {
-        show({message: "An error occurred while updating the user. Please try again.", error: true});
-      }
-    } else {
-      console.error("Unexpected error:", error);
-      alert("An unexpected error occurred. Please contact support.");
-    }
-  }
-}
-
-
-const copyText = () => {
-  navigator.clipboard.writeText(`${location.origin}${surveyLink}`);
-  show({
-    message: `<div>Link copied to clipboard!</div>`,
-  });
-};
-
-// Toggle display functions
-const toggleClients = () => {
-  displayState.showClients = !displayState.showClients;
-  displayState.searched = false;
-  clientsToShow();
-};
-
-// Find client function for search bar 
-const findClient = (search) => {
-  if (search === '') {
-    displayState.searched = false;
-    displayState.showClients = false;
-  } else {
-    foundClient.value = allRolesClients.value.filter((client) => {
-      return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
-    });
-    displayState.searched = true;
-    clientsToShow();
-    displayState.showClients = true;
-  }
-};
-
-const findOtherClient = (search) => {
-  if (search === '') {
-    displayState.searchedOtherClients = false;
-  } else {
-    otherFoundClient.value = otherClientsShown.value.filter((client) => {
-      return client.full_name.toLowerCase().includes(search.toLowerCase()) || client.email.toLowerCase().includes(search.toLowerCase());
-    });
-    displayState.searchedOtherClients = true;
-    otherClientsToShow();
-  }
-};
-
-const findAdvisor = (search) => {
-  if (search === '') {
-    advisorsShown.value = advisors.value;
-  } else {
-    advisorsShown.value = advisors.value.filter((advisor) => {
-      return advisor.full_name.toLowerCase().includes(search.toLowerCase()) || advisor.email.toLowerCase().includes(search.toLowerCase());
-    });
-  }
-};
-
-const clientsToShow = () => {
-  return displayState.searched ? clientsShown.value = foundClient.value : clientsShown.value = allRolesClients.value
-};
-
-const otherClientsToShow = () => {
-  return displayState.searchedOtherClients ? otherClientsShown.value = otherFoundClient.value : otherClientsShown.value = otherClients.value;
-};
-
-
-const getAccountsForAllClients = async (c, acc) => {
-  acc.value = [];
-  for (const client of c.value) {
-    const {data} = await $axios.get(`/api/advisors/${advisor_id}/clients/${client.id}/accounts/`);
-    acc.value.push(data.length);
-  }
-};
-
-const findAccIndex = (c, id) => {
-  return c.findIndex((client) => {
-    return client.id === id
-  });
-};
-
-const changeAdvisorViewing = (id) => {
-  displayState.showOtherClients = !displayState.showOtherClients;
-  displayState.currentAdvisorViewing === null ? (otherClientsShown.value = []) && (otherClients.value = []) : null;
-  displayState.currentAdvisorViewing === null ?
-      displayState.currentAdvisorViewing = id :
-      displayState.currentAdvisorViewing = null;
-};
-
-const resetDisplayState = () => {
-  displayState.showClients = false;
-  displayState.showProspects = false;
-  displayState.showOtherClients = false;
-  displayState.currentAdvisorViewing = null;
-};
-
+/* Lifecycle hooks */
 onMounted(async () => {
-  // Initial data fetch
-  await getAdvisors();
-  await getClients(advisor_id);
-  await getProspects();
+  await fetchUserBrackets()
+  await fetchNewsArticles()
 
-  allRolesClients.value = allRolesClients.value.concat(clients.value).concat(prospects.value)
-
+  console.log(user)
 })
+
+
+/**
+ * Fetch brackets for the current user
+ * GET /get-user-brackets?id=<userId>
+ */
+const fetchUserBrackets = async () => {
+  console.log("user", user.value)
+  try {
+    const {data} = await $brackets.get(`get-user-brackets?id=${user.value._id}`)
+    console.log("here is data", data)
+    data.forEach((brack) =>{
+      const oGBracket = {
+        name:brack.name,
+        createdAt:brack.createdAt,
+        updatedAt:"N/A (original bracket creation)",
+        id:brack.id
+      }
+      const copyBracket = {
+        name:`copy of ${brack.name}`,
+        createdAt:brack.createdAt,
+        updatedAt:brack.updatedAt,
+        id:brack.id
+      }
+      brackets.value.push(oGBracket)
+      brackets.value.push(copyBracket)
+    })
+  } catch (error) {
+    console.error('Failed to fetch brackets:', error)
+    // Optionally display a toast or alert
+  }
+}
+
+/**
+ * Fetch news articles from your external Google search or another API
+ */
+const fetchNewsArticles = async () => {
+  loadingNews.value = true
+  try {
+    // Mock data for demonstration:
+    // In reality, you'd do an axios/fetch call to your server endpoint 
+    // that queries Google or other news sources.
+    newsArticles.value = [
+      {
+        title: 'Selection Sunday Insights',
+        snippet: 'Experts share their top seeds for the upcoming tournament...',
+        link: 'https://www.example.com/selection-sunday'
+      },
+      {
+        title: 'Underdog Stories That Might Surprise You',
+        snippet: 'Which unranked teams have the best shot at an upset?',
+        link: 'https://www.example.com/underdog-stories'
+      },
+    ]
+  } catch (error) {
+    console.error('Failed to fetch news articles:', error)
+    newsArticles.value = []
+  } finally {
+    loadingNews.value = false
+  }
+}
+
+/* Utility function to format dates in your table */
+function formatDate(date) {
+  if (!date) return ''
+  return moment(date).format('MMM DD, YYYY')
+}
 </script>
 
-<style>
+<style scoped>
 .top_line_dash {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  align-items: center;
+}
+.card {
+  border-radius: 12px;
+  background-color: rgba(255,255,255,0.2);
 }
 
-.survey_button {
-  margin-left: 10px;
+/* Example custom style for the dashboard title */
+.dashboard-title {
+  font-weight: 600;
 }
 
-
-.client_display {
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  margin-top: 20px;
-}
-
-.client_button {
-  max-width: fit-content;
-  margin-bottom: 30px;
-}
-
-.search {
-  width: 400px;
-  font-family: halyard-text;
-}
-
-@media only screen and (max-width: 700px) {
-
-  .top_line_dash {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .survey_button {
-    margin-top: 10px;
-  }
-
-  .client_display {
-    justify-content: center;
-    align-items: center;
-  }
-
-  .search {
-    width: 75%;
-  }
-
+/* Just to show you can style the bracket build button separately */
+.build-bracket-btn {
+  min-width: 200px;
+  margin-left: 1rem;
 }
 </style>

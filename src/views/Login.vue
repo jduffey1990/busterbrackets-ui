@@ -8,9 +8,9 @@
       <v-form @submit.prevent="loginUser()">
         <v-card-text>
           <v-text-field
-              label="Email"
+              label="Username"
               type="text"
-              v-model="credentials.email"
+              v-model="credentials.username"
           ></v-text-field>
           <br/>
 
@@ -19,42 +19,26 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn @click="resetPassword()">Reset Password</v-btn>
           <v-btn type="submit">Login</v-btn>
         </v-card-actions>
       </v-form>
     </v-card>
   </v-layout>
   <div v-if="showCreationSection === false" class="button-section">
-    <v-btn class="btn-primary" @click="updateCreationSection">Need To create a profile?</v-btn>
+    <v-btn class="btn-primary" @click="updateCreationSection" color="warning">New Here?</v-btn>
   </div>
   <v-layout v-if="showCreationSection" class="button-section">
 
     <v-card class="main-card">
       <v-toolbar class="title-holder">
         <v-toolbar-title class="title">Create New User</v-toolbar-title>
+        <button class="close-button" @click="updateCreationSection" color="error">
+          <v-icon>mdi-close</v-icon>
+        </button>
       </v-toolbar>
 
       <v-card-text>
         <!-- Name and Email Fields -->
-        <v-radio-group v-model="newAccount.role" title="Select Your Role">
-          <v-radio
-              v-for="r in clientRoles"
-              :key="r.key"
-              :label="r.title"
-              :value="r.key"
-              class="my-2"
-          ></v-radio>
-        </v-radio-group>
-        <br/>
-        <div v-if="newAccount.role !== ''">
-          <div v-if="newAccount.role === 'firm_admin'">
-            <v-text-field
-                v-model="newAccount.firm"
-                label="Business/Firm Name"
-            ></v-text-field>
-            <br/>
-          </div>
           <v-text-field
               v-model="newAccount.firstName"
               label="First Name"
@@ -71,7 +55,12 @@
               v-model="newAccount.email"
           ></v-text-field>
           <br/>
-
+          <v-text-field
+              label="Username"
+              type="email"
+              v-model="newAccount.username"
+          ></v-text-field>
+          <br/>
           <div>
             <v-text-field
                 v-model="passwordOne"
@@ -126,7 +115,7 @@
               </v-btn>
             </div>
           </div>
-        </div>
+        
       </v-card-text>
     </v-card>
   </v-layout>
@@ -139,30 +128,21 @@ import UiPassword from '@/components/ui/Password.vue';
 import {useRouter} from 'vue-router';
 import {inject} from 'vue';
 import {storeToRefs} from 'pinia';
-import {parseError} from "@/utils/error";
 import {stringIsEmail} from '@/utils/string'
 
 const {show} = inject('toast');
-const $axios = inject('$axios');
+const $users = inject('$usersApi');
+const $brackets = inject('$bracketsApi');
 const {user, stripeAccountAssociated, cardOnFile} = storeToRefs(useUserStore());
 const {login} = useUserStore();
 
 const router = useRouter();
 
 const credentials = reactive({
-  email: undefined,
+  username: undefined,
   password: undefined,
 });
 
-const timeUntilSubOver = (currentUnixTime, subscriptionEndDate) => {
-  // Calculate the number of days remaining
-  const daysRemaining = Math.floor((subscriptionEndDate - currentUnixTime) / (60 * 60 * 24)); // Convert seconds to days
-
-  // Check if a message should be shown (based on specific day thresholds)
-  const isShown = [15, 10, 5, 3, 2, 1].includes(daysRemaining);
-
-  return [isShown, daysRemaining];
-};
 
 const loginUser = async () => {
   try {
@@ -193,7 +173,7 @@ const resetPassword = async () => {
     });
   } else {
     try {
-      await $axios.put('/api/users/reset-password/', {
+      await $users.put('/reset-password/', {
         email: credentials.email,
       });
     } catch (error) {
@@ -214,39 +194,32 @@ const hasSpecialCharacter = ref(false);
 const hasNum = ref(false);
 const hasLowerUpper = ref(false);
 const twoMatchesOne = ref(false);
+
+// create form readiness check
 const passwordReady = computed(() => {
   return longerThan8chars.value && hasSpecialCharacter.value && hasNum.value && hasLowerUpper.value && twoMatchesOne.value;
 });
-// Computed to check if the client info is ready, including conditional checks for firm_admin
 const clientReady = computed(() => {
   const basicInfoReady = newAccount.value.lastName !== '' &&
       newAccount.value.firstName !== '' &&
-      newAccount.value.email !== '';
+      newAccount.value.email !== '' &&
+      newAccount.value.username;
 
-  // Check if the firm name is required and filled out when the role is firm_admin
-  const firmInfoReady = newAccount.value.role !== 'firm_admin' || newAccount.value.firm !== '';
-
-  return basicInfoReady && firmInfoReady;
+  return basicInfoReady
 });
-
-// Computed to determine if the submit button should be enabled
 const showSubmit = computed(() => {
   return clientReady.value && passwordReady.value;
 });
 
+
 const newAccount = ref({
   firstName: "",
   lastName: "",
+  username: "",
   email: "",
   password: "",
-  firm: "",
-  role: "",
+  name: ""
 })
-
-const clientRoles = [
-  {title: "Investor", key: "prospect"},
-  {title: "Advisor", key: "firm_admin"}
-]
 
 const updateCreationSection = () => showCreationSection.value = !showCreationSection.value
 
@@ -285,9 +258,10 @@ const submitNewClient = async () => {
 
   newAccount.value.email = newAccount.value.email.toLowerCase();
   newAccount.value.password = passwordOne.value
+  newAccount.value.name = newAccount.value.firstName + " " + newAccount.value.lastName
 
   try {
-    const response = await $axios.post('/api/users/create-user/', newAccount.value);
+    const response = await $users.post('/create-user', newAccount.value);
     if (response.status === 200) {
       show({message: 'Thanks for creating an account with us. You will be redirected to login.'});
       setTimeout(() => {
@@ -336,6 +310,11 @@ watch(passwordTwo, () => {
   min-width: 600px;
 }
 
+.title-holder {
+  display: flex;
+  justify-content: space-between;
+}
+
 
 .match-field {
   margin-top: 20px; /* Adds space above the div */
@@ -367,6 +346,20 @@ watch(passwordTwo, () => {
   font-size: 20px; /* Size of the icon */
 }
 
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: grey;
+  font-family: "halyard-text" !important;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 100; /* Ensure button stays on top of other content */
+
+}
+
 
 @media (max-width: 700px) {
   .title-holder {
@@ -377,6 +370,9 @@ watch(passwordTwo, () => {
   .title {
     margin-bottom: 80px;
   }
+  .main-card {
+  min-width: 90%;
+}
 }
 
 </style>

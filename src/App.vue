@@ -1,8 +1,8 @@
 <template>
-  <v-app >
-    <Header v-if="screenWidth < 700" style="transform: translateY(-30px);"/>
-    <Header v-else/>
-
+  <v-app class="overall-app">
+    <div class="header-div">
+      <Header/>
+    </div>
     <UiToast>
       <v-main class="padding-add">
         <v-container>
@@ -96,6 +96,18 @@ document.addEventListener('scroll', debouncedResetTimer);
 </script>
 
 <style>
+.overall-app {
+  width: 100%;
+  background: linear-gradient(135deg, #28F6F4 0%, #1071A0 100%) !important;
+}
+.header-div {
+  height: 150px;
+}  
+
+.padding-add {
+  padding-top: 80px !important;
+  padding: 2rem;
+}
 
 .appBackground {
   background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%) !important;

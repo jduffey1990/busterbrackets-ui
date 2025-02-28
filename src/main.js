@@ -12,7 +12,8 @@ const app = createApp(App);
 const pinia = createPinia();
 
 pinia.use(({store}) => {
-    store.$axios = app.config.globalProperties.$axios;
+    store.$users = app.config.globalProperties.$usersApi;
+    store.$brackets =  app.config.globalProperties.$bracketsApi;
 });
 
 app.use(axios).use(pinia).use(vuetify);
