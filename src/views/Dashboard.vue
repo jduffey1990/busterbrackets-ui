@@ -48,13 +48,19 @@
           >
             <!-- Define how each row looks in the table body (optional slot) -->
             <template #item.name="{ item }">
+              <v-btn @click="goToBracket(item)">
               {{ item.name || 'Untitled Bracket' }}
+            </v-btn>
             </template>
             <template #item.createdAt="{ item }">
               {{ formatDate(item.createdAt) }}
             </template>
             <template #item.updatedAt="{ item }">
               {{ formatDate(item.updatedAt) }}
+            </template>
+            <template #item.editable="{ item }" v-slot:activator="{ props }">
+              <v-icon v-if="item.editable === true" v-bind="props" color="green" size="medium">mdi-check</v-icon>
+              <v-icon v-else v-bind="props" color="error" size="medium">mdi-close</v-icon>
             </template>
             <!-- Provide a slot for actions or other columns if needed -->
           </v-data-table>
@@ -146,6 +152,7 @@ const bracketHeaders = [
   { title: 'Bracket Name', value: 'name' },
   { title: 'Created On', value: 'createdAt' },
   { title: 'Last Updated', value: 'updatedAt' },
+  { title: 'Editable?', value: "editable" }
 ]
 
 /* Lifecycle hooks */
@@ -171,13 +178,15 @@ const fetchUserBrackets = async () => {
         name:brack.name,
         createdAt:brack.createdAt,
         updatedAt:"N/A (original bracket creation)",
-        id:brack.id
+        id:brack.id,
+        editable:false
       }
       const copyBracket = {
         name:`copy of ${brack.name}`,
         createdAt:brack.createdAt,
         updatedAt:brack.updatedAt,
-        id:brack.id
+        id:brack.id,
+        editable:true
       }
       brackets.value.push(oGBracket)
       brackets.value.push(copyBracket)
@@ -186,6 +195,14 @@ const fetchUserBrackets = async () => {
     console.error('Failed to fetch brackets:', error)
     // Optionally display a toast or alert
   }
+}
+
+const goToBracket = (item) => {
+  const params = new URLSearchParams({
+    id: item.id,
+    editable: item.editable
+  }).toString();
+  router.push(`/bracket/${params}`)
 }
 
 /**

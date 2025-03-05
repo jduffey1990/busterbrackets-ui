@@ -9,15 +9,12 @@
 
       <h4 class="text-h4">What Happens Next?</h4>
       <ul class="next-steps">
-        <li>Any changes to your subscription or billing details can be viewed on your
-          <strong><a href="/billing" target="_blank">Billing Page</a></strong>.
+        <li>Feel free to build a bracket from your <strong><a href="/dashboard" target="_blank">Billing Page</a></strong>.
+            You will receive one <b>uneditable bracket</b> That serves to save the algorithm's result, and one editable 
+            bracket that is a copy of the first.
         </li>
-        <li>To ensure uninterrupted service, please keep your billing information and payment method up-to-date for
-          future transactions.
-        </li>
-        <li>If you have any questions or need assistance with this transaction, reach out support
-          <a href="https://www.getpomarium.com/product/resources" target="_blank">here</a> or at
-          <a href="mailto:support@getpomarium.com">support@getpomarium.com</a>.
+        <li>If you have any questions or need assistance with this transaction, reach out to support
+          <a href="mailto:foxdogdevelopment@gmail.com">foxdogdevelopment@gmail.com</a>.
         </li>
       </ul>
     </div>
