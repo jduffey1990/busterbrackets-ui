@@ -29,10 +29,11 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",
-    "cssnano-webpack-plugin": "^1.0.3",
+    "css-minimizer-webpack-plugin": "^7.0.0",
     "eslint": "^8.22.0",
     "eslint-plugin-vue": "^9.3.0",
     "html-minifier-webpack-plugin": "^2.2.3",
+    "prettier": "3.5.3",
     "sass": "^1.60.0",
     "sass-loader": "^13.2.2",
     "terser-webpack-plugin": "^5.3.10",

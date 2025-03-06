@@ -2,19 +2,9 @@
   <!-- Page Container -->
   <v-container fluid class="px-0 py-0 page-container">
     <!-- Registration/Log In Notice -->
-    <v-alert
-          type="info"
-          border="start"
-          elevation="2"
-        >
-          Please click the 
-          <strong>"LOG IN"</strong> 
-          button in the navbar to begin the login or registration process. 
-          If you need to reach out to us, feel free to contact at:
-          <a href="mailto:foxdogdevelopment@gmail.com" class="text-decoration-underline secondary--text">
-            Fox Dog Development
-          </a>.
-        </v-alert>
+    <div class="center">
+      <v-img :width="400" src="@/assets/buster.png"></v-img>
+    </div>
     <!-- Hero / Header Section -->
     <div class="hero-header">
       <h1 class="display-1 font-weight-bold mb-3 white--text">
@@ -96,6 +86,12 @@
 /* Page Container to allow for a gradient hero header */
 .page-container {
   background-color: transparent;
+}
+.center{
+display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .hero-header {

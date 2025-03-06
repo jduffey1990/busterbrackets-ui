@@ -6,6 +6,7 @@ import {useUserStore} from '@/store/user';
 import Settings from '@/views/Settings.vue';
 import Success from "@/components/Success.vue";
 import Bracket from '@/views/Bracket.vue';
+import Builder from '@/views/Builder.vue';
 
 
 const router = createRouter({
@@ -38,6 +39,11 @@ const router = createRouter({
             path: "/bracket",
             name: "Bracket",
             component: Bracket
+        },
+        {
+            path: "/builder",
+            name: "Builder",
+            component: Builder
         },
         {
             path: '/settings',

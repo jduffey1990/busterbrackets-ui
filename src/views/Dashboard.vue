@@ -32,7 +32,7 @@
             <v-btn
               color="warning"
               class="build-bracket-btn mt-4 mr-4"
-              href="/bracket-builder"
+              href="/builder"
               elevation="2"
             >
               Build me a bracket!
@@ -58,10 +58,10 @@
             <template #item.updatedAt="{ item }">
               {{ formatDate(item.updatedAt) }}
             </template>
-            <template #item.editable="{ item }" v-slot:activator="{ props }">
+            <!-- <template #item.editable="{ item }" v-slot:activator="{ props }">
               <v-icon v-if="item.editable === true" v-bind="props" color="green" size="medium">mdi-check</v-icon>
               <v-icon v-else v-bind="props" color="error" size="medium">mdi-close</v-icon>
-            </template>
+            </template> -->
             <!-- Provide a slot for actions or other columns if needed -->
           </v-data-table>
         </v-card>
@@ -129,6 +129,7 @@ import { useUserStore } from '@/store/user'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import moment from 'moment'
+const router = useRouter()
 
 /* Inject your bracket & toast APIs if desired */
 const { show } = inject('toast')
@@ -152,7 +153,7 @@ const bracketHeaders = [
   { title: 'Bracket Name', value: 'name' },
   { title: 'Created On', value: 'createdAt' },
   { title: 'Last Updated', value: 'updatedAt' },
-  { title: 'Editable?', value: "editable" }
+  // { title: 'Editable?', value: "editable" }
 ]
 
 /* Lifecycle hooks */
@@ -178,18 +179,18 @@ const fetchUserBrackets = async () => {
         name:brack.name,
         createdAt:brack.createdAt,
         updatedAt:"N/A (original bracket creation)",
-        id:brack.id,
-        editable:false
+        id:brack._id,
+        // editable:false
       }
-      const copyBracket = {
-        name:`copy of ${brack.name}`,
-        createdAt:brack.createdAt,
-        updatedAt:brack.updatedAt,
-        id:brack.id,
-        editable:true
-      }
+      // const copyBracket = {
+      //   name:`copy of ${brack.name}`,
+      //   createdAt:brack.createdAt,
+      //   updatedAt:brack.updatedAt,
+      //   id:brack._id,
+      //   editable:true
+      // }
       brackets.value.push(oGBracket)
-      brackets.value.push(copyBracket)
+      // brackets.value.push(copyBracket)
     })
   } catch (error) {
     console.error('Failed to fetch brackets:', error)
@@ -198,11 +199,14 @@ const fetchUserBrackets = async () => {
 }
 
 const goToBracket = (item) => {
-  const params = new URLSearchParams({
-    id: item.id,
-    editable: item.editable
-  }).toString();
-  router.push(`/bracket/${params}`)
+  console.log("item",item)
+  router.push({
+        name: 'Bracket',
+        query: {
+          id: item.id,
+          // editable: item.editable
+        }
+      });
 }
 
 /**
@@ -237,6 +241,9 @@ const fetchNewsArticles = async () => {
 /* Utility function to format dates in your table */
 function formatDate(date) {
   if (!date) return ''
+  else if(date === "N/A (original bracket creation)"){
+    return date
+  }
   return moment(date).format('MMM DD, YYYY')
 }
 </script>
