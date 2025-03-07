@@ -17,9 +17,9 @@
       <v-tab>
         My Brackets
       </v-tab>
-      <v-tab>
+      <!-- <v-tab>
         News
-      </v-tab>
+      </v-tab> -->
     </v-tabs>
 
     <!-- Content of the selected tab -->
@@ -58,10 +58,11 @@
             <template #item.updatedAt="{ item }">
               {{ formatDate(item.updatedAt) }}
             </template>
-            <!-- <template #item.editable="{ item }" v-slot:activator="{ props }">
-              <v-icon v-if="item.editable === true" v-bind="props" color="green" size="medium">mdi-check</v-icon>
-              <v-icon v-else v-bind="props" color="error" size="medium">mdi-close</v-icon>
-            </template> -->
+            <template #item.breakdown="{ item }" v-slot:activator="{ props }">
+            <v-btn @click="goToBreakdown(item)">
+              {{checkBracketYear(item) ? 'Post-tourney breakdown' : 'Pre-tourny breakdown' }}
+            </v-btn>
+            </template>
             <!-- Provide a slot for actions or other columns if needed -->
           </v-data-table>
         </v-card>
@@ -140,6 +141,11 @@ const $users = inject('$usersApi')
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
 
+
+/* Get the correct year's bracket */
+import { bracketNames, recordsOver20, fixRecords, bracketFinalYears } from '@/utils/bracketStruc';
+
+
 /* Local state */
 const currentTab = ref(0)
 const brackets = ref([])
@@ -153,7 +159,7 @@ const bracketHeaders = [
   { title: 'Bracket Name', value: 'name' },
   { title: 'Created On', value: 'createdAt' },
   { title: 'Last Updated', value: 'updatedAt' },
-  // { title: 'Editable?', value: "editable" }
+  { title: 'Bracket Breakdown', value: "breakdown" }
 ]
 
 /* Lifecycle hooks */
@@ -199,7 +205,6 @@ const fetchUserBrackets = async () => {
 }
 
 const goToBracket = (item) => {
-  console.log("item",item)
   router.push({
         name: 'Bracket',
         query: {
@@ -207,6 +212,20 @@ const goToBracket = (item) => {
           // editable: item.editable
         }
       });
+}
+
+const goToBreakdown = (item) => {
+  router.push({
+        name: 'Breakdown',
+        query: {
+          id: item.id,
+        }
+      });
+}
+
+const checkBracketYear = (item) => {
+  let bracketYearStr = item.createdAt.slice(0,4)
+  return bracketFinalYears[bracketYearStr] !== undefined
 }
 
 /**

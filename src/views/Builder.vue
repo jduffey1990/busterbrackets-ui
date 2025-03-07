@@ -134,7 +134,7 @@ const bracketFinalFour= ref([])
 const bracketToSend = ref([])
 const champion = ref()
 /* get actual decimal odds*/
-const odds = fixRecords(recordsOver20)
+const oddsTable = fixRecords(recordsOver20)
 
 /* User input stuff*/
 const selectedTeam = ref("")
@@ -184,16 +184,9 @@ const round = (region = [], regionStr = "") => {
             notFavored = slicedFirst
         }
         let matchup = favored.toString() + "vs" + notFavored.toString()
-        let odd = 0
-        if(odds.has(matchup)){
-            odd = odds.get(matchup)
-        }else if((notFavored - favored) < 3){
-            odd = 60
-        }else if((notFavored - favored) < 7){
-            odd = 70
-        }else{
-            odd = 85
-        }
+        
+        let odd = getOdds(matchup, favored, notFavored)
+
         // if the user added a different percentage favorite
         if(selectedTeam.value !== ""){
           odd = checkOddForAlterations(favored, notFavored, odd, regionStr)
@@ -245,16 +238,7 @@ function finals(teams){
 
       let matchup = `${favored.seed}vs${notFavored.seed}`;
 
-      let odd = 0
-      if(odds.has(matchup)){
-          odd = odds.get(matchup)
-      }else if((notFavored - favored) < 3){
-          odd = 60
-      }else if((notFavored - favored) < 7){
-          odd = 70
-      }else{
-          odd = 85
-      }
+      let odd = getOdds(matchup, favored, notFavored)
 
       if(selectedTeam.value !== ""){
         odd = checkFinalOddForAlterations(favored, notFavored, odd)
@@ -278,6 +262,25 @@ function finals(teams){
   return teams[0]; // Return the winner for external use if needed
 }
 
+
+const getOdds = (matchup, favored, notFavored) => {
+  if(oddsTable.has(matchup)){
+          return oddsTable.get(matchup)
+      }else if((notFavored - favored) < 3){
+          return 60
+      }else if((notFavored - favored) < 6){
+          return 65
+      }
+      else if((notFavored - favored) < 9){
+          return 75
+      }
+      else if((notFavored - favored) < 12){
+          return 80
+      }
+      else{
+          return 85
+      }
+}
 
 
 const checkOddForAlterations = (favored, notFavored, odd, regionStr) =>{ 

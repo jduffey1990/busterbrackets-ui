@@ -1,17 +1,21 @@
 <template>
-    <div class="title-card">
-        <div class="title-heading">
-            <h2>
-                <span class="user-name">{{ user.name }}</span>'s {{bracketReturned.name}}
-                <small class="created-at"> (Created {{ formatDate(bracketReturned.createdAt) }})</small>
-            </h2>
+    <div v-show="screenWidthBig === false">
+        <div class="title-card">
+            <div class="title-heading">
+                <h2>
+                    <span class="user-name">{{ user.name }}</span>'s {{bracketReturned.name}}
+                    <small class="created-at"> (Created {{ formatDate(bracketReturned.createdAt) }})</small>
+                </h2>
+            </div>
+            <div class="champion-banner">
+            <div class="champion-title">National Champion:</div>
+            <div class="champion-name">{{ yearHasBracket ? formatTitleName(champion) : formatStringName(champion)}}</div>
+            </div>
+            <div class="mt-4">
+                <h4>PDF Download only available on desktop</h4>
+            </div>
         </div>
-        <div class="champion-banner">
-        <div class="champion-title">National Champion:</div>
-        <div class="champion-name">{{ yearHasBracket ? formatTitleName(champion) : formatStringName(champion)}}</div>
-        </div>
-    </div>
-    <hr>
+        <hr>
     <div class="bracket-display">
         <v-select
             label="Select a Region"
@@ -382,11 +386,381 @@
             </div>
         </div>
     </div>
+</div>
+
+    <!--for full screen or pdf builder-->
+<div id="pdf-generator" :class="{
+      // If small screen, push it offscreen, so it's not visible to the user
+      'offscreen-pdf': !screenWidthBig
+    }">
+    <!-- Title, heading, champion banner, etc. -->
+    <div class="title-card">
+    <div class="title-heading">
+        <h2>
+        <span class="user-name">{{ user.name }}</span>'s {{ bracketReturned.name }}
+        <small class="created-at">
+            (Created {{ formatDate(bracketReturned.createdAt) }})
+        </small>
+        </h2>
+    </div>
+    <div class="champion-banner">
+        <div class="champion-title">National Champion:</div>
+        <div class="champion-name">
+        {{ yearHasBracket ? formatTitleName(champion) : formatStringName(champion) }}
+        </div>
+    </div>
+    <div class="mt-4">
+        <PDFBuilder/>
+    </div>
+    </div>
+    <div class="big-background">
+<div class="lower-section final-four-region mb-6">
+  <h3>Final Four</h3>
+
+  <div class="bracket-region" style="justify-content: center;">
+    <div class="round final-4">
+      <div
+        class="matchup"
+        v-for="(pair, idx) in chunkArray(bracketFinalFour.slice(0,4), 2)"
+        :key="'finalFour-s16-' + idx"
+      >
+        <v-card
+          v-for="team in pair"
+          :key="team"
+          class="matchup-card"
+        >
+          {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+        </v-card>
+      </div>
+    </div>
+
+    <div class="round finals">
+      <div
+        class="matchup"
+        v-for="(pair, idx) in chunkArray(bracketFinalFour.slice(4,6), 2)"
+        :key="'finalFour-e8-' + idx"
+      >
+        <v-card
+          v-for="team in pair"
+          :key="team"
+          class="matchup-card"
+        >
+          {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+        </v-card>
+      </div>
+    </div>
+  </div>
+</div>
+    <!-- The bracket layout with multiple columns/rows -->
+    <div class="upper-section">
+    <!-- Left side: East, West (or whichever two you want on the left) -->
+    <div class="left-regions">
+
+        <!-- East Region -->
+        <div class="display-section east-region">
+        <h3>East Region</h3>
+        <div class="bracket-region">
+            <!-- Round of 64 -->
+            <div class="round round-of-64">
+            <div
+                class="matchup"
+                v-for="(pair, matchIndex) in chunkArray(startingBracketEast, 2)"
+                :key="'east-r64-' + matchIndex"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Round of 32 -->
+            <div class="round round-of-32">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketEast.slice(16, 24), 2)"
+                :key="'east-r32-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Sweet 16 -->
+            <div class="round sweet-16">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketEast.slice(24, 28), 2)"
+                :key="'east-s16-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Elite 8 -->
+            <div class="round elite-8">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketEast.slice(28,30), 1)"
+                :key="'east-e8-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- West Region -->
+        <div class="display-section west-region">
+        <h3>West Region</h3>
+        <div class="bracket-region">
+            <!-- Round of 64 -->
+            <div class="round round-of-64">
+            <div
+                class="matchup"
+                v-for="(pair, matchIndex) in chunkArray(startingBracketWest, 2)"
+                :key="'west-r64-' + matchIndex"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Round of 32 -->
+            <div class="round round-of-32">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketWest.slice(16, 24), 2)"
+                :key="'west-r32-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Sweet 16 -->
+            <div class="round sweet-16">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketWest.slice(24, 28), 2)"
+                :key="'west-s16-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Elite 8 -->
+            <div class="round elite-8">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketWest.slice(28,30), 1)"
+                :key="'west-e8-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+        </div>
+        </div>
+
+    </div>
+
+    <!-- Right side: South, Midwest -->
+    <div class="right-regions">
+
+        <!-- South Region -->
+        <div class="display-section south-region">
+        <h3>South Region</h3>
+        <!-- Region champion, bracket rounds, etc. -->
+        <div class="bracket-region">
+            <!-- Elite 8 -->
+            <div class="round elite-8">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketSouth.slice(28,30), 1)"
+                :key="'south-e8-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Sweet 16 -->
+            <div class="round sweet-16">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketSouth.slice(24, 28), 2)"
+                :key="'south-s16-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Round of 32 -->
+            <div class="round round-of-32">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketSouth.slice(16, 24), 2)"
+                :key="'south-r32-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Round of 64 -->
+            <div class="round round-of-64">
+            <div
+                class="matchup"
+                v-for="(pair, matchIndex) in chunkArray(startingBracketSouth, 2)"
+                :key="'south-r64-' + matchIndex"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Midwest Region -->
+        <div class="display-section midwest-region">
+        <h3>Midwest Region</h3>
+        <!-- Region champion, bracket rounds, etc. -->
+        <div class="bracket-region">
+             <!-- Elite 8 -->
+            <div class="round elite-8">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketMidwest.slice(28,30), 1)"
+                :key="'midwest-e8-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Sweet 16 -->
+            <div class="round sweet-16">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketMidwest.slice(24, 28), 2)"
+                :key="'midwest-s16-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Round of 32 -->
+            <div class="round round-of-32">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketMidwest.slice(16, 24), 2)"
+                :key="'midwest-r32-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            <!-- Round of 64 -->
+            <div class="round round-of-64">
+            <div
+                class="matchup"
+                v-for="(pair, matchIndex) in chunkArray(startingBracketMidwest, 2)"
+                :key="'midwest-r64-' + matchIndex"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+            
+            
+        </div>
+        </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+</div>
 </template>
 
 <script setup>
 /* Imports */
-import { ref, onMounted, inject, computed } from 'vue'
+import { ref, onMounted, onUnmounted, inject, computed } from 'vue'
 import { useUserStore } from '@/store/user'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
@@ -394,12 +768,19 @@ const route = useRoute();
 const router = useRouter();
 import moment from 'moment'
 import { bracketNames } from '@/utils/bracketStruc';
+import PDFBuilder from '@/components/PDFBuilder.vue'
+
+//Time and bracketr insert management
 const timeNow = new Date()
 const yearNowString = String(timeNow.getFullYear()) 
 const yearBracketString = ref("")
 const yearHasBracket = computed(()=> {
   return bracketNames[yearBracketString.value] !== undefined
 })
+const checkBracketYear = (item) => {
+  let bracketYearStr = item.createdAt.slice(0,4)
+  return bracketFinalYears[bracketYearStr] !== undefined
+}
 
 
 const bracketId = route.query.id;
@@ -468,17 +849,16 @@ const getBracket = async () => {
 
 const formatTeamName = (seedString) => {
   const yearKey = yearBracketString.value
-  const teamName = bracketNames[yearKey]?.[seedString] || seedString
+  const teamName = bracketNames[yearKey]?.[seedString] || bracketNames["base"].seedString
   return seedString.slice(1) + ". " + teamName
 }
 
 const formatTitleName = (seedString) => {
   const yearKey = yearBracketString.value
-  return bracketNames[yearKey]?.[seedString]
+  return bracketNames[yearKey]?.[seedString] || seedString
 }
 
 const formatStringName = (seedString = "") =>{
-    console.log(seedString)
     let regionStr = seedString.slice(0,1)
     let seed = seedString.slice(1,seedString.length)
 
@@ -515,13 +895,22 @@ function formatDate(date) {
   return moment(date).format('MMM DD, YYYY')
 }
 
+const screenWidthBig = ref(window.innerWidth >= 1500)
+
+function handleResize() {
+  // 2) Set the ref based on new width
+  screenWidthBig.value = window.innerWidth >= 1500
+}
+
 onMounted(async () => {
   await getBracket()
- console.log(yearBracketString.value)
+  window.addEventListener('resize', handleResize)
 });
-// onMounted(() => {
-//   getBracket()
-// });
+
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 </script>
 
 <style scoped>
@@ -594,8 +983,13 @@ onMounted(async () => {
 .bracket-display {
   margin: 2rem auto;
   max-width: 1200px; /* keep bracket content centered within a max width */
-  background-color: rgba(255, 255, 255, 0.5)
+  background-color: rgba(255, 255, 255, 0.2)
 }
+
+.big-background {
+    background-color: rgba(255, 255, 255, 0.2)
+}
+
 
 /* The overall container holding the four rounds in a row */
 .bracket-region {
@@ -604,8 +998,9 @@ onMounted(async () => {
   justify-content: start;
   gap: 1rem;
   position: relative;
-  
+  padding-left:90px
 }
+
 
 /* Each round is a column. */
 .round {
@@ -696,6 +1091,19 @@ onMounted(async () => {
   font-weight: bold;
   font-size: 1.1rem;
 }
+
+.offscreen-pdf {
+  visibility: hidden;
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  background-color: rgba(255, 255, 255, 0.2)
+  /* Possibly a fixed width/height if needed */
+}
+
+.lower-section {
+    transform:translateX(-70px)
+}
 @media only screen and (max-width: 700px) {
   .v-card {
     padding: 0.4rem 0.1rem;
@@ -708,5 +1116,80 @@ onMounted(async () => {
   .round {
   max-width: 130px;
 }
+}
+@media only screen and (min-width: 1500px) {
+    .bracket-pdf-container {
+  /* So that html2canvas captures properly if needed */
+  background-color: rgba(255, 255, 255, 0.3);
+  color: #000;
+  width: 100%;
+  /* etc... */
+}
+
+.upper-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-left:90px
+}
+
+.bracket-region {
+    padding-left:0px
+}
+
+.left-regions, .right-regions {
+  display: flex;
+  flex-direction: column;
+  width: 45%; /* Example widths */
+}
+
+.lower-section {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+/* Adjust these classes as you see fit. Use your existing bracket styling: */
+.display-section {
+  margin-bottom: 2rem;
+}
+
+.v-card {
+    padding: 0.2rem 0.1rem;
+    width: 100px !important;
+  }
+  .matchup-card{
+    min-width: none;
+    width: 100px !important;
+  }
+  .round {
+  max-width: 130px;
+}
+
+.right-regions .matchup::after{
+    content: none;
+}
+
+.right-regions .matchup::before{
+    content: none;
+}
+ .right-regions .matchup::after{
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: 50%;
+  width: 20px;
+  height: 3px;
+  background: #6d6d6d;
+  transform: translateY(-50%);
+ }
+
+ .right-regions .bracket-region {
+    margin-right:0 !important;
+ }
+
+ .right-regions .elite-8 .matchup::after {
+  content: none;
+}
+
 }
 </style>

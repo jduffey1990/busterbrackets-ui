@@ -9,6 +9,7 @@ export const useUserStore = defineStore('user', {
     state: () => ({
         user: {},
         token: localStorage.getItem('token') || null,
+        llmCache: {}
     }),
     getters: {
         isLoggedIn(state) {
@@ -16,6 +17,13 @@ export const useUserStore = defineStore('user', {
         }
     },
     actions: {
+        getCachedResponse(id) {
+            return this.llmCache[id] || null;
+          },
+          setCachedResponse(id, response) {
+            this.llmCache[id] = response;
+            console.log("description cached for id")
+          },
         async login(credentials) {
             try {
                 const response = await this.$users({

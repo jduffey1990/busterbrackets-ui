@@ -57,7 +57,6 @@
           <br/>
           <v-text-field
               label="Username"
-              type="email"
               v-model="newAccount.username"
           ></v-text-field>
           <br/>
@@ -262,7 +261,7 @@ const submitNewClient = async () => {
 
   try {
     const response = await $users.post('/create-user', newAccount.value);
-    if (response.status === 200) {
+    if (response.status === 201) {
       show({message: 'Thanks for creating an account with us. You will be redirected to login.'});
       setTimeout(() => {
         window.location.href = '/login';
@@ -275,7 +274,7 @@ const submitNewClient = async () => {
     // Check if the error is due to a duplicate email
     if (error.response && error.response.data && error.response.data.error.includes("duplicate key value violates unique constraint")) {
       show({
-        message: "A user with this email already exists. Please use another email.",
+        message: "A user with this username or email already exists, please try again",
         error: true
       });
     } else {

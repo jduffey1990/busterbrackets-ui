@@ -3,11 +3,11 @@
   <v-container fluid class="px-0 py-0 page-container">
     <!-- Registration/Log In Notice -->
     <div class="center">
-      <v-img :width="400" src="@/assets/buster.png"></v-img>
+      <v-img :width="300" src="@/assets/buster.png"></v-img>
     </div>
     <!-- Hero / Header Section -->
     <div class="hero-header">
-      <h1 class="display-1 font-weight-bold mb-3 white--text">
+      <h1 class="display-1 font-weight-bold mb-3 mt-10 white--text">
         Welcome to Buster Brackets!
       </h1>
       <p class="subtitle-1 mb-6 white--text">
@@ -19,7 +19,7 @@
         elevation="3"
         large
         rounded
-        class="mx-auto my-4"
+        class="mx-auto mt-4 mb-15"
       >
         Get Started
       </v-btn>
@@ -116,6 +116,7 @@ display: flex;
 .services-card {
   border-radius: 12px;
   background-color: rgba(255,255,255,0.2);
+  margin-top:20px
 }
 
 /* Tweak the look of bullet points */

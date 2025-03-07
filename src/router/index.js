@@ -7,6 +7,7 @@ import Settings from '@/views/Settings.vue';
 import Success from "@/components/Success.vue";
 import Bracket from '@/views/Bracket.vue';
 import Builder from '@/views/Builder.vue';
+import Breakdown from '@/views/Breakdown.vue';
 
 
 const router = createRouter({
@@ -44,6 +45,11 @@ const router = createRouter({
             path: "/builder",
             name: "Builder",
             component: Builder
+        },
+        {
+            path: "/breakdown",
+            name: "Breakdown",
+            component: Breakdown
         },
         {
             path: '/settings',
