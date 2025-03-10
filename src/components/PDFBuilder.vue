@@ -1,5 +1,5 @@
 <template>
-    <v-btn @click="generatePDF">Download PDF</v-btn>
+    <v-btn @click="generatePDF" :disabled="!mobile">Download PDF</v-btn>
   </template>
   
   <script>
@@ -14,6 +14,11 @@
         type: String,
         required: true,
         default: 'pdf-generator'
+      },
+      mobile: {
+        type: Boolean,
+        required: false,
+        default: true
       }
     },
     methods: {

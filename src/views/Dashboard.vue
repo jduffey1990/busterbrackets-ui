@@ -32,7 +32,7 @@
             <v-btn
               color="warning"
               class="build-bracket-btn mt-4 mr-4"
-              href="/builder"
+              @click="pickRoute"
               elevation="2"
             >
               Build me a bracket!
@@ -264,6 +264,20 @@ function formatDate(date) {
     return date
   }
   return moment(date).format('MMM DD, YYYY')
+}
+
+const pickRoute = async ()=> {
+  try {
+    let response = await $users.get(`/get-user?id=${user.value._id}`);
+    let userReturned = response.data
+      if(userReturned.credits === 0) {
+        router.push("/payment")
+      }else{
+        router.push("/builder")
+      }
+    }catch (error) {
+    console.error(error)
+  }
 }
 </script>
 

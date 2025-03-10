@@ -9,7 +9,7 @@
   
       <!-- Explanation or subheader -->
       <p class="subtitle">
-        Here’s a detailed look at how your bracket is shaping up.
+        Here’s a detailed look at how your bracket is shaping up.  Now for your breakdown, presented by ur AI-sportscaster Buster Brackets!:
       </p>
   
       <!-- Loading state -->
@@ -299,8 +299,6 @@ onMounted(async () => {
   padding:2px 10px;
   width: 900px;
   font-weight: 500;
-  background-color: rgba(255, 255, 255, 0.3) !important;
-  background-color: ; 
   /* You can also style the v-card itself with additional props, e.g. "outlined", etc. */
 }
 

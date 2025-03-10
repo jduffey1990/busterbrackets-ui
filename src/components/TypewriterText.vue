@@ -1,8 +1,20 @@
 <template>
-    <p class="typewriter-text">
-      {{ visibleText }}
-    </p>
-  </template>
+  <div class="whole-div">
+    <div class="left-col">
+      <v-img
+        src="@/assets/casterbuster.png"
+      ></v-img>
+    </div>
+    <div class="side-column">
+      <v-btn @click="finishTyping" class="mb-6">
+        Finish Monologue
+      </v-btn>
+      <p class="typewriter-text">
+        {{ visibleText }}
+      </p>
+    </div>
+  </div>
+</template>
   
   <script setup>
   import { ref, watch, onMounted } from 'vue'
@@ -19,6 +31,7 @@
   })
   
   const visibleText = ref('')
+  let typingTimer = null
   
   // Re-type if the parent passes a new fullText
   watch(
@@ -34,25 +47,87 @@
   })
   
   function startTyping() {
-    visibleText.value = ''
-    let index = 0
-  
-    const timer = setInterval(() => {
-      if (index < props.fullText.length) {
-        visibleText.value += props.fullText[index]
-        index++
-      } else {
-        clearInterval(timer)
-      }
-    }, props.typeSpeed)
-  }
+  clearInterval(typingTimer)
+  visibleText.value = ''
+  let index = 0
+
+  typingTimer = setInterval(() => {
+    if (index < props.fullText.length) {
+      visibleText.value += props.fullText[index]
+      index++
+    } else {
+      clearInterval(typingTimer)
+    }
+  }, props.typeSpeed)
+}
+
+function finishTyping() {
+  visibleText.value = props.fullText
+  clearInterval(typingTimer)
+}
   </script>
   
   <style scoped>
-  .typewriter-text {
-    white-space: pre-line; /* preserves line breaks from multiline text */
-    font-family: 'Arial', sans-serif;
+.whole-div {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Default for wider screens: image 1/3, side column 2/3 */
+.left-col {
+  width:300px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-column {
+  width: 67%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Under 700px: stack columns in one centered column */
+@media screen and (max-width: 700px) {
+  .whole-div {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
-  </style>
-  
+
+  .left-col,
+  .side-column {
+    width: 90%;
+  }
+
+  .left-col {
+    margin-bottom: 1rem; /* spacing between the image and the button */
+  }
+}
+
+/* Typewriter text styling */
+.typewriter-text {
+  white-space: pre-line; /* preserves line breaks from multiline text */
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.typewriter-text b {
+  font-size: 30px;
+}
+</style>
+
+
+
+
+
+
+
   

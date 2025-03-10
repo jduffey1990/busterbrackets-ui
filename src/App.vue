@@ -105,7 +105,7 @@ document.addEventListener('scroll', debouncedResetTimer);
 }  
 
 .padding-add {
-  padding-top: 80px !important;
+  padding-top: 40px !important;
   padding: 2rem;
 }
 
@@ -123,5 +123,12 @@ document.addEventListener('scroll', debouncedResetTimer);
 
 .trans-background {
   background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+@media only screen and (max-width: 700px) {
+  .header-div{
+    height:190px;
+    transform: translateY(20px);
+  }
 }
 </style>

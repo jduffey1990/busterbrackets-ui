@@ -72,7 +72,7 @@
       <div class="disclaimer">
         <p class="small">
           Our bracket simulation assigns a “favored” team in each matchup based on seed differences and user-selected odds adjustments, then runs a caluculation to decide who advances. We repeat this process round by round until we have winners from each region, culminating in a final showdown. This approach reflects a powerful, but fun, weighted die roll (1's versus 16's is historically far from a toss up for example).  We
-          select out historical matchups that have under 20 meetings due to skewed results.
+          select out historical matchups that have under 20 meetings due to skewed results, and use a matchup gradient instead.
         </p>
         <br />
         <p class="small">
@@ -394,7 +394,7 @@ const createBracket = () => {
   newBracket.value.bracket = bracketToSend.value
 
   submitNewBracket()
-
+  decrementCredits()
 }
 
 const submitNewBracket = async () => {
@@ -403,27 +403,25 @@ const submitNewBracket = async () => {
     const response = await $brackets.post('/create-bracket', newBracket.value);
     if (response.status === 200) {
       show({message: 'Thanks for creating a bracket with us. You will be redirected to your dashboard to view your bracket.'});
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1000);
     }
   } catch (error) {
-
-    console.log("error", error)
-
-    // Check if the error is due to a duplicate email
-    if (error.response && error.response.data && error.response.data.error.includes("duplicate key value violates unique constraint")) {
-      show({
-        message: "A user with this email already exists. Please use another email.",
-        error: true
-      });
-    } else {
-      // Handle other types of errors
-      const errorMessage = error.response ? error.response.data.error : "An unknown error occurred. Please try again.";
-      show({message: errorMessage, error: true});
-    }
+    console.error(error)
   }
 };
+
+const decrementCredits = async () => {
+
+try {
+  const response = await $users.patch('/decrement-credits');
+  // if (response.status === 200) {
+  //   setTimeout(() => {
+  //     window.location.href = '/dashboard';
+  //   }, 1000);
+  // }
+} catch (error) {
+    console.error(error)
+}
+  }
 
 onMounted(async () => {
   makeNamesArray()

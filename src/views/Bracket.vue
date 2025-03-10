@@ -13,6 +13,9 @@
             </div>
             <div class="mt-4">
                 <h4>PDF Download only available on desktop</h4>
+            <div class="mt-4">
+                <PDFBuilder :mobile="false"/>
+            </div>  
             </div>
         </div>
         <hr>
@@ -410,7 +413,7 @@
         </div>
     </div>
     <div class="mt-4">
-        <PDFBuilder/>
+        <PDFBuilder :mobile="true"/>
     </div>
     </div>
     <div class="big-background">
@@ -895,11 +898,11 @@ function formatDate(date) {
   return moment(date).format('MMM DD, YYYY')
 }
 
-const screenWidthBig = ref(window.innerWidth >= 1500)
+const screenWidthBig = ref(window.innerWidth >= 1200)
 
 function handleResize() {
   // 2) Set the ref based on new width
-  screenWidthBig.value = window.innerWidth >= 1500
+  screenWidthBig.value = window.innerWidth >= 1200
 }
 
 onMounted(async () => {
@@ -1117,7 +1120,7 @@ onUnmounted(() => {
   max-width: 130px;
 }
 }
-@media only screen and (min-width: 1500px) {
+@media only screen and (min-width: 1200px) {
     .bracket-pdf-container {
   /* So that html2canvas captures properly if needed */
   background-color: rgba(255, 255, 255, 0.3);

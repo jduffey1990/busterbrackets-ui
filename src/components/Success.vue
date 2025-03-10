@@ -3,15 +3,12 @@
     <div class="success-container">
       <h3 class="font-weight-regular text-h3">Thank you!</h3>
       <p class="my-3">
-        Your recent payment has been successfully processed and your transaction was securely handled through Stripe.
-        Thank you for being a valued customer.
+        Your recent payment has been successfully processed and your transaction was securely handled through Stripe.  Thank you for being a valued customer.
       </p>
 
       <h4 class="text-h4">What Happens Next?</h4>
       <ul class="next-steps">
-        <li>Feel free to build a bracket from your <strong><a href="/dashboard" target="_blank">Billing Page</a></strong>.
-            You will receive one <b>uneditable bracket</b> That serves to save the algorithm's result, and one editable 
-            bracket that is a copy of the first.
+        <li>Feel free to build a bracket from your <strong><a href="/dashboard" target="_blank">Dashboard Page.  </a></strong>.  When you now click on the "Build Me a Bracket!" button, you will be led to the builder.
         </li>
         <li>If you have any questions or need assistance with this transaction, reach out to support
           <a href="mailto:foxdogdevelopment@gmail.com">foxdogdevelopment@gmail.com</a>.

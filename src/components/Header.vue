@@ -3,12 +3,12 @@
     <v-container color="translucent">
       <div class="nav_bar">
         <v-app-bar-title>
-          <router-link to="/" custom v-slot="{ navigate }">
+          <router-link to="/" custom v-slot="{ navigate }" class="">
             <v-img
                    :width="166"
                    src="@/assets/buster.png"
                    @click="navigate"
-                   class="cursor-pointer"
+                   class="cursor-pointer image"
                    style="max-height: 120px;"
             ></v-img>
 
@@ -37,37 +37,11 @@
                 </v-btn>
               </template>
               <v-list :elevation="0">
-                <v-list-item v-if="isSuper" link :to="{ name: 'Advisors' }">
-                  <v-list-item-title>Super Tools</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item
-                    v-if="isFirmAdminOrGreater"
-                    link
-                    :to="{ name: 'Admin' }"
-                >
-                  <v-list-item-title>Admin</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item
-                    v-if="isFirmAdminOrGreater"
-                    link
-                    :to="{ name: 'Billing' }"
-                >
-                  <v-list-item-title>Billing</v-list-item-title>
-                </v-list-item>
-
                 <v-list-item link :to="{ name: 'Settings' }">
                   <v-list-item-title>Settings</v-list-item-title>
                 </v-list-item>
 
-                <v-list-item
-                    link
-                    href="https://pomarium.atlassian.net/wiki/spaces/CS/overview"
-                    target="_blank"
-                >
-                  <v-list-item-title>Resources</v-list-item-title>
-                </v-list-item>
+                
                 <hr/>
                 <v-list-item @click="logout()">
                   <v-list-item-title>Logout</v-list-item-title>
@@ -183,6 +157,13 @@ watch(route, () => {
 }
 
 @media only screen and (max-width: 700px) {
+  .image{
+    padding-bottom: 30px;
+  }
+  .nav_bar{
+    flex-direction: column;
+    padding-bottom: 10px;
+  }
   .nav-bar-mobile {
     display: flex;
     align-items: center;
@@ -190,10 +171,6 @@ watch(route, () => {
 
   .v-toolbar__content {
     min-height: 150px;
-  }
-
-  .hide {
-    display: none;
   }
 }
 </style>

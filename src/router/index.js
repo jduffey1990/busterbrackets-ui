@@ -8,6 +8,7 @@ import Success from "@/components/Success.vue";
 import Bracket from '@/views/Bracket.vue';
 import Builder from '@/views/Builder.vue';
 import Breakdown from '@/views/Breakdown.vue';
+import Payment from "@/components/Payment";
 
 
 const router = createRouter({
@@ -50,6 +51,11 @@ const router = createRouter({
             path: "/breakdown",
             name: "Breakdown",
             component: Breakdown
+        },
+        {
+            path: "/payment",
+            name: "Payment",
+            component: Payment
         },
         {
             path: '/settings',
