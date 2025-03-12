@@ -33,7 +33,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketFinalFour[0]) : formatStringName(bracketFinalFour[0])}}
+                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[0]) : formatStringName(bracketPenultimateFour[0])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -73,8 +73,8 @@
                     </div>
                 </div>
 
-                <!-- Sweet 16 (winners from bracketEast[8..11]) -->
-                <div class="round sweet-16">
+                <!-- succulent 16 (winners from bracketEast[8..11]) -->
+                <div class="round succulent-16">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketEast.slice(24, 28), 2)"
@@ -90,8 +90,8 @@
                     </div>
                 </div>
 
-                <!-- Elite 8 (winners from bracketEast[12..13]) -->
-                <div class="round elite-8">
+                <!-- hateful 8 (winners from bracketEast[12..13]) -->
+                <div class="round hateful-8">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketEast.slice(28,30), 1)"
@@ -113,7 +113,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketFinalFour[1]) : formatStringName(bracketFinalFour[1])}}
+                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[1]) : formatStringName(bracketPenultimateFour[1])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -153,8 +153,8 @@
                     </div>
                 </div>
 
-                <!-- Sweet 16 (winners from bracketEast[8..11]) -->
-                <div class="round sweet-16">
+                <!-- succulent 16 (winners from bracketEast[8..11]) -->
+                <div class="round succulent-16">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketWest.slice(24, 28), 2)"
@@ -170,8 +170,8 @@
                     </div>
                 </div>
 
-                <!-- Elite 8 (winners from bracketEast[12..13]) -->
-                <div class="round elite-8">
+                <!-- hateful 8 (winners from bracketEast[12..13]) -->
+                <div class="round hateful-8">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketWest.slice(28,30), 1)"
@@ -192,7 +192,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketFinalFour[3]) : formatStringName(bracketFinalFour[3])}}
+                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[3]) : formatStringName(bracketPenultimateFour[3])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -232,8 +232,8 @@
                     </div>
                 </div>
 
-                <!-- Sweet 16 (winners from bracketEast[8..11]) -->
-                <div class="round sweet-16">
+                <!-- succulent 16 (winners from bracketEast[8..11]) -->
+                <div class="round succulent-16">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketMidwest.slice(24, 28), 2)"
@@ -249,8 +249,8 @@
                     </div>
                 </div>
 
-                <!-- Elite 8 (winners from bracketEast[12..13]) -->
-                <div class="round elite-8">
+                <!-- hateful 8 (winners from bracketEast[12..13]) -->
+                <div class="round hateful-8">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketMidwest.slice(28,30), 1)"
@@ -271,7 +271,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketFinalFour[2]) : formatStringName(bracketFinalFour[2])}}
+                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[2]) : formatStringName(bracketPenultimateFour[2])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -312,7 +312,7 @@
                 </div>
 
                
-                <div class="round sweet-16">
+                <div class="round succulent-16">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketSouth.slice(24, 28), 2)"
@@ -329,7 +329,7 @@
                 </div>
 
                
-                <div class="round elite-8">
+                <div class="round hateful-8">
                     <div
                         class="matchup"
                         v-for="(pair, idx) in chunkArray(bracketSouth.slice(28,30), 1)"
@@ -346,7 +346,7 @@
                 </div>
             </div>
         </div>
-        <div v-else-if="selectedRegion==='finalFour'">
+        <div v-else-if="selectedRegion==='penultimateFour'">
             <div class="region-champ">
                 <p>National Champion:</p>
                 <v-card class="matchup-card">
@@ -355,11 +355,11 @@
             </div>
             <div class="bracket-region">
 
-            <div class="round final-4">
+            <div class="round penultimate-4">
                 <div
                 class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketFinalFour.slice(0,4), 2)"
-                :key="'finalFour-s16-' + idx"
+                v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(0,4), 2)"
+                :key="'penultimateFour-s16-' + idx"
                 >
                 <v-card
                     v-for="team in pair"
@@ -374,8 +374,8 @@
             <div class="round finals">
                 <div
                 class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketFinalFour.slice(4,6), 2)"
-                :key="'finalFour-e8-' + idx"
+                v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(4,6), 2)"
+                :key="'penultimateFour-e8-' + idx"
                 >
                 <v-card
                     v-for="team in pair"
@@ -417,15 +417,15 @@
     </div>
     </div>
     <div class="big-background">
-<div class="lower-section final-four-region mb-6">
-  <h3>Final Four</h3>
+<div class="lower-section penultimate-four-region mb-6">
+  <h3>Penultimate Four</h3>
 
   <div class="bracket-region" style="justify-content: center;">
-    <div class="round final-4">
+    <div class="round penultimate-4">
       <div
         class="matchup"
-        v-for="(pair, idx) in chunkArray(bracketFinalFour.slice(0,4), 2)"
-        :key="'finalFour-s16-' + idx"
+        v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(0,4), 2)"
+        :key="'penultimateFour-s16-' + idx"
       >
         <v-card
           v-for="team in pair"
@@ -440,8 +440,8 @@
     <div class="round finals">
       <div
         class="matchup"
-        v-for="(pair, idx) in chunkArray(bracketFinalFour.slice(4,6), 2)"
-        :key="'finalFour-e8-' + idx"
+        v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(4,6), 2)"
+        :key="'penultimateFour-e8-' + idx"
       >
         <v-card
           v-for="team in pair"
@@ -495,8 +495,8 @@
                 </v-card>
             </div>
             </div>
-            <!-- Sweet 16 -->
-            <div class="round sweet-16">
+            <!-- succulent 16 -->
+            <div class="round succulent-16">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketEast.slice(24, 28), 2)"
@@ -511,8 +511,8 @@
                 </v-card>
             </div>
             </div>
-            <!-- Elite 8 -->
-            <div class="round elite-8">
+            <!-- hateful 8 -->
+            <div class="round hateful-8">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketEast.slice(28,30), 1)"
@@ -566,8 +566,8 @@
                 </v-card>
             </div>
             </div>
-            <!-- Sweet 16 -->
-            <div class="round sweet-16">
+            <!-- succulent 16 -->
+            <div class="round succulent-16">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketWest.slice(24, 28), 2)"
@@ -582,8 +582,8 @@
                 </v-card>
             </div>
             </div>
-            <!-- Elite 8 -->
-            <div class="round elite-8">
+            <!-- hateful 8 -->
+            <div class="round hateful-8">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketWest.slice(28,30), 1)"
@@ -611,8 +611,8 @@
         <h3>South Region</h3>
         <!-- Region champion, bracket rounds, etc. -->
         <div class="bracket-region">
-            <!-- Elite 8 -->
-            <div class="round elite-8">
+            <!-- hateful 8 -->
+            <div class="round hateful-8">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketSouth.slice(28,30), 1)"
@@ -627,8 +627,8 @@
                 </v-card>
             </div>
             </div>
-            <!-- Sweet 16 -->
-            <div class="round sweet-16">
+            <!-- succulent 16 -->
+            <div class="round succulent-16">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketSouth.slice(24, 28), 2)"
@@ -683,8 +683,8 @@
         <h3>Midwest Region</h3>
         <!-- Region champion, bracket rounds, etc. -->
         <div class="bracket-region">
-             <!-- Elite 8 -->
-            <div class="round elite-8">
+             <!-- hateful 8 -->
+            <div class="round hateful-8">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketMidwest.slice(28,30), 1)"
@@ -699,8 +699,8 @@
                 </v-card>
             </div>
             </div>
-            <!-- Sweet 16 -->
-            <div class="round sweet-16">
+            <!-- succulent 16 -->
+            <div class="round succulent-16">
             <div
                 class="matchup"
                 v-for="(pair, idx) in chunkArray(bracketMidwest.slice(24, 28), 2)"
@@ -802,7 +802,7 @@ const regions = ref([
   {value: "west", title: 'West'},
   {value: "south", title: 'South'},
   {value: "midwest", title: 'Midwest'},
-  {value: "finalFour", title: 'Final Four'},
+  {value: "penultimateFour", title: 'Penultimate Four'},
 ]);
 
 //these are stable.  They are not saved with the backend data to keep costs down
@@ -825,7 +825,7 @@ const bracketEast = ref([])
 const bracketWest = ref([])
 const bracketMidwest = ref([])
 const bracketSouth = ref([])
-const bracketFinalFour= ref([])
+const bracketPenultimateFour= ref([])
 const champion = ref()
 
 
@@ -843,7 +843,7 @@ const getBracket = async () => {
         bracketWest.value = startingBracketWest.concat(bracketToChop.slice(14, 28))
         bracketSouth.value = startingBracketMidwest.concat(bracketToChop.slice(28, 42))
         bracketMidwest.value = startingBracketSouth.concat(bracketToChop.slice(42, 56))
-        bracketFinalFour.value = bracketToChop.slice(56, 62)
+        bracketPenultimateFour.value = bracketToChop.slice(56, 62)
         champion.value = bracketToChop.pop()
     } catch (error) {
         console.error(error)
@@ -1054,7 +1054,7 @@ onUnmounted(() => {
   transform: translateY(-50%);
 }
 
-.elite-8 .matchup::after {
+.hateful-8 .matchup::after {
   content: none;
 }
 
@@ -1066,11 +1066,11 @@ onUnmounted(() => {
   justify-content: space-around !important;
 }
 
-.sweet-16 {
+.succulent-16 {
   justify-content: space-around !important;
 }
 
-.elite-8 {
+.hateful-8 {
   justify-content: space-around !important;
 }
 
@@ -1190,7 +1190,7 @@ onUnmounted(() => {
     margin-right:0 !important;
  }
 
- .right-regions .elite-8 .matchup::after {
+ .right-regions .hateful-8 .matchup::after {
   content: none;
 }
 
