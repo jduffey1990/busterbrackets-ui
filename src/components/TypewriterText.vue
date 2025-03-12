@@ -3,6 +3,7 @@
     <div class="left-col">
       <v-img
         src="@/assets/casterbuster.png"
+        size="400px"
       ></v-img>
     </div>
     <div class="side-column">
@@ -103,7 +104,7 @@ function finishTyping() {
 
   .left-col,
   .side-column {
-    width: 90%;
+    width: 60%;
   }
 
   .left-col {
