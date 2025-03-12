@@ -55,7 +55,7 @@
         <br/>
         <v-text-field
             v-model="account.credits"
-            label="Credits Available"
+            label="Access purchased"
             readonly
         ></v-text-field>
         <br/>
@@ -90,7 +90,7 @@ const account = ref({
   firstName: "",
   lastName: "",
   email: "",
-  credits: 0
+  credits: ""
 });
 
 const accountCopy = ref({...account});
@@ -105,7 +105,7 @@ const getUser = async () => {
       account.value.firstName = arrayOfNames[0]
       account.value.lastName = arrayOfNames[1]
       account.value.email = userReturned.email
-      account.value.credits =userReturned.credits
+      account.value.credits =userReturned.credits > 0 ? "True" : "False"
 
       accountCopy.value = {...account.value}
     }catch (error) {
