@@ -1,6 +1,6 @@
 <template>
   <!-- Page Container -->
-  <v-container fluid class="px-0 py-0 page-container">
+  <div class="px-0 py-0">
     <!-- Registration/Log In Notice -->
     <div class="center">
       <v-img :width="300" src="@/assets/buster.png"></v-img>
@@ -79,14 +79,11 @@
         </v-alert>
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <style scoped>
 /* Page Container to allow for a gradient hero header */
-.page-container {
-  background-color: transparent;
-}
 .center{
 display: flex;
   flex-direction: column;
@@ -99,14 +96,18 @@ display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 20vh;
-  padding: 2rem;
+  padding: 10px;
+}
+.display-1 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
 }
 
 /* Subtitle style tweak */
 .subtitle-1 {
-  font-size: 1.25rem;
   letter-spacing: 0.5px;
   max-width: 600px;
   margin: 0 auto;
@@ -122,7 +123,6 @@ display: flex;
 /* Tweak the look of bullet points */
 .services-card ul {
   list-style: disc;
-  margin-left: 1.5rem;
 }
 
 /* Button hover effect (just an example) */

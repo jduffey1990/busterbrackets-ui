@@ -181,7 +181,7 @@ async function buildLlmDescription(prompt) {
   
 
     try {
-    if(import.meta.env.VITE_DOMAIN_URL === "http://localhost:4000"){
+    if(window.location.origin === "http://localhost:4000"){
         const response = {
             data: `
             Welcome, sports fans, to the thrilling prelude of the tournament season! We’re diving into a unique bracket filled with intriguing upset picks that could turn convention on its head this year. Let's break down the key aspects of this user’s bold choices and what we might see unfold.

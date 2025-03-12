@@ -2,7 +2,7 @@
     <div class="success-page">
       <div class="success-container">
         <h4 class="mb-4">Payment Information</h4>
-        <p>By paying for a bracket, you will buy yourself a credit to build.  You do not have to build your bracket at this time should you wish to wait for official tournament seeding.</p>
+        <p>By paying for a bracket, you will buy yourself permanent access to build and analysis. <span style="color: red;">Note:</span> in the offseason (not tournament time) page response times will be significantly slower in order to save on costs</p>
   
         <form
             id="payment-form"
@@ -16,7 +16,7 @@
                 class="intent-button mt-4"
                 :disabled="isPaymentButtonDisabled || isLoading"
             >
-              Pay $1.99
+              Pay $0.99
             </button>
             <sr-messages :messages="messages" class="small"/>
           </div>
