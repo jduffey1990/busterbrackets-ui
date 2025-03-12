@@ -105,6 +105,7 @@ function finishTyping() {
   .left-col,
   .side-column {
     width: 60%;
+    padding: 0;
   }
 
   .left-col {
@@ -118,6 +119,7 @@ function finishTyping() {
   font-family: 'Arial', sans-serif;
   text-align: center;
   background-color: rgba(255, 255, 255, 0.3) !important;
+  padding: 0 10px;
 }
 
 .typewriter-text b {
