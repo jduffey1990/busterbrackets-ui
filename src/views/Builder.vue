@@ -35,7 +35,7 @@
       </div>
       <div v-else class="blurred">
         <div class="blurred-overlay">
-          There is not a bracket officially released for this year.  If you would like to add a team boon, please wait until the bracket is released.
+          There is not a bracket officially released for this year.  If you would like to increase a specific team's odds, please wait until the bracket is released.
         </div>
         <div class="blur-me">
           <v-autocomplete
@@ -68,6 +68,23 @@
       <v-text-field v-model="newBracket.name" label="Name Your Bracket" width="400" class="mb-6"></v-text-field>
   
       <v-btn @click="createBracket" color="warning" class="mb-10">Create Bracket Now!</v-btn>
+
+      <!-- Display sections based on processing status -->
+      <div class="bracket-status" v-if="eastDisplay">
+        <p>East bracket processing complete!</p>
+      </div>
+      <div class="bracket-status" v-if="westDisplay">
+        <p>West bracket processing complete!</p>
+      </div>
+      <div class="bracket-status" v-if="southDisplay">
+        <p>South bracket processing complete!</p>
+      </div>
+      <div class="bracket-status" v-if="midwestDisplay">
+        <p>Midwest bracket processing complete!</p>
+      </div>
+      <div class="bracket-status" v-if="finalsDisplay">
+        <p>Finals bracket processing complete!</p>
+      </div>
       
       <div class="disclaimer">
         <p class="small">
@@ -124,6 +141,14 @@ const startingBracketWest = ["w1", "w16", "w8", "w9", "w5", "w12", "w4", "w13", 
 const startingBracketMidwest = ["m1", "m16", "m8", "m9", "m5", "m12", "m4", "m13", "m6", "m11", "m3", "m14", "m7", "m10", "m2", "m15"]
 const startingBracketSouth = ["s1", "s16", "s8", "s9", "s5", "s12", "s4", "s13", "s6", "s11", "s3", "s14", "s7", "s10", "s2", "s15"]
 const startingFinalFour = ref([])
+
+/* ending bracket stuff*/
+const eastDisplay = ref(false)
+const westDisplay = ref(false)
+const southDisplay = ref(false)
+const midwestDisplay = ref(false)
+const finalsDisplay = ref(false)
+
 
 /* ending bracket stuff*/
 const bracketEast = ref([])
@@ -356,46 +381,66 @@ const makeNamesArray = () =>{
   }
 }
 
-const createBracket = () => {
-  round(startingBracketEast, "east")
-   round(startingBracketWest, "west")
-   round(startingBracketSouth, "south")
-   round(startingBracketMidwest, "midwest")
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-   const eastWinner = bracketEast.value.pop()
-   const westWinner = bracketWest.value.pop()
-   const southWinner = bracketSouth.value.pop()
-   const midwestWinner = bracketMidwest.value.pop()
+const createBracket = async () => {
+  // Process East bracket and display its status
+  round(startingBracketEast, "east");
+  eastDisplay.value = true;
+  await sleep(1000); // Delay 1 second
 
-   let final4 = [
+  // Process West bracket and display its status
+  round(startingBracketWest, "west");
+  westDisplay.value = true;
+  await sleep(1000);
+
+  // Process South bracket and display its status
+  round(startingBracketSouth, "south");
+  southDisplay.value = true;
+  await sleep(1000);
+
+  // Process Midwest bracket and display its status
+  round(startingBracketMidwest, "midwest");
+  midwestDisplay.value = true;
+  await sleep(1000);
+
+  // Get winners from each region
+  const eastWinner = bracketEast.value.pop();
+  const westWinner = bracketWest.value.pop();
+  const southWinner = bracketSouth.value.pop();
+  const midwestWinner = bracketMidwest.value.pop();
+
+  let final4 = [
     { seed: eastWinner, region: 'east' },
     { seed: westWinner, region: 'west' },
     { seed: southWinner, region: 'south' },
     { seed: midwestWinner, region: 'midwest' }
   ];
-  
-  bracketFinalFour.value = bracketFinalFour.value.concat(startingFinalFour.value)
 
+  // Concatenate the final four bracket
+  bracketFinalFour.value = bracketFinalFour.value.concat(startingFinalFour.value);
 
-  finals(final4)
+  // Process finals and show final bracket display
+  finals(final4);
+  finalsDisplay.value = true;
+  await sleep(1000);
 
-  bracketFinalFour.value.pop()
+  // Final processing before sending the bracket
+  bracketFinalFour.value.pop();
+  bracketToSend.value = bracketToSend.value.concat(bracketEast.value);
+  bracketToSend.value = bracketToSend.value.concat(bracketWest.value);
+  bracketToSend.value = bracketToSend.value.concat(bracketSouth.value);
+  bracketToSend.value = bracketToSend.value.concat(bracketMidwest.value);
+  bracketToSend.value = bracketToSend.value.concat(bracketFinalFour.value);
+  bracketToSend.value.push(champion.value);
 
-  bracketToSend.value = bracketToSend.value.concat(bracketEast.value)
-  bracketToSend.value = bracketToSend.value.concat(bracketWest.value)
-  bracketToSend.value = bracketToSend.value.concat(bracketSouth.value)
-  bracketToSend.value = bracketToSend.value.concat(bracketMidwest.value)
-  bracketToSend.value = bracketToSend.value.concat(bracketFinalFour.value)
-  bracketToSend.value.push(champion.value)
+  console.log("we've got our bracket to send", bracketToSend.value);
+  console.log(user.value);
 
-  console.log("we've got our bracket to send",bracketToSend.value)
-  console.log(user.value)
-
-  newBracket.value.bracket = bracketToSend.value
-
-  submitNewBracket()
-  // decrementCredits()
-}
+  newBracket.value.bracket = bracketToSend.value;
+  submitNewBracket();
+  // Optionally, decrementCredits();
+};
 
 const submitNewBracket = async () => {
 
@@ -403,9 +448,9 @@ const submitNewBracket = async () => {
     const response = await $brackets.post('/create-bracket', newBracket.value);
     if (response.status === 200) {
       show({message: 'Thanks for creating a bracket with us. You will be redirected to your dashboard to view your bracket.'});
-      setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1000);
+    //   setTimeout(() => {
+    //   window.location.href = '/dashboard';
+    // }, 1000);
     }
   } catch (error) {
     console.error(error)

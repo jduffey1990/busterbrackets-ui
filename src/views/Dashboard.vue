@@ -34,8 +34,9 @@
               class="build-bracket-btn mt-4 mr-4"
               @click="pickRoute"
               elevation="2"
+              :disabled="makeNewBracketDisabled"
             >
-              Build me a bracket!
+              {{ makeNewBracketDisabled ? "Tourney started, builder disabled" : "Build me a bracket!" }}
             </v-btn>
           </div>
           
@@ -153,6 +154,7 @@ const basicBrackets = ref([])
 const offshootBrackets = ref([])
 const loadingNews = ref(true)
 const newsArticles = ref([])
+const makeNewBracketDisabled = ref(false)
 
 /* Define table headers for brackets */
 const bracketHeaders = [

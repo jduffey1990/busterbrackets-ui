@@ -10,24 +10,14 @@
       <h1 class="display-1 font-weight-bold mb-3 mt-10 white--text">
         Welcome to Buster Brackets!
       </h1>
-      <p class="subtitle-1 mb-6 white--text">
+      <p class="subtitle-1 white--text">
         Where every bracket is a masterpiece in the making.
       </p>
-      <v-btn
-        href="/login"
-        color="warning"
-        elevation="3"
-        large
-        rounded
-        class="mx-auto mt-4 mb-15"
-      >
-        Get Started
-      </v-btn>
     </div>
 
     <!-- Main Content Section -->
-    <v-row justify="center" class="mt-n8">
-      <v-col cols="12" sm="10">
+    <v-row justify="center" >
+      <v-col class="content-bottom">
         <!-- Registration/Log In Notice -->
         <!-- Services Card -->
         <v-card
@@ -37,7 +27,7 @@
           <v-card-title class="white--text">
             What We Offer
           </v-card-title>
-          <v-card-text class="white--text px-4">
+          <v-card-text class="white--text px-8">
             <p>
               At Buster Brackets, we strive to bring you the ultimate college basketball 
               championship bracket experience. Here’s what you can expect:
@@ -62,6 +52,17 @@
           </v-card-text>
         </v-card>
 
+        <v-btn
+        href="/login"
+        color="warning"
+        elevation="3"
+        large
+        rounded
+        class="mx-auto mt-4 mb-4"
+      >
+        Get Started
+      </v-btn>
+
         <!-- Disclaimer -->
         <v-alert
           type="warning"
@@ -77,6 +78,8 @@
           decisions are your own and agree to hold Buster Brackets and its creators harmless 
           for any results or consequences thereof.
         </v-alert>
+
+
       </v-col>
     </v-row>
   </div>
@@ -110,7 +113,14 @@ display: flex;
 .subtitle-1 {
   letter-spacing: 0.5px;
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
+}
+
+.content-bottom {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Services card slight style changes */
