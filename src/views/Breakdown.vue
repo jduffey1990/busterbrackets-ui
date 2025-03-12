@@ -14,11 +14,14 @@
       <div class="social">
       <span style="font-size: xx-large; text-align: center;">Share Us!</span>
          <div class="social-icons" style="font-size: xx-large;">
-          <v-btn icon @click="shareToInstagramStories" target="_blank">
+          <!-- <v-btn icon @click="shareToInstagramStories" target="_blank">
             <v-icon size="30">mdi-instagram</v-icon>
-          </v-btn>
-          <v-btn icon href="https://www.facebook.com/sharer/sharer.php?u=https://busterbrackets.com&quote=I%20just%20built%20my%20tournament%20bracket%20with%20Buster%20Brackets!" target="_blank">
+          </v-btn> -->
+          <v-btn icon class="ml-3" href="https://www.facebook.com/sharer/sharer.php?u=https://busterbrackets.com&quote=I%20just%20built%20my%20tournament%20bracket%20with%20Buster%20Brackets!" target="_blank">
             <v-icon size="30">mdi-facebook</v-icon>
+          </v-btn>
+          <v-btn class="ml-3" icon href="https://twitter.com/intent/tweet?text=I%20just%20built%20my%20tournament%20bracket%20with%20Buster%20Brackets:%20https%3A%2F%2Fbusterbrackets.com" target="_blank">
+            <v-icon size="30">mdi-twitter</v-icon>
           </v-btn>
          </div>
         </div>
