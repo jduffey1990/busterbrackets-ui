@@ -269,7 +269,7 @@ const submitNewClient = async () => {
     }
   } catch (error) {
 
-    console.log("error", error)
+    console.error("error", error)
 
     // Check if the error is due to a duplicate email
     if (error.response && error.response.data && error.response.data.error.includes("duplicate key value violates unique constraint")) {

@@ -168,8 +168,6 @@ const bracketHeaders = [
 onMounted(async () => {
   await fetchUserBrackets()
   await fetchNewsArticles()
-
-  console.log(user)
 })
 
 
@@ -178,10 +176,8 @@ onMounted(async () => {
  * GET /get-user-brackets?id=<userId>
  */
 const fetchUserBrackets = async () => {
-  console.log("user", user.value)
   try {
     const {data} = await $brackets.get(`get-user-brackets?id=${user.value._id}`)
-    console.log("here is data", data)
     data.forEach((brack) =>{
       const oGBracket = {
         name:brack.name,

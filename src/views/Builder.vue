@@ -187,7 +187,6 @@ const newBracket = ref({
 const round = (region = [], regionStr = "") => {
     if(region.length === 1){
         startingFinalFour.value.push(region[0])
-        console.log(`${regionStr} region finished with the winner of ${region[0]}`)
         return region
     }
     
@@ -387,22 +386,22 @@ const createBracket = async () => {
   // Process East bracket and display its status
   round(startingBracketEast, "east");
   eastDisplay.value = true;
-  await sleep(1000); // Delay 1 second
+  await sleep(2000); // Delay 1 second
 
   // Process West bracket and display its status
   round(startingBracketWest, "west");
   westDisplay.value = true;
-  await sleep(1000);
+  await sleep(2000);
 
   // Process South bracket and display its status
   round(startingBracketSouth, "south");
   southDisplay.value = true;
-  await sleep(1000);
+  await sleep(2000);
 
   // Process Midwest bracket and display its status
   round(startingBracketMidwest, "midwest");
   midwestDisplay.value = true;
-  await sleep(1000);
+  await sleep(2000);
 
   // Get winners from each region
   const eastWinner = bracketEast.value.pop();
@@ -434,9 +433,6 @@ const createBracket = async () => {
   bracketToSend.value = bracketToSend.value.concat(bracketFinalFour.value);
   bracketToSend.value.push(champion.value);
 
-  console.log("we've got our bracket to send", bracketToSend.value);
-  console.log(user.value);
-
   newBracket.value.bracket = bracketToSend.value;
   submitNewBracket();
   // Optionally, decrementCredits();
@@ -448,9 +444,9 @@ const submitNewBracket = async () => {
     const response = await $brackets.post('/create-bracket', newBracket.value);
     if (response.status === 200) {
       show({message: 'Thanks for creating a bracket with us. You will be redirected to your dashboard to view your bracket.'});
-    //   setTimeout(() => {
-    //   window.location.href = '/dashboard';
-    // }, 1000);
+      setTimeout(() => {
+      window.location.href = '/dashboard';
+    }, 1000);
     }
   } catch (error) {
     console.error(error)
@@ -553,6 +549,15 @@ onMounted(async () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.bracket-status {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  text-align: center;
+  font-weight: bold;
 }
 
 .disclaimer {

@@ -99,9 +99,7 @@ const getUser = async () => {
   try {
     let response = await $users.get(`/get-user?id=${user.value._id}`);
     let userReturned = response.data
-    console.log(userReturned)
       let arrayOfNames = userReturned.name.split(" ")
-      console.log("array", arrayOfNames)
       account.value.firstName = arrayOfNames[0]
       account.value.lastName = arrayOfNames[1]
       account.value.email = userReturned.email

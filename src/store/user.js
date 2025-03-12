@@ -57,7 +57,6 @@ export const useUserStore = defineStore('user', {
             try {
                 // Request an endpoint that verifies the token and returns user info
                 const response = await this.$users.get('/session');
-                console.log("session response", response.data)
                 this.user = response.data.user;
             } catch (error) {
                 // If the token is invalid or expired, clear stored info
