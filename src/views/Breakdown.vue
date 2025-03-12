@@ -11,6 +11,17 @@
       <p class="subtitle">
         Here’s a detailed look at how your bracket is shaping up.  Now for your breakdown, presented by ur AI-sportscaster Buster Brackets!:
       </p>
+      <div class="social">
+      <span style="font-size: xx-large; text-align: center;">Share Us!</span>
+         <div class="social-icons" style="font-size: xx-large;">
+          <v-btn icon @click="shareToInstagramStories" target="_blank">
+            <v-icon size="30">mdi-instagram</v-icon>
+          </v-btn>
+          <v-btn icon href="https://www.facebook.com/sharer/sharer.php?u=https://busterbrackets.com&quote=I%20just%20built%20my%20tournament%20bracket%20with%20Buster%20Brackets!" target="_blank">
+            <v-icon size="30">mdi-facebook</v-icon>
+          </v-btn>
+         </div>
+        </div>
   
       <!-- Loading state -->
       <div v-if="loading" class="text-center mt-4">
@@ -23,7 +34,7 @@
       </div>
   
       <!-- Typewriter effect when loading is done -->
-      <div v-else class="matchup-card">
+      <div v-else class="matchup-card mt-6">
         <TypewriterText :fullText="breakdownDescription" />
       </div>
     </div>
@@ -231,6 +242,10 @@ async function buildLlmDescription(prompt) {
     }
 }
 
+const shareToInstagramStories = () => {
+  window.location.href = 'instagram-stories://share';
+}
+
 
 const breakdownDescription = ref("")
 
@@ -290,9 +305,17 @@ onMounted(async () => {
   align-items:center;
 }
 
+.social {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .subtitle {
   margin-top: 0.5rem;
   margin-bottom: 1rem;
+  font-size: large;
+  text-align: center;
 }
 
 .matchup-card {
