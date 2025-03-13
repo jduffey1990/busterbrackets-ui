@@ -140,8 +140,7 @@ function buildPrompt(
 
   if (isPostTournament.value) {
     return `
-      The official bracket is complete for (please don't use any copyrighted 
-      terms or the schools involved).
+      The official bracket is complete for this year, as the tournament is done.  This is the resulting bracket: ${officialBracket} that we are using to compare the user's bracket generated before the tourny: ${userBracket}
 
       The user had ${correctPicks} correct picks out of ${totalGames}. 
       They predicted the following underdogs: ${upsets.join(", ")}.
@@ -160,8 +159,7 @@ function buildPrompt(
     `;
   } else {
     return `
-      The tournament hasn't started yet (using a base bracket for comparison). 
-      Please don't use any copyrighted terms.
+      The tournament hasn't started yet, so please use this bracket ${officialBracket} as the "base" example of all the "better" seeds advancing to compare with the user's bracket ${userBracket}
 
       The user bracket picks seeds that differ from the standard favorites 
       in these spots: ${upsets.join(", ")}.
@@ -178,6 +176,7 @@ function buildPrompt(
       2. Potential storylines
       3. Overall bracket-building strategy.
       4. Remember that the tournament hasn't actually happened, yet, so these are prospective picks.
+      5. Do not halucinate past years results or storylines
     `;
   }
 }
