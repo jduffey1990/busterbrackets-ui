@@ -150,7 +150,7 @@ function buildPrompt(
       bracketNames JSON:
       ${bracketNamesJson}
 
-      Please write a short (two paragraph max), sportscaster-style summary without copyright infringment describing:
+      Please write a short (three paragraph max), sportscaster-style summary without copyright infringment describing:
       1. The overall performance compared to the real results.
       2. Two notable upsets they picked correctly (two sentences max) either:
           a. big underdog (seed over 12)
@@ -168,7 +168,7 @@ function buildPrompt(
       bracketNames JSON:
       ${bracketNamesJson}
 
-      Please write a short (two paragraph max), sportscaster-style preview without copyright infringment describing:
+      Please write a short (three paragraph max), sportscaster-style preview without copyright infringment describing:
       1. Two notable upsets they picked compared to benchmark (two sentences max) either:
           a. big underdog wins (seed 12 or more)
           b. appear multiple times in the upset array
