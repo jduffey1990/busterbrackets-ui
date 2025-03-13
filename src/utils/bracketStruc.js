@@ -1,6 +1,6 @@
 // ui/src/utils/bracketStruc.js
 export const bracketNames = {
-  "2025": {
+  "2024": {
     // EAST (e1–e16)
     e1: "Duke",
     e2: "Tenessee",

@@ -450,7 +450,6 @@ const createBracket = async () => {
 
   newBracket.value.bracket = bracketToSend.value;
   submitNewBracket();
-  // Optionally, decrementCredits();
 };
 
 const submitNewBracket = async () => {
@@ -458,29 +457,27 @@ const submitNewBracket = async () => {
   try {
     const response = await $brackets.post('/create-bracket', newBracket.value);
     if (response.status === 200) {
-      show({message: 'Thanks for creating a bracket with us. You will be redirected to your dashboard to view your bracket.'});
-      setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1000);
+      decrementCredits()
     }
   } catch (error) {
     console.error(error)
   }
 };
 
-// const decrementCredits = async () => {
+const decrementCredits = async () => {
 
-// try {
-//   const response = await $users.patch('/decrement-credits');
-//   // if (response.status === 200) {
-//   //   setTimeout(() => {
-//   //     window.location.href = '/dashboard';
-//   //   }, 1000);
-//   // }
-// } catch (error) {
-//     console.error(error)
-// }
-//   }
+try {
+  const response = await $users.patch('/decrement-credits');
+  if (response.status === 200) {
+    show({message: 'Thanks for creating a bracket with us. You will be redirected to your dashboard to view your bracket.'});
+    setTimeout(() => {
+      window.location.href = '/dashboard';
+    }, 1000);
+  }
+} catch (error) {
+    console.error(error)
+}
+  }
 
 onMounted(async () => {
   makeNamesArray()
