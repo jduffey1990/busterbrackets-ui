@@ -1,7 +1,7 @@
 <template>
     <div class="bracket-breakdown-container">
       <!-- Heading text -->
-      <h2 class="text-h4 mt-2">
+      <h2 class="text-h4 mt-2 title">
         <!-- subheader describing post- vs. pre-tournament -->
         <span v-if="isPostTournament">Post-Tournament Breakdown</span>
         <span v-else>Pre-Tournament Breakdown</span>
@@ -150,9 +150,9 @@ function buildPrompt(
       bracketNames JSON:
       ${bracketNamesJson}
 
-      Please write a short, sportscaster-style summary describing:
+      Please write a short (two paragraph max), sportscaster-style summary without copyright infringment describing:
       1. The overall performance compared to the real results.
-      2. Two notable upsets they picked correctly either:
+      2. Two notable upsets they picked correctly (two sentences max) either:
           a. big underdog (seed over 12)
           b. appear multiple times in the upset array
     `;
@@ -168,11 +168,11 @@ function buildPrompt(
       bracketNames JSON:
       ${bracketNamesJson}
 
-      Please write a short, sportscaster-style preview describing:
-      1. Two notable upsets they picked compared to benchmark either:
+      Please write a short (two paragraph max), sportscaster-style preview without copyright infringment describing:
+      1. Two notable upsets they picked compared to benchmark (two sentences max) either:
           a. big underdog wins (seed 12 or more)
           b. appear multiple times in the upset array
-      2. Potential storylines
+      2. Bracket winner (two sentences max)
       3. Remember that the tournament hasn't actually happened, yet, so these are prospective picks.
       4. Do not halucinate past years results or storylines
     `;
@@ -309,6 +309,10 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.title {
+  text-align: center;
 }
 
 .subtitle {
