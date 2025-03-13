@@ -328,7 +328,8 @@ const checkOddForAlterations = (favored, notFavored, odd, regionStr) =>{
 
 const checkFinalOddForAlterations = (favored, notFavored, odd) =>{ 
   let favoredStr = addBack(favored.seed, favored.region)
-  let unfavoredStr = addBack(notFavored.seed, favored.region)
+  let unfavoredStr = addBack(notFavored.seed, notFavored.region)
+
   if(selectedTeam.value === bracketNames[yearNowString][favoredStr]){
     if(addedBenefit.value === 100 || (odd + addedBenefit.value) >= 100){
       return 100
