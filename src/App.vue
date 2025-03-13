@@ -105,8 +105,7 @@ document.addEventListener('scroll', debouncedResetTimer);
 }  
 
 .padding-add {
-  padding-top: 40px !important;
-  padding: 2rem;
+  padding-top: 10px !important;
 }
 
 .appBackground {

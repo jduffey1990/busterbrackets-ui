@@ -1,9 +1,8 @@
 <template>
   <!-- Page Container -->
-  <div class="px-0 py-0">
+  <div class="px-0 py-0 d-flex flex-column">
     <!-- Registration/Log In Notice -->
     <div class="center">
-      <v-img :width="300" src="@/assets/buster.png"></v-img>
     </div>
     <!-- Hero / Header Section -->
     <div class="hero-header">
@@ -100,17 +99,16 @@ display: flex;
   justify-content: center;
   align-items: center;
   padding: 10px;
+  margin-bottom: 40px;
 }
 .display-1 {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  text-align: center;
   padding: 10px;
 }
 
 /* Subtitle style tweak */
 .subtitle-1 {
+  text-align: center;
   letter-spacing: 0.5px;
   max-width: 600px;
   margin: 0;

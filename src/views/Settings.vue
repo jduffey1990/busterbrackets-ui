@@ -186,8 +186,8 @@ onBeforeUnmount(() => {
   transform: translateY(-10px);
 }
 
-.v-card {
-  min-width: 600px !important;
+.main-card {
+  width: 600px !important;
 }
 
 .client-move {
@@ -199,16 +199,20 @@ onBeforeUnmount(() => {
 
 @media (max-width: 700px) {
   .main-card {
-    min-width: 90vw;
+    min-width: 95vw;
   }
 
   .title-holder {
     max-height: 64px !important;
+  }
 
+  .title-holder .v-btn {
+    font-size: xx-small;
   }
 
   .title {
     margin-bottom: 80px;
+    font-size: small;
   }
 }
 

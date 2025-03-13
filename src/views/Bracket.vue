@@ -1025,7 +1025,7 @@ onUnmounted(() => {
 /* Style the actual team cards. */
 .matchup-card {
   margin: 0.25rem 0;
-  width: 130px;
+  width: 120px;
   text-align: center;
   font-weight: 500;
   /* You can also style the v-card itself with additional props, e.g. "outlined", etc. */
@@ -1038,7 +1038,7 @@ onUnmounted(() => {
   border: 1px solid #ddd;
   box-shadow: 0 2px 3px rgba(0,0,0,0.1);
   font-size: 12;
-  width:130px
+  width:120px
 }
 
 /* Example for a connecting line to the right of each 'matchup' 
@@ -1110,14 +1110,18 @@ onUnmounted(() => {
 @media only screen and (max-width: 700px) {
   .v-card {
     padding: 0.4rem 0.1rem;
-    width: 100px !important;
+    font-size: 7px;
   }
   .matchup-card{
     min-width: none;
-    width: 100px !important;
+    width: 60px !important;
   }
   .round {
   max-width: 130px;
+}
+
+.bracket-region {
+    padding-left: 20px;
 }
 }
 @media only screen and (min-width: 1200px) {

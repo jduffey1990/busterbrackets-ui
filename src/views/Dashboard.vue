@@ -2,7 +2,7 @@
   <v-container fluid>
 
     <!-- Top section with user dashboard header -->
-    <div class="top_line_dash mb-6 d-flex align-center">
+    <div class="top_line_dash">
       <div>
         <!-- User dashboard title displaying either full name or email -->
         <div class="text-h4 mb-2 dashboard-title">
@@ -27,8 +27,8 @@
       <!-- My Brackets tab content -->
       <v-tabs-window-item>
         <v-card elevation="3" class="p-4 mt-4 card">
-          <div class="d-flex justify-space-between align-center pb-4" style="background-color: whitesmoke;">
-            <div class="text-h6 ml-4 mt-2">Manage Your Brackets</div>
+          <div class="table-title" style="background-color: whitesmoke;">
+            <div class="text-h6 ml-4 mt-4">Manage Your Brackets</div>
             <v-btn
               color="warning"
               class="build-bracket-btn mt-4 mr-4"
@@ -46,6 +46,7 @@
             :items="brackets"
             :items-per-page="5"
             class="elevation-1"
+            mobile-breakpoint="700"
           >
             <!-- Define how each row looks in the table body (optional slot) -->
             <template #item.name="{ item }">
@@ -56,15 +57,12 @@
             <template #item.createdAt="{ item }">
               {{ formatDate(item.createdAt) }}
             </template>
-            <template #item.updatedAt="{ item }">
-              {{ formatDate(item.updatedAt) }}
-            </template>
             <template #item.breakdown="{ item }" v-slot:activator="{ props }">
             <v-btn @click="goToBreakdown(item)">
               {{checkBracketYear(item) ? 'Post-tourney breakdown' : 'Pre-tourny breakdown' }}
             </v-btn>
             </template>
-            <!-- Provide a slot for actions or other columns if needed -->
+            <template #bottom v-if="brackets.length < 5"></template>
           </v-data-table>
         </v-card>
       </v-tabs-window-item>
@@ -160,7 +158,6 @@ const makeNewBracketDisabled = ref(false)
 const bracketHeaders = [
   { title: 'Bracket Name', value: 'name' },
   { title: 'Created On', value: 'createdAt' },
-  { title: 'Last Updated', value: 'updatedAt' },
   { title: 'Bracket Breakdown', value: "breakdown" }
 ]
 
@@ -194,8 +191,8 @@ const fetchUserBrackets = async () => {
       //   editable:true
       // }
       brackets.value.push(oGBracket)
-      // brackets.value.push(copyBracket)
     })
+    brackets.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch (error) {
     console.error('Failed to fetch brackets:', error)
     // Optionally display a toast or alert
@@ -261,7 +258,7 @@ function formatDate(date) {
   else if(date === "N/A (original bracket creation)"){
     return date
   }
-  return moment(date).format('MMM DD, YYYY')
+  return moment(date).format('MMM DD, YYYY - HH:mm')
 }
 
 const pickRoute = async ()=> {
@@ -280,11 +277,6 @@ const pickRoute = async ()=> {
 </script>
 
 <style scoped>
-.top_line_dash {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
 .card {
   border-radius: 12px;
   background-color: rgba(255,255,255,0.2);
@@ -293,6 +285,7 @@ const pickRoute = async ()=> {
 /* Example custom style for the dashboard title */
 .dashboard-title {
   font-weight: 600;
+  text-align: start;
 }
 
 /* Just to show you can style the bracket build button separately */
@@ -300,4 +293,34 @@ const pickRoute = async ()=> {
   min-width: 200px;
   margin-left: 1rem;
 }
+
+.table-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: start;
+  padding-bottom: 10px;
+}
+
+@media (max-width: 700px) {
+  .dashboard-title {
+  text-align: center;
+}
+  elevation-1 {
+  font-size: x-small;
+}
+
+.elevation-1 .v-btn{
+  font-size:7px;
+  padding: 3px;
+}
+
+.build-bracket-btn{
+  font-size: 7px;
+  min-width: 0;
+  width: 100px !important;
+}
+}
+
+
 </style>
