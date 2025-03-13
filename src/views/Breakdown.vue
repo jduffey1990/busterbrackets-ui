@@ -144,7 +144,7 @@ function buildPrompt(
       user's bracket generated before the tourny: ${userBracket}
 
       The user had ${correctPicks} correct picks out of ${totalGames}. 
-      They predicted the following underdogs: ${upsets.join(", ")}.
+      They predicted the following underdogs: ${upsets.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
 
       Map values like "e1" to bracketNames[${yearBracketString}] 
       bracketNames JSON:
@@ -163,9 +163,9 @@ function buildPrompt(
       user's bracket: ${userBracket}
 
       The user bracket picks seeds that differ from the standard favorites 
-      in these spots: ${upsets.join(", ")}.
+      in these spots: ${upsets.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
 
-      Map values like "e1" to bracketNames["${yearBracketString}"] if exists, else bracketNames["base"]
+      Map values like "e1" to bracketNames["${yearBracketString}"] if bracketNames["${yearBracketString}"] exists, else bracketNames["base"]
       bracketNames JSON:
       ${bracketNamesJson}
 
