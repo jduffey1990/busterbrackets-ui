@@ -3,7 +3,7 @@ export const bracketNames = {
   "2025": {
     // EAST (e1–e16)
     e1: "Duke",
-    e2: "Robert Morris",
+    e2: "Tenessee",
     e3: "Iowa St.",
     e4: "Maryland",
     e5: "BYU",
@@ -13,7 +13,7 @@ export const bracketNames = {
     e9: "Creighton",
     e10: "West Virginia",
     e11: "Vanderbilt",
-    e12: "Iowa St.",
+    e12: "Liberty",
     e13: "High Point",
     e14: "Troy",
     e15: "Robert Morris",

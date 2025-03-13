@@ -14,7 +14,6 @@
               :items="teamsThisYear"
               label="Select Your Team If you want to increase their odds"
               chips
-              closable-chips
               clear-on-select
               class="autocomplete"
           ></v-autocomplete>
