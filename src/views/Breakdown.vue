@@ -218,7 +218,7 @@ async function buildLlmDescription(prompt) {
             {
             // The data payload (JSON body),
             // matching your curl command
-            model: 'o3-mini', 
+            model: 'gpt-4o-mini', 
             store: true,
             messages: [
                 { role: 'user', content: prompt }

@@ -28,9 +28,24 @@
                 item-title="title"
                 item-value="value"
             ></v-select>
-            <p class="small mb-6">The percentage is not an overall percentage.  It is an added chance each round to pass the opposing team.  
-              Win chances can't go over 100, and 100% means that your team will win the bracket automation.
+            <div class="paratool">
+            <p class="small mb-6">The percentage is not an overall percentage.  
             </p>
+            <v-tooltip
+                text="It is an added chance each round to pass the opposing team.  Win chances can't go over 100, and 100% means that your team will win the bracket automation. A 9 seed team with a 40% chance of winning and a 10% increase will have a 50% chance of winning that round"
+                location="top"
+            >
+              <template v-slot:activator="{ props }">
+                <v-icon
+                    v-bind="props"
+                    small
+                    color="grayblue"
+                    class="icon">mdi-information
+                </v-icon>
+              </template>
+            </v-tooltip>
+          </div>
+            
           </div>
       </div>
       <div v-else class="blurred">
@@ -168,8 +183,8 @@ const addedBenefit = ref(0)
 const benefitLevels = ref([
   {value: 0, title: 'None, Why did I select a team at all?'},
   {value: 3, title: "3% - I'm modest, what can I say?"},
-  {value: 5, title: '5% - A 10% swing can be a boon!'},
-  {value: 10, title: '10% - Puts a little more fight in the underdogs.'},
+  {value: 5, title: '5% - Puts a little more fight in the underdogs.'},
+  {value: 10, title: '10% - A 10% swing can be a boon!'},
   {value: 25, title: '25% - Close matchups are close no more!'},
   {value: 50, title: '50% - Like bringing a gun to a knife fight.'},
   {value: 80, title: '80% - Only the lowest seeds can still have odds against them with this'},
@@ -499,6 +514,11 @@ onMounted(async () => {
   font-size: 1.75rem;
   font-weight: 700;
   color: #444;
+}
+
+.paratool {
+  display: flex;
+  flex-direction: row;
 }
 
 .user-name {
