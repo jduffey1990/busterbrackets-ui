@@ -7,7 +7,7 @@
       ></v-img>
     </div>
     <div class="side-column">
-      <v-btn @click="finishTyping" class="mb-6">
+      <v-btn  v-if="!buttonHid" @click="finishTyping" class="mb-6">
         Finish Monologue
       </v-btn>
       <p class="typewriter-text">
@@ -33,6 +33,7 @@
   
   const visibleText = ref('')
   let typingTimer = null
+  const buttonHid = ref(false)
   
   // Re-type if the parent passes a new fullText
   watch(
@@ -65,6 +66,7 @@
 function finishTyping() {
   visibleText.value = props.fullText
   clearInterval(typingTimer)
+  buttonHid.value = true
 }
   </script>
   
