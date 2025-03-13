@@ -140,43 +140,41 @@ function buildPrompt(
 
   if (isPostTournament.value) {
     return `
-      The official bracket is complete for this year, as the tournament is done.  This is the resulting bracket: ${officialBracket} that we are using to compare the user's bracket generated before the tourny: ${userBracket}
+      resulting real bracket: ${officialBracket}
+      user's bracket generated before the tourny: ${userBracket}
 
       The user had ${correctPicks} correct picks out of ${totalGames}. 
       They predicted the following underdogs: ${upsets.join(", ")}.
 
-      Below is the bracketNames object in JSON format for you to reference. If you see a seed like "e1", 
-      look up the correct name in bracketNames[${yearBracketString}] if it exists; 
-      otherwise fall back to bracketNames["base"].
-
+      Map values like "e1" to bracketNames[${yearBracketString}] 
       bracketNames JSON:
       ${bracketNamesJson}
 
       Please write a short, sportscaster-style summary describing:
       1. The overall performance compared to the real results.
-      2. Notable upsets they picked correctly, if any.
-      3. How it felt to watch this bracket unfold.
+      2. Two notable upsets they picked correctly either:
+          a. big underdog (seed over 12)
+          b. appear multiple times in the upset array
     `;
   } else {
     return `
-      The tournament hasn't started yet, so please use this bracket ${officialBracket} as the "base" example of all the "better" seeds advancing to compare with the user's bracket ${userBracket}
+      benchmark, no-upset bracket: ${officialBracket}
+      user's bracket: ${userBracket}
 
       The user bracket picks seeds that differ from the standard favorites 
       in these spots: ${upsets.join(", ")}.
 
-      Below is the bracketNames object in JSON format for you to reference. If you see a seed like "e1", 
-      look up the correct name in bracketNames[${yearBracketString}] if it exists; 
-      otherwise fall back to bracketNames["base"].
-
+      Map values like "e1" to bracketNames[${yearBracketString}] if exists, else bracketNames["base"]
       bracketNames JSON:
       ${bracketNamesJson}
 
       Please write a short, sportscaster-style preview describing:
-      1. Big upset picks
+      1. Two notable upsets they picked compared to benchmark either:
+          a. big underdog wins (seed 12 or more)
+          b. appear multiple times in the upset array
       2. Potential storylines
-      3. Overall bracket-building strategy.
-      4. Remember that the tournament hasn't actually happened, yet, so these are prospective picks.
-      5. Do not halucinate past years results or storylines
+      3. Remember that the tournament hasn't actually happened, yet, so these are prospective picks.
+      4. Do not halucinate past years results or storylines
     `;
   }
 }
