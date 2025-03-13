@@ -154,7 +154,7 @@ function buildPrompt(
       1. The overall performance compared to the real results.
       2. Two notable upsets they picked correctly (two sentences max) either:
           a. big underdog (seed over 12)
-          b. appear multiple times in the upset array
+          b. deep run underdogs
       3. Exclude words "March Madness, NCAA, Sweet Sixteen, Elight Eight, Final Four" due to copyright
     `;
   } else {
@@ -171,8 +171,8 @@ function buildPrompt(
 
       Please write a short (three paragraph max), sportscaster-style preview without copyright infringment describing:
       1. Two notable upsets they picked compared to benchmark (two sentences max) either:
-          a. underdog to make it furthest in the tournament
-          b. appear multiple times in the upset array
+          a. big underdog (seed over 12)
+          b. deep run underdogs
       2. Bracket winner (two sentences max)
       3. Remember that the tournament hasn't actually happened, yet, so these are prospective picks.
       4. Do not halucinate past years results or storylines.
