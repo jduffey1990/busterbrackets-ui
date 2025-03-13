@@ -165,7 +165,7 @@ function buildPrompt(
       The user bracket picks seeds that differ from the standard favorites 
       in these spots: ${upsets.join(", ")}.
 
-      Map values like "e1" to bracketNames[${yearBracketString}] if exists, else bracketNames["base"]
+      Map values like "e1" to bracketNames["${yearBracketString}"] if exists, else bracketNames["base"]
       bracketNames JSON:
       ${bracketNamesJson}
 

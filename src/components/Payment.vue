@@ -2,7 +2,7 @@
     <div class="success-page">
       <div class="success-container">
         <h4 class="mb-4">Payment Information</h4>
-        <p>By paying for a bracket, you will buy yourself 4 bracket Credits <span style="color: red;">Note:</span> in the offseason (not tournament time) page response times will be significantly slower in order to save on costs</p>
+        <p>By paying here, you will buy yourself 4 bracket credits.</p>
   
         <form
             id="payment-form"
