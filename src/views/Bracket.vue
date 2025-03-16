@@ -33,7 +33,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[0]) : formatStringName(bracketPenultimateFour[0])}}
+                    {{ yearHasBracket ? formatTitleName(bracketsemifinals[0]) : formatStringName(bracketsemifinals[0])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -113,7 +113,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[1]) : formatStringName(bracketPenultimateFour[1])}}
+                    {{ yearHasBracket ? formatTitleName(bracketsemifinals[1]) : formatStringName(bracketsemifinals[1])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -192,7 +192,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[3]) : formatStringName(bracketPenultimateFour[3])}}
+                    {{ yearHasBracket ? formatTitleName(bracketsemifinals[3]) : formatStringName(bracketsemifinals[3])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -271,7 +271,7 @@
             <div class="region-champ">
                 <p>Region Champion:</p>
                 <v-card class="matchup-card">
-                    {{ yearHasBracket ? formatTitleName(bracketPenultimateFour[2]) : formatStringName(bracketPenultimateFour[2])}}
+                    {{ yearHasBracket ? formatTitleName(bracketsemifinals[2]) : formatStringName(bracketsemifinals[2])}}
                 </v-card>
             </div>
             <div class="bracket-region">
@@ -346,7 +346,7 @@
                 </div>
             </div>
         </div>
-        <div v-else-if="selectedRegion==='penultimateFour'">
+        <div v-else-if="selectedRegion==='semifinals'">
             <div class="region-champ">
                 <p>National Champion:</p>
                 <v-card class="matchup-card">
@@ -355,11 +355,11 @@
             </div>
             <div class="bracket-region">
 
-            <div class="round penultimate-4">
+            <div class="round semifinals-4">
                 <div
                 class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(0,4), 2)"
-                :key="'penultimateFour-s16-' + idx"
+                v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(0,4), 2)"
+                :key="'semifinals-s16-' + idx"
                 >
                 <v-card
                     v-for="team in pair"
@@ -374,8 +374,8 @@
             <div class="round finals">
                 <div
                 class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(4,6), 2)"
-                :key="'penultimateFour-e8-' + idx"
+                v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(4,6), 2)"
+                :key="'semifinals-e8-' + idx"
                 >
                 <v-card
                     v-for="team in pair"
@@ -417,15 +417,15 @@
     </div>
     </div>
     <div class="big-background">
-<div class="lower-section penultimate-four-region mb-6">
-  <h3>Penultimate Four</h3>
+<div class="lower-section semifinals-four-region mb-6">
+  <h3>Semifinals</h3>
 
   <div class="bracket-region" style="justify-content: center;">
-    <div class="round penultimate-4">
+    <div class="round semifinals-4">
       <div
         class="matchup"
-        v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(0,4), 2)"
-        :key="'penultimateFour-s16-' + idx"
+        v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(0,4), 2)"
+        :key="'semifinals-s16-' + idx"
       >
         <v-card
           v-for="team in pair"
@@ -440,8 +440,8 @@
     <div class="round finals">
       <div
         class="matchup"
-        v-for="(pair, idx) in chunkArray(bracketPenultimateFour.slice(4,6), 2)"
-        :key="'penultimateFour-e8-' + idx"
+        v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(4,6), 2)"
+        :key="'semifinals-e8-' + idx"
       >
         <v-card
           v-for="team in pair"
@@ -802,7 +802,7 @@ const regions = ref([
   {value: "west", title: 'West'},
   {value: "south", title: 'South'},
   {value: "midwest", title: 'Midwest'},
-  {value: "penultimateFour", title: 'Penultimate Four'},
+  {value: "semifinals", title: 'semifinals'},
 ]);
 
 //these are stable.  They are not saved with the backend data to keep costs down
@@ -825,7 +825,7 @@ const bracketEast = ref([])
 const bracketWest = ref([])
 const bracketMidwest = ref([])
 const bracketSouth = ref([])
-const bracketPenultimateFour= ref([])
+const bracketsemifinals= ref([])
 const champion = ref()
 
 
@@ -843,7 +843,7 @@ const getBracket = async () => {
         bracketWest.value = startingBracketWest.concat(bracketToChop.slice(14, 28))
         bracketSouth.value = startingBracketMidwest.concat(bracketToChop.slice(28, 42))
         bracketMidwest.value = startingBracketSouth.concat(bracketToChop.slice(42, 56))
-        bracketPenultimateFour.value = bracketToChop.slice(56, 62)
+        bracketsemifinals.value = bracketToChop.slice(56, 62)
         champion.value = bracketToChop.pop()
     } catch (error) {
         console.error(error)
