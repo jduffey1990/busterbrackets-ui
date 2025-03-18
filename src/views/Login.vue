@@ -147,10 +147,10 @@ const loginUser = async () => {
   try {
     await login(credentials);
   } catch (error) {
-    // Check if the error response contains a message from the backend
-    if (error.response && error.response.data && error.response.data.detail) {
+    console.log(error)
+    if (error.response && error.response.data && error.response.data.message) {
       show({
-        message: error.response.data.detail,
+        message: error.response.data.message,
         error: true,
       });
     } else {
