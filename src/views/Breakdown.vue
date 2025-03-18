@@ -9,7 +9,7 @@
   
       <!-- Explanation or subheader -->
       <p class="subtitle">
-        Here’s a detailed look at how your bracket is shaping up.  Now for your breakdown, presented by ur AI-sportscaster Buster Brackets!:
+        Here’s a detailed look at how your bracket is shaping up.  Now for your breakdown, presented by our AI-sportscaster Buster Brackets!:
       </p>
       <div class="social">
       <span style="font-size: xx-large; text-align: center;">Share Us!</span>
