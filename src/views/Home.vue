@@ -12,6 +12,8 @@
       <p class="subtitle-1 white--text">
         Where every bracket is a masterpiece in the making.
       </p>
+
+      <iframe src="https://www.loom.com/embed/99926e7b2b5c497a9afe4149e0692a03?sid=84a2c702-e044-4aa5-9c33-18b12ae215da" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen class="video"></iframe>
     </div>
 
     <!-- Main Content Section -->
@@ -143,10 +145,22 @@ display: flex;
 .hero-header h1 {
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
 }
+.video {
+  width: 640px;
+  height: 372px;
+}
 
 @media (max-width: 700px) {
+  .content-bottom {
+    margin-top: 80px;
+  }
   .hero-header {
     height: 30vh;
   }
+
+  .video {
+  width: 350px;
+  height: 203px;
+}
 }
 </style>
