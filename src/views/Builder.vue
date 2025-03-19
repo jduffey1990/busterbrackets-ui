@@ -426,9 +426,9 @@ const createBracket = async () => {
 
   let final4 = [
     { seed: eastWinner, region: 'east' },
-    { seed: westWinner, region: 'west' },
+    { seed: midwestWinner, region: 'midwest' },
     { seed: southWinner, region: 'south' },
-    { seed: midwestWinner, region: 'midwest' }
+    { seed: westWinner, region: 'west' }
   ];
 
   // Concatenate the final four bracket
