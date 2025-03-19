@@ -252,7 +252,7 @@ const round = (region = [], regionStr = "") => {
     return round(region, regionStr)    
 }
 
-function finals(teams){
+function finalsFunction(teams){
   if(teams.length === 1){
         champion.value = teams[0].seed
         return teams
@@ -296,7 +296,7 @@ function finals(teams){
   for(let team of teams){
     bracketFinalFour.value.push(team.seed)
   }
-  finals(teams);
+  finalsFunction(teams);
   return teams[0]; // Return the winner for external use if needed
 }
 
@@ -430,12 +430,11 @@ const createBracket = async () => {
     { seed: southWinner, region: 'south' },
     { seed: westWinner, region: 'west' }
   ];
-
   // Concatenate the final four bracket
   bracketFinalFour.value = bracketFinalFour.value.concat(startingFinalFour.value);
-
+  
   // Process finals and show final bracket display
-  finals(final4);
+  finalsFunction(final4);
   finalsDisplay.value = true;
   await sleep(1000);
 
@@ -472,9 +471,9 @@ try {
   const response = await $users.patch('/decrement-credits');
   if (response.status === 200) {
     show({message: 'Thanks for creating a bracket with us. You will be redirected to your dashboard to view your bracket.'});
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 1000);
+    // setTimeout(() => {
+    //   window.location.href = '/dashboard';
+    // }, 1000);
   }
 } catch (error) {
     console.error(error)
