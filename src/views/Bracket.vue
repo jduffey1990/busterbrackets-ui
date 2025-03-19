@@ -840,9 +840,9 @@ const getBracket = async () => {
         
         let bracketToChop = new Array(...htmlBracket.value)
         bracketEast.value = startingBracketEast.concat(bracketToChop.slice(0, 14))
-        bracketWest.value = startingBracketWest.concat(bracketToChop.slice(14, 28))
-        bracketSouth.value = startingBracketMidwest.concat(bracketToChop.slice(28, 42))
-        bracketMidwest.value = startingBracketSouth.concat(bracketToChop.slice(42, 56))
+        bracketMidwest.value = startingBracketMidwest.concat(bracketToChop.slice(14, 28))
+        bracketSouth.value = startingBracketSouth.concat(bracketToChop.slice(28, 42))
+        bracketWest.value = startingBracketWest.concat(bracketToChop.slice(42, 56))
         bracketsemifinals.value = bracketToChop.slice(56, 62)
         champion.value = bracketToChop.pop()
     } catch (error) {

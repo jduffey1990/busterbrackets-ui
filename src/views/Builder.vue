@@ -403,9 +403,9 @@ const createBracket = async () => {
   eastDisplay.value = true;
   await sleep(2000); // Delay 1 second
 
-  // Process West bracket and display its status
-  round(startingBracketWest, "west");
-  westDisplay.value = true;
+  // Process Midwest bracket and display its status
+  round(startingBracketMidwest, "midwest");
+  midwestDisplay.value = true;
   await sleep(2000);
 
   // Process South bracket and display its status
@@ -413,9 +413,9 @@ const createBracket = async () => {
   southDisplay.value = true;
   await sleep(2000);
 
-  // Process Midwest bracket and display its status
-  round(startingBracketMidwest, "midwest");
-  midwestDisplay.value = true;
+  // Process West bracket and display its status
+  round(startingBracketWest, "west");
+  westDisplay.value = true;
   await sleep(2000);
 
   // Get winners from each region

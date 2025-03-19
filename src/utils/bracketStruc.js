@@ -19,24 +19,6 @@ export const bracketNames = {
     e15: "Robert Morris",
     e16: "American/Mt. St. Mary's",
     
-    // WEST (w1–w16)
-    w1: "Florida",
-    w2: "St. John's",
-    w3: "Texas Tech",
-    w4: "Maryland",
-    w5: "Memphis",
-    w6: "Missouri",
-    w7: "Kansas",
-    w8: "UConn",
-    w9: "Oklahoma",
-    w10: "Arkansas",
-    w11: "Drake",
-    w12: "Colorado St.",
-    w13: "Grand Canyon",
-    w14: "UNCW",
-    w15: "Omaha",
-    w16: "Norfolk St.",
-    
     // MIDWEST (m1–m16)
     m1: "Houston",
     m2: "Tennessee",
@@ -66,12 +48,30 @@ export const bracketNames = {
     s8: "Louisville",
     s9: "Creighton",
     s10: "New Mexico",
-    s11: "San Diego St/UNC",
+    s11: "UNC",
     s12: "UCSD",
     s13: "Yale",
     s14: "Lipscomb",
     s15: "Bryant",
-    s16: "Alabama St./St. Francis",
+    s16: "Alabama St.",
+
+    // WEST (w1–w16)
+    w1: "Florida",
+    w2: "St. John's",
+    w3: "Texas Tech",
+    w4: "Maryland",
+    w5: "Memphis",
+    w6: "Missouri",
+    w7: "Kansas",
+    w8: "UConn",
+    w9: "Oklahoma",
+    w10: "Arkansas",
+    w11: "Drake",
+    w12: "Colorado St.",
+    w13: "Grand Canyon",
+    w14: "UNCW",
+    w15: "Omaha",
+    w16: "Norfolk St.",
   },
   "base": {
     // EAST (e1–e16)
@@ -149,7 +149,7 @@ export const bracketNames = {
 };
 
   export const bracketFinalYears = {
-    "base": ["e1", "e8", "e5", "e4", "e6", "e3", "e7", "e2", "e1", "e5", "e6", "e2", "e1", "e2", "w1", "w8", "w5", "w4", "w6", "w3", "w7", "w2", "w1", "w5", "w6", "w2", "w1", "w2", "m1", "m8", "m5", "m4", "m6", "m3", "m7", "m2", "m1", "m5", "m6", "m2", "m1", "m2", "s1", "s8", "s5", "s4", "s6", "s3", "s7", "s2", "s1", "s5", "s6", "s2", "s1", "s2", "e1", "w1", "m1", "s1", "e1", "s1", "e1"]
+    "base": ["e1", "e8", "e5", "e4", "e6", "e3", "e7", "e2", "e1", "e5", "e6", "e2", "e1", "e2", "m1", "m8", "m5", "m4", "m6", "m3", "m7", "m2", "m1", "m5", "m6", "m2", "m1", "m2", "s1", "s8", "s5", "s4", "s6", "s3", "s7", "s2", "s1", "s5", "s6", "s2", "s1", "s2", "w1", "w8", "w5", "w4", "w6", "w3", "w7", "w2", "w1", "w5", "w6", "w2", "w1", "w2","e1", "w1", "m1", "s1", "e1", "s1", "e1"]
     };
 
   export const recordsOver20 = {
