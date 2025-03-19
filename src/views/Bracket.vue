@@ -398,62 +398,62 @@
     }">
     <!-- Title, heading, champion banner, etc. -->
     <div class="title-card">
-    <div class="title-heading">
-        <h2>
-        <span class="user-name">{{ user.name }}</span>'s {{ bracketReturned.name }}
-        <small class="created-at">
-            (Created {{ formatDate(bracketReturned.createdAt) }})
-        </small>
-        </h2>
-    </div>
-    <div class="champion-banner">
-        <div class="champion-title">National Champion:</div>
-        <div class="champion-name">
-        {{ yearHasBracket ? formatTitleName(champion) : formatStringName(champion) }}
+        <div class="title-heading">
+            <h2>
+            <span class="user-name">{{ user.name }}</span>'s {{ bracketReturned.name }}
+            <small class="created-at">
+                (Created {{ formatDate(bracketReturned.createdAt) }})
+            </small>
+            </h2>
+        </div>
+        <div class="champion-banner">
+            <div class="champion-title">National Champion:</div>
+            <div class="champion-name">
+            {{ yearHasBracket ? formatTitleName(champion) : formatStringName(champion) }}
+            </div>
+        </div>
+        <div class="mt-4">
+            <PDFBuilder :mobile="true"/>
         </div>
     </div>
-    <div class="mt-4">
-        <PDFBuilder :mobile="true"/>
-    </div>
-    </div>
     <div class="big-background">
-<div class="lower-section semifinals-four-region mb-6">
-  <h3>Semifinals</h3>
+        <div class="lower-section semifinals-four-region mb-6">
+        <h3>Semifinals</h3>
 
-  <div class="bracket-region" style="justify-content: center;">
-    <div class="round semifinals-4">
-      <div
-        class="matchup"
-        v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(0,4), 2)"
-        :key="'semifinals-s16-' + idx"
-      >
-        <v-card
-          v-for="team in pair"
-          :key="team"
-          class="matchup-card"
-        >
-          {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-        </v-card>
-      </div>
-    </div>
+        <div class="bracket-region" style="justify-content: center;">
+            <div class="round semifinals-4">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(0,4), 2)"
+                :key="'semifinals-s16-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
 
-    <div class="round finals">
-      <div
-        class="matchup"
-        v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(4,6), 2)"
-        :key="'semifinals-e8-' + idx"
-      >
-        <v-card
-          v-for="team in pair"
-          :key="team"
-          class="matchup-card"
-        >
-          {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-        </v-card>
-      </div>
+            <div class="round finals">
+            <div
+                class="matchup"
+                v-for="(pair, idx) in chunkArray(bracketsemifinals.slice(4,6), 2)"
+                :key="'semifinals-e8-' + idx"
+            >
+                <v-card
+                v-for="team in pair"
+                :key="team"
+                class="matchup-card"
+                >
+                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                </v-card>
+            </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
     <!-- The bracket layout with multiple columns/rows -->
     <div class="upper-section">
     <!-- Left side: East, West (or whichever two you want on the left) -->
@@ -461,303 +461,299 @@
 
         <!-- East Region -->
         <div class="display-section east-region">
-        <h3>East Region</h3>
-        <div class="bracket-region">
-            <!-- Round of 64 -->
-            <div class="round round-of-64">
-            <div
-                class="matchup"
-                v-for="(pair, matchIndex) in chunkArray(startingBracketEast, 2)"
-                :key="'east-r64-' + matchIndex"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
+            <h3>East Region</h3>
+            <div class="bracket-region">
+                <!-- Round of 64 -->
+                <div class="round round-of-64">
+                    <div
+                        class="matchup"
+                        v-for="(pair, matchIndex) in chunkArray(startingBracketEast, 2)"
+                        :key="'east-r64-' + matchIndex"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- Round of 32 -->
+                <div class="round round-of-32">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketEast.slice(16, 24), 2)"
+                        :key="'east-r32-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- succulent 16 -->
+                <div class="round succulent-16">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketEast.slice(24, 28), 2)"
+                        :key="'east-s16-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- hateful 8 -->
+                <div class="round hateful-8">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketEast.slice(28,30), 1)"
+                        :key="'east-e8-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
             </div>
-            </div>
-            <!-- Round of 32 -->
-            <div class="round round-of-32">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketEast.slice(16, 24), 2)"
-                :key="'east-r32-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- succulent 16 -->
-            <div class="round succulent-16">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketEast.slice(24, 28), 2)"
-                :key="'east-s16-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- hateful 8 -->
-            <div class="round hateful-8">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketEast.slice(28,30), 1)"
-                :key="'east-e8-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-        </div>
         </div>
 
         <!-- Midwest Region -->
         <div class="display-section midwest-region">
-        <h3>Midwest Region</h3>
-        <!-- Region champion, bracket rounds, etc. -->
-        <div class="bracket-region">
-             <!-- hateful 8 -->
-            <div class="round hateful-8">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketMidwest.slice(28,30), 1)"
-                :key="'midwest-e8-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
+            <h3>Midwest Region</h3>
+            <!-- Region champion, bracket rounds, etc. -->
+            <div class="bracket-region">
+                <!-- Round of 64 -->
+                <div class="round round-of-64">
+                    <div
+                        class="matchup"
+                        v-for="(pair, matchIndex) in chunkArray(startingBracketMidwest, 2)"
+                        :key="'midwest-r64-' + matchIndex"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- Round of 32 -->
+                <div class="round round-of-32">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketMidwest.slice(16, 24), 2)"
+                        :key="'midwest-r32-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- succulent 16 -->
+                <div class="round succulent-16">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketMidwest.slice(24, 28), 2)"
+                        :key="'midwest-s16-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- hateful 8 -->
+                <div class="round hateful-8">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketMidwest.slice(28,30), 1)"
+                        :key="'midwest-e8-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
             </div>
-            </div>
-            <!-- succulent 16 -->
-            <div class="round succulent-16">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketMidwest.slice(24, 28), 2)"
-                :key="'midwest-s16-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- Round of 32 -->
-            <div class="round round-of-32">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketMidwest.slice(16, 24), 2)"
-                :key="'midwest-r32-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- Round of 64 -->
-            <div class="round round-of-64">
-            <div
-                class="matchup"
-                v-for="(pair, matchIndex) in chunkArray(startingBracketMidwest, 2)"
-                :key="'midwest-r64-' + matchIndex"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-
-    </div>
+        </div>
+     </div>
 
     <!-- Right side: South, Midwest -->
     <div class="right-regions">
-
         <!-- South Region -->
         <div class="display-section south-region">
-        <h3>South Region</h3>
-        <!-- Region champion, bracket rounds, etc. -->
-        <div class="bracket-region">
-            <!-- hateful 8 -->
-            <div class="round hateful-8">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketSouth.slice(28,30), 1)"
-                :key="'south-e8-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
+            <h3>South Region</h3>
+            <!-- Region champion, bracket rounds, etc. -->
+            <div class="bracket-region">
+                <!-- hateful 8 -->
+                <div class="round hateful-8">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketSouth.slice(28,30), 1)"
+                        :key="'south-e8-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- succulent 16 -->
+                <div class="round succulent-16">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketSouth.slice(24, 28), 2)"
+                        :key="'south-s16-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- Round of 32 -->
+                <div class="round round-of-32">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketSouth.slice(16, 24), 2)"
+                        :key="'south-r32-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- Round of 64 -->
+                <div class="round round-of-64">
+                    <div
+                        class="matchup"
+                        v-for="(pair, matchIndex) in chunkArray(startingBracketSouth, 2)"
+                        :key="'south-r64-' + matchIndex"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
             </div>
-            </div>
-            <!-- succulent 16 -->
-            <div class="round succulent-16">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketSouth.slice(24, 28), 2)"
-                :key="'south-s16-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- Round of 32 -->
-            <div class="round round-of-32">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketSouth.slice(16, 24), 2)"
-                :key="'south-r32-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- Round of 64 -->
-            <div class="round round-of-64">
-            <div
-                class="matchup"
-                v-for="(pair, matchIndex) in chunkArray(startingBracketSouth, 2)"
-                :key="'south-r64-' + matchIndex"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-        </div>
         </div>
 
         <!-- West Region -->
         <div class="display-section west-region">
-        <h3>West Region</h3>
-        <div class="bracket-region">
-            <!-- Round of 64 -->
-            <div class="round round-of-64">
-            <div
-                class="matchup"
-                v-for="(pair, matchIndex) in chunkArray(startingBracketWest, 2)"
-                :key="'west-r64-' + matchIndex"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
+            <h3>West Region</h3>
+            <div class="bracket-region">
+                <!-- hateful 8 -->
+                <div class="round hateful-8">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketWest.slice(28,30), 1)"
+                        :key="'west-e8-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- succulent 16 -->
+                <div class="round succulent-16">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketWest.slice(24, 28), 2)"
+                        :key="'west-s16-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                <!-- Round of 32 -->
+                <div class="round round-of-32">
+                    <div
+                        class="matchup"
+                        v-for="(pair, idx) in chunkArray(bracketWest.slice(16, 24), 2)"
+                        :key="'west-r32-' + idx"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                
+                <!-- Round of 64 -->
+                <div class="round round-of-64">
+                    <div
+                        class="matchup"
+                        v-for="(pair, matchIndex) in chunkArray(startingBracketWest, 2)"
+                        :key="'west-r64-' + matchIndex"
+                    >
+                        <v-card
+                        v-for="team in pair"
+                        :key="team"
+                        class="matchup-card"
+                        >
+                        {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
+                        </v-card>
+                    </div>
+                </div>
+                
             </div>
-            </div>
-            <!-- Round of 32 -->
-            <div class="round round-of-32">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketWest.slice(16, 24), 2)"
-                :key="'west-r32-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- succulent 16 -->
-            <div class="round succulent-16">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketWest.slice(24, 28), 2)"
-                :key="'west-s16-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-            <!-- hateful 8 -->
-            <div class="round hateful-8">
-            <div
-                class="matchup"
-                v-for="(pair, idx) in chunkArray(bracketWest.slice(28,30), 1)"
-                :key="'west-e8-' + idx"
-            >
-                <v-card
-                v-for="team in pair"
-                :key="team"
-                class="matchup-card"
-                >
-                {{ yearHasBracket ? formatTeamName(team) : formatStringName(team) }}
-                </v-card>
-            </div>
-            </div>
-        </div>
         </div>
             
             
         </div>
         </div>
     </div>
-
-  </div>
-</div>
-
-
-
 </div>
 </template>
 
