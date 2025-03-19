@@ -442,9 +442,11 @@ const createBracket = async () => {
   // Final processing before sending the bracket
   bracketFinalFour.value.pop();
   bracketToSend.value = bracketToSend.value.concat(bracketEast.value);
-  bracketToSend.value = bracketToSend.value.concat(bracketWest.value);
-  bracketToSend.value = bracketToSend.value.concat(bracketSouth.value);
   bracketToSend.value = bracketToSend.value.concat(bracketMidwest.value);
+  bracketToSend.value = bracketToSend.value.concat(bracketSouth.value);
+  bracketToSend.value = bracketToSend.value.concat(bracketWest.value);
+  
+  
   bracketToSend.value = bracketToSend.value.concat(bracketFinalFour.value);
   bracketToSend.value.push(champion.value);
 

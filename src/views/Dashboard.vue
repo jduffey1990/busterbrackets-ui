@@ -265,11 +265,12 @@ const pickRoute = async ()=> {
   try {
     let response = await $users.get(`/get-user?id=${user.value._id}`);
     let userReturned = response.data
-      if(userReturned.credits === 0) {
-        router.push("/payment")
-      }else{
-        router.push("/builder")
-      }
+      // if(userReturned.credits === 0) {
+      //   router.push("/payment")
+      // }else{
+      //   router.push("/builder")
+      // }
+      router.push("/builder")
     }catch (error) {
     console.error(error)
   }
