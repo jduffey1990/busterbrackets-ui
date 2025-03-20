@@ -17,7 +17,7 @@ export const bracketNames = {
     e13: "Akron",
     e14: "Montana",
     e15: "Robert Morris",
-    e16: "American/Mt. St. Mary's",
+    e16: "Mt. St. Mary's",
     
     // MIDWEST (m1–m16)
     m1: "Houston",
@@ -30,7 +30,7 @@ export const bracketNames = {
     m8: "Gonzaga",
     m9: "Georgia",
     m10: "Utah St.",
-    m11: "Texas/Xavier",
+    m11: "Xavier",
     m12: "McNeese",
     m13: "High Point",
     m14: "Troy",
