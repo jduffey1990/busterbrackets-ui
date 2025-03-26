@@ -1,4 +1,4 @@
-# 🏀 BusterBrackets
+# 🏀 BusterBrackets - [website](https://busterbrackets.com)
 
 A lightweight Vue 3 app for building NCAA March Madness brackets. Built for fans who want to quickly generate printable or shareable brackets, this app was built just in time for the madness — but there's a whole roadmap for turning it into something bigger.
 
@@ -43,7 +43,7 @@ A lightweight Vue 3 app for building NCAA March Madness brackets. Built for fans
 
 ## 🔗 Backend Repositories
 
-This frontend connects to two backend services:
+This frontend connects to two backend microservices:
 
 - [Brackets Service (FastAPI)](https://github.com/jduffey1990/busterbrackets-app-brackets)
 - [Users & Authentication (FastAPI)](https://github.com/jduffey1990/busterbrackets-app-users)
