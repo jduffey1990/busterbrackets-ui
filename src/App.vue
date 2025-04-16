@@ -73,9 +73,23 @@ const startTimer = () => {
 
 const pingBackendUser = async () => {
   try {
-    const response = await $users.get(/)
+    const response = await $users.get('/ping-user')
+    if(response.status === 200){
+      console.log("backend users pinged baby")
+    }
   } catch (error) {
-    
+    console.error(error)
+  }
+}
+
+const pingBackendBrackets = async () => {
+  try {
+    const response = await $brackets.get('/ping-bracket')
+    if(response.status === 200){
+      console.log("backend brackets pinged baby")
+    }
+  } catch (error) {
+    console.error(error)
   }
 }
 
