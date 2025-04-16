@@ -40,6 +40,8 @@ const overlayStore = useOverlayStore();
 import {inject, ref} from 'vue';
 
 const $axios = inject('$axios');
+const $users = inject('$usersApi')
+const $brackets = inject('$bracketsApi')
 
 import {useUserStore} from '@/store/user';
 import {storeToRefs} from 'pinia';
@@ -69,6 +71,14 @@ const startTimer = () => {
   }, 600000); // 10 minutes
 };
 
+const pingBackendUser = async () => {
+  try {
+    const response = await $users.get(/)
+  } catch (error) {
+    
+  }
+}
+
 const resetTimer = () => {
   clearTimeout(timeout);
   startTimer();
@@ -87,6 +97,8 @@ const debouncedResetTimer = debounce(resetTimer, 1000);
 
 onMounted(() => {
   startTimer();
+  pingBackendUser()
+  pingBackendBrackets()
 });
 
 document.addEventListener('click', debouncedResetTimer);
