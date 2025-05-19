@@ -64,13 +64,14 @@ Getting this project out in time for March Madness was a sprint to the buzzer â€
 ---
 
 ## ðŸ“¦ Tech Stack
-
+- Prod served by **AWS Amplify**
 - **Vue 3** + **Pinia**
 - **Vuetify 3**
 - **Vite**
 - **Stripe JS** (for payment integration)
 - **Axios** for API communication
 - **Moment.js**, **html2canvas**, **jspdf** for utility and PDF exporting
+
 
 ---
 
