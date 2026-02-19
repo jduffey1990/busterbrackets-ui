@@ -22,6 +22,43 @@
           <v-btn type="submit">Login</v-btn>
         </v-card-actions>
       </v-form>
+
+      <!-- Forgot Password Section -->
+      <v-card-text v-if="!showForgotPassword">
+        <div class="button-section">
+          <v-btn variant="text" size="small" @click="showForgotPassword = true">
+            Forgot Password?
+          </v-btn>
+        </div>
+      </v-card-text>
+
+      <v-card-text v-if="showForgotPassword">
+        <v-divider class="mb-4"></v-divider>
+        <p class="text-body-2 mb-2">Enter the email address associated with your account and we'll send you a reset link.</p>
+        <v-text-field
+          label="Email"
+          type="email"
+          v-model="forgotEmail"
+        ></v-text-field>
+        <div class="button-section">
+          <v-btn
+            color="primary"
+            @click="submitForgotPassword"
+            :loading="forgotLoading"
+            :disabled="!forgotEmail"
+          >
+            Send Reset Link
+          </v-btn>
+          <v-btn
+            variant="text"
+            size="small"
+            @click="showForgotPassword = false"
+            class="mt-2"
+          >
+            Cancel
+          </v-btn>
+        </div>
+      </v-card-text>
     </v-card>
   </v-layout>
   <div v-if="showCreationSection === false" class="button-section">
@@ -135,6 +172,11 @@ const $brackets = inject('$bracketsApi');
 const {user, stripeAccountAssociated, cardOnFile} = storeToRefs(useUserStore());
 const {login} = useUserStore();
 
+// Forgot password
+const showForgotPassword = ref(false);
+const forgotEmail = ref('');
+const forgotLoading = ref(false);
+
 const router = useRouter();
 
 const credentials = reactive({
@@ -142,6 +184,26 @@ const credentials = reactive({
   password: undefined,
 });
 
+const submitForgotPassword = async () => {
+  if (!forgotEmail.value) {
+    show({ message: 'Please enter your email address', error: true });
+    return;
+  }
+
+  forgotLoading.value = true;
+  try {
+    await $users.post('/forgot-password', { email: forgotEmail.value });
+    show({ message: 'If an account with that email exists, a reset link has been sent. Check your inbox!' });
+    showForgotPassword.value = false;
+    forgotEmail.value = '';
+  } catch (error) {
+    // Backend always returns 200 to prevent enumeration,
+    // but handle network errors gracefully
+    show({ message: 'Something went wrong. Please try again later.', error: true });
+  } finally {
+    forgotLoading.value = false;
+  }
+};
 
 const loginUser = async () => {
   try {
@@ -160,27 +222,6 @@ const loginUser = async () => {
         error: true,
       });
     }
-  }
-};
-
-
-const resetPassword = async () => {
-  if (!credentials.email) {
-    show({
-      message: 'Please enter in email associated to account',
-      error: true,
-    });
-  } else {
-    try {
-      await $users.put('/reset-password/', {
-        email: credentials.email,
-      });
-    } catch (error) {
-    }
-
-    show({
-      message: 'Password reset! Please check your email.',
-    });
   }
 };
 

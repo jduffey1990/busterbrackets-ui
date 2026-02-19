@@ -11,6 +11,7 @@ import Builder from '@/views/Builder.vue';
 import Breakdown from '@/views/Breakdown.vue';
 import Payment from "@/components/Payment";
 import Admin from '@/views/Admin.vue';
+import ResetPassword from '@/views/ResetPassword.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -66,6 +67,11 @@ const router = createRouter({
             path: "/success",
             name: "Success",
             component: Success,
+        },
+        {
+            path: '/reset-password',
+            name: 'ResetPassword',
+            component: ResetPassword,
         },
         // ─── NEW: Admin route with guard ───
         {
