@@ -1,237 +1,138 @@
 <template>
-  <v-container fluid>
-
-    <!-- Top section with user dashboard header -->
-    <div class="top_line_dash">
-      <div>
-        <!-- User dashboard title displaying either full name or email -->
-        <div class="text-h4 mb-2 dashboard-title">
-          {{ user.name ? user.name + "'s Dashboard" : user.email + "'s Dashboard" }}
-        </div>
-      </div>
-      <v-spacer></v-spacer>
+  <div class="px-4 py-6">
+    <!-- Dashboard Title & Build Button -->
+    <div class="table-title">
+      <h2 class="dashboard-title">My Dashboard</h2>
+      <v-btn color="warning" class="build-bracket-btn" @click="pickRoute">
+        Build a Bracket
+      </v-btn>
     </div>
 
-    <!-- Tabs for switching between brackets and news -->
-    <v-tabs v-model="currentTab" background-color="primary" class="white--text">
-      <v-tab>
-        My Brackets
-      </v-tab>
-      <!-- <v-tab>
-        News
-      </v-tab> -->
-    </v-tabs>
+    <!-- Admin link (only visible to admins) -->
+    <v-btn
+      v-if="isAdmin"
+      color="primary"
+      variant="outlined"
+      class="mb-4"
+      @click="$router.push('/admin')"
+    >
+      Tournament Admin
+    </v-btn>
 
-    <!-- Content of the selected tab -->
-    <v-tabs-window v-model="currentTab" class="mt-4">
-      <!-- My Brackets tab content -->
-      <v-tabs-window-item>
-        <v-card elevation="3" class="p-4 mt-4 card">
-          <div class="table-title" style="background-color: whitesmoke;">
-            <div class="text-h6 ml-4 mt-4">Manage Your Brackets</div>
-            <v-btn
-              color="warning"
-              class="build-bracket-btn mt-4 mr-4"
-              @click="pickRoute"
-              elevation="2"
-              :disabled="makeNewBracketDisabled"
-            >
-              {{ makeNewBracketDisabled ? "Tourney started, builder disabled" : "Build me a bracket!" }}
-            </v-btn>
+    <!-- Brackets Table -->
+    <v-card class="card mb-6" elevation="1">
+      <v-data-table
+        :headers="bracketHeaders"
+        :items="brackets"
+        class="elevation-1"
+        item-value="id"
+      >
+        <template v-slot:item.createdAt="{ item }">
+          {{ formatDate(item.createdAt) }}
+        </template>
+        <template v-slot:item.name="{ item }">
+          <v-btn variant="text" @click="goToBracket(item)">
+            {{ item.name || '(unnamed)' }}
+          </v-btn>
+        </template>
+        <template v-slot:item.breakdown="{ item }">
+          <v-btn size="small" color="warning" @click="goToBreakdown(item)">
+            Breakdown
+          </v-btn>
+        </template>
+      </v-data-table>
+    </v-card>
+
+    <!-- News Section -->
+    <v-card class="card mb-6" elevation="1">
+      <v-card-title>Latest News</v-card-title>
+      <v-card-text>
+        <div v-if="loadingNews">
+          <v-progress-circular indeterminate size="24"></v-progress-circular>
+          Loading articles...
+        </div>
+        <div v-else-if="newsArticles.length">
+          <div v-for="article in newsArticles" :key="article.link" class="mb-2">
+            <a :href="article.link" target="_blank">{{ article.title }}</a>
+            <p class="text-body-2">{{ article.snippet }}</p>
           </div>
-          
-          <!-- Table of the user's brackets -->
-          <v-data-table
-            :headers="bracketHeaders"
-            :items="brackets"
-            :items-per-page="5"
-            class="elevation-1"
-            mobile-breakpoint="700"
-          >
-            <!-- Define how each row looks in the table body (optional slot) -->
-            <template #item.name="{ item }">
-              <v-btn @click="goToBracket(item)">
-              {{ item.name || 'Untitled Bracket' }}
-            </v-btn>
-            </template>
-            <template #item.createdAt="{ item }">
-              {{ formatDate(item.createdAt) }}
-            </template>
-            <template #item.breakdown="{ item }" v-slot:activator="{ props }">
-            <v-btn @click="goToBreakdown(item)">
-              {{checkBracketYear(item) ? 'Post-tourney breakdown' : 'Pre-tourny breakdown' }}
-            </v-btn>
-            </template>
-            <template #bottom v-if="brackets.length < 5"></template>
-          </v-data-table>
-        </v-card>
-      </v-tabs-window-item>
-
-      <!-- News tab content -->
-      <v-tabs-window-item>
-        <v-card elevation="3" class="p-4">
-          <div class="text-h6 mb-4">Latest College Basketball Headlines</div>
-          
-          <!-- If we're still loading articles, show a skeleton loader -->
-          <template v-if="loadingNews">
-            <v-skeleton-loader
-              class="mx-auto"
-              type="table"
-              :loading="true"
-              elevation="0"
-            />
-          </template>
-
-          <template v-else>
-            <div v-if="newsArticles.length === 0">
-              <em>No news articles found. Check again later!</em>
-            </div>
-            <!-- Display articles in a list or cards -->
-            <v-row v-else dense>
-              <v-col
-                v-for="(article, i) in newsArticles"
-                :key="i"
-                cols="12"
-                md="6"
-                lg="4"
-              >
-                <v-card class="mb-4" elevation="2">
-                  <v-card-title class="headline">
-                    {{ article.title }}
-                  </v-card-title>
-                  <v-card-subtitle v-if="article.snippet">
-                    {{ article.snippet }}
-                  </v-card-subtitle>
-                  <v-card-actions>
-                    <v-btn
-                      :href="article.link"
-                      target="_blank"
-                      color="secondary"
-                      text
-                    >
-                      Read More
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-col>
-            </v-row>
-          </template>
-        </v-card>
-      </v-tabs-window-item>
-    </v-tabs-window>
-  </v-container>
+        </div>
+        <p v-else>No news articles available.</p>
+      </v-card-text>
+    </v-card>
+  </div>
 </template>
 
 <script setup>
-/* Imports */
-import { ref, onMounted, watch, inject } from 'vue'
+import { ref, onMounted, inject, computed } from 'vue'
 import { useUserStore } from '@/store/user'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import moment from 'moment'
 const router = useRouter()
 
-/* Inject your bracket & toast APIs if desired */
 const { show } = inject('toast')
 const $brackets = inject('$bracketsApi')
 const $users = inject('$usersApi')
 
-/* Pull user info from store */
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
+const isAdmin = computed(() => userStore.isAdmin)
 
-
-/* Get the correct year's bracket */
-import { bracketNames, recordsOver20, fixRecords, bracketFinalYears } from '@/utils/bracketStruc';
-
-
-/* Local state */
+// ─── State ───
 const currentTab = ref(0)
 const brackets = ref([])
-const basicBrackets = ref([])
-const offshootBrackets = ref([])
 const loadingNews = ref(true)
 const newsArticles = ref([])
-const makeNewBracketDisabled = ref(false)
 
-/* Define table headers for brackets */
 const bracketHeaders = [
   { title: 'Bracket Name', value: 'name' },
   { title: 'Created On', value: 'createdAt' },
-  { title: 'Bracket Breakdown', value: "breakdown" }
+  { title: 'Bracket Breakdown', value: 'breakdown' },
 ]
 
-/* Lifecycle hooks */
+// ─── Lifecycle ───
 onMounted(async () => {
   await fetchUserBrackets()
   await fetchNewsArticles()
 })
 
-
-/**
- * Fetch brackets for the current user
- * GET /get-user-brackets?id=<userId>
- */
+// ─── Fetch user brackets ───
 const fetchUserBrackets = async () => {
   try {
-    const {data} = await $brackets.get(`get-user-brackets?id=${user.value._id}`)
-    data.forEach((brack) =>{
+    const { data } = await $brackets.get(`get-user-brackets?id=${user.value._id}`)
+    data.forEach((brack) => {
       const oGBracket = {
-        name:brack.name,
-        createdAt:brack.createdAt,
-        updatedAt:"N/A (original bracket creation)",
-        id:brack._id,
-        // editable:false
+        name: brack.name,
+        createdAt: brack.createdAt,
+        updatedAt: "N/A (original bracket creation)",
+        id: brack._id,
       }
-      // const copyBracket = {
-      //   name:`copy of ${brack.name}`,
-      //   createdAt:brack.createdAt,
-      //   updatedAt:brack.updatedAt,
-      //   id:brack._id,
-      //   editable:true
-      // }
       brackets.value.push(oGBracket)
     })
-    brackets.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    brackets.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   } catch (error) {
     console.error('Failed to fetch brackets:', error)
-    // Optionally display a toast or alert
   }
 }
 
 const goToBracket = (item) => {
   router.push({
-        name: 'Bracket',
-        query: {
-          id: item.id,
-          // editable: item.editable
-        }
-      });
+    name: 'Bracket',
+    query: { id: item.id },
+  })
 }
 
 const goToBreakdown = (item) => {
   router.push({
-        name: 'Breakdown',
-        query: {
-          id: item.id,
-        }
-      });
+    name: 'Breakdown',
+    query: { id: item.id },
+  })
 }
 
-const checkBracketYear = (item) => {
-  let bracketYearStr = item.createdAt.slice(0,4)
-  return bracketFinalYears[bracketYearStr] !== undefined
-}
-
-/**
- * Fetch news articles from your external Google search or another API
- */
 const fetchNewsArticles = async () => {
   loadingNews.value = true
   try {
-    // Mock data for demonstration:
-    // In reality, you'd do an axios/fetch call to your server endpoint 
-    // that queries Google or other news sources.
     newsArticles.value = [
       {
         title: 'Selection Sunday Insights',
@@ -252,25 +153,22 @@ const fetchNewsArticles = async () => {
   }
 }
 
-/* Utility function to format dates in your table */
 function formatDate(date) {
   if (!date) return ''
-  else if(date === "N/A (original bracket creation)"){
-    return date
-  }
+  else if (date === "N/A (original bracket creation)") return date
   return moment(date).format('MMM DD, YYYY - HH:mm')
 }
 
-const pickRoute = async ()=> {
+const pickRoute = async () => {
   try {
-    let response = await $users.get(`/get-user?id=${user.value._id}`);
+    let response = await $users.get(`/get-user?id=${user.value._id}`)
     let userReturned = response.data
-      if(userReturned.credits === 0) {
-        router.push("/payment")
-      }else{
-        router.push("/builder")
-      }
-    }catch (error) {
+    if (userReturned.credits === 0) {
+      router.push("/payment")
+    } else {
+      router.push("/builder")
+    }
+  } catch (error) {
     console.error(error)
   }
 }
@@ -281,19 +179,14 @@ const pickRoute = async ()=> {
   border-radius: 12px;
   background-color: rgba(255,255,255,0.2);
 }
-
-/* Example custom style for the dashboard title */
 .dashboard-title {
   font-weight: 600;
   text-align: start;
 }
-
-/* Just to show you can style the bracket build button separately */
 .build-bracket-btn {
   min-width: 200px;
   margin-left: 1rem;
 }
-
 .table-title {
   display: flex;
   flex-direction: row;
@@ -301,26 +194,10 @@ const pickRoute = async ()=> {
   align-items: start;
   padding-bottom: 10px;
 }
-
 @media (max-width: 700px) {
-  .dashboard-title {
-  text-align: center;
+  .dashboard-title { text-align: center; }
+  .elevation-1 { font-size: x-small; }
+  .elevation-1 .v-btn { font-size: 7px; padding: 3px; }
+  .build-bracket-btn { font-size: 7px; min-width: 0; width: 100px !important; }
 }
-  elevation-1 {
-  font-size: x-small;
-}
-
-.elevation-1 .v-btn{
-  font-size:7px;
-  padding: 3px;
-}
-
-.build-bracket-btn{
-  font-size: 7px;
-  min-width: 0;
-  width: 100px !important;
-}
-}
-
-
 </style>

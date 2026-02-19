@@ -1,339 +1,260 @@
 <template>
-    <div class="bracket-breakdown-container">
-      <!-- Heading text -->
-      <h2 class="text-h4 mt-2 title">
-        <!-- subheader describing post- vs. pre-tournament -->
-        <span v-if="isPostTournament">Post-Tournament Breakdown</span>
-        <span v-else>Pre-Tournament Breakdown</span>
-      </h2>
-  
-      <!-- Explanation or subheader -->
-      <p class="subtitle">
-        Here’s a detailed look at how your bracket is shaping up.  Now for your breakdown, presented by our AI-sportscaster Buster Brackets!:
-      </p>
-      <div class="social">
-      <span style="font-size: xx-large; text-align: center;">Share Us!</span>
-         <div class="social-icons" style="font-size: xx-large;">
-          <!-- <v-btn icon @click="shareToInstagramStories" target="_blank">
-            <v-icon size="30">mdi-instagram</v-icon>
-          </v-btn> -->
-          <v-btn icon class="ml-3" href="https://www.facebook.com/sharer/sharer.php?u=https://busterbrackets.com&quote=I%20just%20built%20my%20tournament%20bracket%20with%20Buster%20Brackets!" target="_blank">
-            <v-icon size="30">mdi-facebook</v-icon>
-          </v-btn>
-          <v-btn class="ml-3" icon href="https://twitter.com/intent/tweet?text=I%20just%20built%20my%20tournament%20bracket%20with%20Buster%20Brackets:%20https%3A%2F%2Fbusterbrackets.com" target="_blank">
-            <v-icon size="30">mdi-twitter</v-icon>
-          </v-btn>
-         </div>
-        </div>
-  
-      <!-- Loading state -->
-      <div v-if="loading" class="text-center mt-4">
-        <v-progress-linear
-          color="primary"
-          indeterminate
-          class="mb-2"
-        />
-        <div class="text-h4">Loading...</div>
-      </div>
-  
-      <!-- Typewriter effect when loading is done -->
-      <div v-else class="matchup-card mt-6">
-        <TypewriterText :fullText="breakdownDescription" />
-      </div>
+  <div class="breakdown-page">
+    <h2 class="mb-4">Bracket Breakdown</h2>
+
+    <div v-if="loading" class="text-center mt-10">
+      <v-progress-circular indeterminate color="warning"></v-progress-circular>
+      <p>Analyzing your bracket...</p>
     </div>
-  </template>
+
+    <div v-else-if="breakdownDescription">
+      <v-card class="pa-4 mb-4" elevation="3">
+        <v-card-title>
+          {{ bracketReturned.name || 'Bracket' }} — {{ isPostTournament ? 'Post-Tournament Analysis' : 'Preview' }}
+        </v-card-title>
+        <v-card-text>
+          <div class="breakdown-text" v-html="formattedDescription"></div>
+        </v-card-text>
+      </v-card>
+
+      <v-card v-if="comparisonStats" class="pa-4 mb-4" elevation="2">
+        <v-card-title>Stats</v-card-title>
+        <v-card-text>
+          <p v-if="isPostTournament">
+            Correct picks: <strong>{{ comparisonStats.correctPicks }}</strong> / {{ comparisonStats.totalGames }}
+          </p>
+          <p v-if="comparisonStats.upsets.length">
+            Underdog picks: <strong>{{ comparisonStats.upsets.map(u => formatName(u)).join(', ') }}</strong>
+          </p>
+        </v-card-text>
+      </v-card>
+    </div>
+
+    <div v-else class="text-center mt-10">
+      <p>Unable to generate breakdown.</p>
+    </div>
+  </div>
+</template>
 
 <script setup>
-/* Imports */
-import { ref, onMounted, onUnmounted, inject, computed } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
+import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
-const route = useRoute();
-const router = useRouter();
-import moment from 'moment'
-import { bracketNames, bracketFinalYears } from '@/utils/bracketStruc';
-import TypewriterText from '@/components/TypewriterText.vue'
+import axios from 'axios'
+import {
+  compareBrackets,
+  buildBaseBracket,
+  formatTeamDisplay,
+  formatTeamTitle,
+  baseTeamNames,
+} from '@/utils/bracketStruc'
 
-//Time and bracketr insert management
-const timeNow = new Date()
-const yearNowString = String(timeNow.getFullYear()) 
-const yearBracketString = ref("")
-const yearHasBracketNames = computed(()=> {
-  return bracketNames[yearBracketString.value] !== undefined
-})
-const checkBracketYear = (item) => {
-  let bracketYearStr = item.createdAt.slice(0,4)
-  return bracketFinalYears[bracketYearStr] !== undefined
-}
-
-const bracketId = route.query.id;
-const loading = ref(false)
-
-/* Inject your bracket & toast APIs if desired */
+const route = useRoute()
 const $brackets = inject('$bracketsApi')
 const $users = inject('$usersApi')
-import axios from 'axios';
 
-/* Pull user info from store */
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
 
-// bracket document downloaded ffrom the internet
+// ─── State ───
 const bracketReturned = ref({})
-const selectedRegion = ref("east")
-
-// either the main or offshoot bracket depending on what was clicked
-const htmlBracket = ref([])
-const htmlBracketCopy = ref([])
+const htmlBracket = ref({})           // StructuredBracket from the DB
+const tournamentTeams = ref({})       // team names from API
+const tournamentResults = ref(null)   // actual results from API (null if not available)
+const yearBracketString = ref('')
 const isPostTournament = ref(false)
+const loading = ref(false)
+const breakdownDescription = ref('')
+const comparisonStats = ref(null)
 
+const bracketId = route.query.id
+
+// ─── Formatting ───
+const formatName = (seedString) => {
+  return formatTeamDisplay(seedString, tournamentTeams.value)
+}
+
+const formattedDescription = computed(() => {
+  // Convert newlines to <br> and bold markers if present
+  return (breakdownDescription.value || '').replace(/\n/g, '<br>')
+})
+
+// ─── Data Loading ───
 const getBracket = async () => {
-    try {
-        const response = await $brackets.get(`get-bracket?id=${bracketId}`)
-        bracketReturned.value = response.data
-
-        htmlBracket.value = bracketReturned.value.bracket
-        yearBracketString.value = bracketReturned.value.createdAt.slice(0,4)
-        
-        let bracketToChop = new Array(...htmlBracket.value)
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-function compareBrackets(officialBracket, userBracket) {
-  let correctPicks = 0
-  let upsets = []
-
-  for (let i = 0; i < officialBracket.length; i++) {
-    if (officialBracket[i] === userBracket[i]) {
-      correctPicks++
-    } else {
-      // Example: determine if user picked an underdog
-      const officialSeed = Number(officialBracket[i].replace(/\D/, ''))  // e.g., "e12" -> 12
-      const userSeed = Number(userBracket[i].replace(/\D/, ''))
-      if (userSeed > officialSeed) {
-        upsets.push(userBracket[i]) // user picked a bigger number (higher seed = underdog)
-      }
-    }
-  }
-
-  return {
-    correctPicks,
-    totalGames: officialBracket.length,
-    upsets
+  try {
+    const response = await $brackets.get(`get-bracket?id=${bracketId}`)
+    bracketReturned.value = response.data
+    htmlBracket.value = response.data.bracket
+    yearBracketString.value = response.data.createdAt.slice(0, 4)
+  } catch (error) {
+    console.error(error)
   }
 }
 
-function buildPrompt(
-  officialBracket,
-  userBracket,
-  comparison,
-  yearBracketString,
-  bracketNames
-) {
-  const { correctPicks, totalGames, upsets } = comparison;
-  
-  // Convert bracketNames object to a string so the LLM sees the data
-  const bracketNamesJson = JSON.stringify(bracketNames, null, 2);
+const loadTournamentData = async (year) => {
+  try {
+    const { data } = await $brackets.get(`/tournament-data?year=${year}`)
+    tournamentTeams.value = data.teams || {}
+    tournamentResults.value = data.results || null
+    isPostTournament.value = !!data.results
+  } catch (err) {
+    console.log(`No tournament data for ${year}`)
+    tournamentTeams.value = baseTeamNames
+    tournamentResults.value = null
+    isPostTournament.value = false
+  }
+}
+
+// ─── Analysis ───
+function buildPrompt(officialBracket, userBracket, comparison, yearBracketString, teamNames) {
+  const { correctPicks, totalGames, upsets } = comparison
+
+  // Map seed codes to team names for the LLM
+  const upsetNames = upsets.map(u => {
+    const name = teamNames[u] || u
+    return `${u} (${name})`
+  })
+
+  const teamNamesJson = JSON.stringify(teamNames, null, 2)
 
   if (isPostTournament.value) {
     return `
-      resulting real bracket: ${officialBracket}
-      user's bracket generated before the tourny: ${userBracket}
+      User's bracket: ${JSON.stringify(userBracket)}
+      Actual tournament results: ${JSON.stringify(officialBracket)}
 
-      The user had ${correctPicks} correct picks out of ${totalGames}. 
-      They predicted the following underdogs: ${upsets.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
+      The user had ${correctPicks} correct picks out of ${totalGames}.
+      They predicted the following underdogs: ${upsetNames.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
 
-      Map values like "e1" to bracketNames[${yearBracketString}] 
-      bracketNames JSON:
-      ${bracketNamesJson}
+      Team names mapping: ${teamNamesJson}
 
-      Please write a short (three paragraph max), sportscaster-style summary without copyright infringment describing:
+      Please write a short (three paragraph max), sportscaster-style summary without copyright infringement describing:
       1. The overall performance compared to the real results.
       2. Two notable upsets they picked correctly (two sentences max) either:
           a. big underdog (seed over 12)
           b. deep run underdogs
-      3. Exclude words "March Madness, NCAA, Sweet Sixteen, Elight Eight, Final Four" due to copyright
-    `;
+      3. Exclude words "March Madness, NCAA, Sweet Sixteen, Elite Eight, Final Four" due to copyright
+    `
   } else {
+    const baseBracket = buildBaseBracket()
     return `
-      benchmark, no-upset bracket: ${officialBracket}
-      user's bracket: ${userBracket}
+      benchmark, no-upset bracket: ${JSON.stringify(baseBracket)}
+      user's bracket: ${JSON.stringify(userBracket)}
 
-      The user bracket picks seeds that differ from the standard favorites 
-      in these spots: ${upsets.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
+      The user bracket picks seeds that differ from the standard favorites
+      in these spots: ${upsetNames.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
 
-      Map values like "e1" to bracketNames["${yearBracketString}"] if bracketNames["${yearBracketString}"] exists, else bracketNames["base"]
-      bracketNames JSON:
-      ${bracketNamesJson}
+      Team names mapping: ${teamNamesJson}
 
-      Please write a short (three paragraph max), sportscaster-style preview without copyright infringment describing:
+      Please write a short (three paragraph max), sportscaster-style preview without copyright infringement describing:
       1. Two notable upsets they picked compared to benchmark (two sentences max) either:
           a. big underdog (seed over 12)
           b. deep run underdogs
       2. Bracket winner (two sentences max)
       3. Remember that the tournament hasn't actually happened, yet, so these are prospective picks.
-      4. Do not halucinate past years results or storylines.
-      5. Exclude words "March Madness, NCAA, Sweet Sixteen, Elight Eight, Final Four" due to copyright
-    `;
+      4. Do not hallucinate past years results or storylines.
+      5. Exclude words "March Madness, NCAA, Sweet Sixteen, Elite Eight, Final Four" due to copyright
+    `
   }
 }
 
-
 async function buildLlmDescription(prompt) {
-    const openAIURL = 'https://api.openai.com/v1/chat/completions';
+  const openAIURL = 'https://api.openai.com/v1/chat/completions'
 
-    const localKey = `llmCache::${bracketReturned.value._id}`;
-    const cached = localStorage.getItem(localKey);
-    if (cached) {
-        console.log('Returning cached LLM response from localStorage for prompt:', bracketReturned.value._id);
-        return JSON.parse(cached); // stored as JSON
+  const localKey = `llmCache::${bracketReturned.value._id}`
+  const cached = localStorage.getItem(localKey)
+  if (cached) {
+    return JSON.parse(cached)
+  }
+
+  try {
+    if (window.location.origin === "http://localhost:4000") {
+      const response = {
+        data: `This bracket features some bold picks that challenge conventional seeding wisdom. The user isn't afraid to back underdogs in key matchups, showing confidence in teams that many would overlook.
+
+        Notable upset selections include some intriguing lower-seeded teams advancing deeper than expected, which could create exciting narratives if the tournament unfolds this way.
+
+        Overall, this bracket balances favorite picks in the early rounds with some calculated risks in the later stages, making for a compelling set of predictions.`
+      }
+      userStore.setCachedResponse(bracketReturned.value._id, response.data)
+      localStorage.setItem(localKey, JSON.stringify(response.data))
+      return response.data
+    } else {
+      const response = await axios.post(
+        openAIURL,
+        {
+          model: 'gpt-4o-mini',
+          store: true,
+          messages: [{ role: 'user', content: prompt }]
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_GPT_API_KEY}`
+          }
+        }
+      )
+      const content = response.data.choices[0].message.content
+      userStore.setCachedResponse(bracketReturned.value._id, content)
+      localStorage.setItem(localKey, JSON.stringify(content))
+      return content
     }
-  
-
-    try {
-    if(window.location.origin === "http://localhost:4000"){
-        const response = {
-            data: `
-            Welcome, sports fans, to the thrilling prelude of the tournament season! We’re diving into a unique bracket filled with intriguing upset picks that could turn convention on its head this year. Let's break down the key aspects of this user’s bold choices and what we might see unfold.
-
-            1. **Big Upset Picks**: This user has a knack for taking the road less traveled with picks like e12 and e13, which consistently challenge the convention of the higher seeds. Notably, we have a potential clash brewing with w12 and w9, both looking to dethrone their more favored opponents. Additionally, keep an eye on s11—these teams are a common breeding ground for surprises and have a history of delivering jaw-dropping moments when the pressure is on.
-
-            2. **Potential Storylines**: If these upsets come to fruition, we could witness some thrilling narratives. Imagine a Cinderella story unfolding with the w12 advancing deep into the tournament, sparking conversations about the underdog mentality and resilience. With e12 and e13 pulling off surprises, we would also likely see the drama of elite teams facing early eliminations, leading to heated debates about team depth and coaching strategies, as well as the ever-popular "Did they overlook their opponent?" storyline.
-
-            3. **Overall Bracket-Building Strategy**: This user's approach seems to be rooted in an underdog philosophy, banking on the unpredictable nature of the tournament. By selecting lower-seeded teams in critical matchups, they are clearly leaning into the chaos that often defines this time of year. It appears they believe that the tournament is won not just by the favorites but by those hungry teams ready to seize the moment and rewrite their narratives against the odds.
-
-            As the tournament draws near, keep your eye on how these selections pan out—because in the world of sports, anything can happen!
-            `
-            };
-        userStore.setCachedResponse(bracketReturned.value._id, response.data);
-        localStorage.setItem(localKey, JSON.stringify(response.data));
-        return response.data
-    }else{
-        // Make a POST request using axios
-        const response = await axios.post(
-            openAIURL,
-            {
-            // The data payload (JSON body),
-            // matching your curl command
-            model: 'gpt-4o-mini', 
-            store: true,
-            messages: [
-                { role: 'user', content: prompt }
-            ]
-            },
-            {
-            // HTTP headers
-            headers: {
-                'Content-Type': 'application/json',
-                // Grab your secret from an environment variable (Vite style)
-                'Authorization': `Bearer ${import.meta.env.VITE_GPT_API_KEY}`
-            }
-            }
-        );
-        userStore.setCachedResponse(bracketReturned.value._id, response.data.choices[0].message.content);
-        localStorage.setItem(localKey, JSON.stringify(response.data.choices[0].message.content));
-        return response.data.choices[0].message.content;
-    }
-
-    } catch (error) {
-    console.error('Error calling OpenAI API:', error);
-    throw error; // or return a fallback
-    }
+  } catch (error) {
+    console.error('Error calling OpenAI API:', error)
+    throw error
+  }
 }
-
-const shareToInstagramStories = () => {
-  window.location.href = 'instagram-stories://share';
-}
-
-
-const breakdownDescription = ref("")
 
 const getBreakdown = async () => {
-    loading.value = true
-  // bracket's year exists in bracketFinalYears
-  isPostTournament.value = checkBracketYear(bracketReturned.value)
-  
-  // 2. Decide which official bracket we use
-  const officialBracket = isPostTournament.value 
-    ? bracketFinalYears[yearBracketString.value] 
-    : bracketFinalYears["base"]
+  loading.value = true
 
-  // 3. Compare the official bracket vs. user's bracket
+  // Determine which official bracket to compare against
+  const officialBracket = isPostTournament.value
+    ? tournamentResults.value
+    : buildBaseBracket()
+
+  // Compare
   const comparison = compareBrackets(officialBracket, htmlBracket.value)
+  comparisonStats.value = comparison
 
-  // 4. Build a prompt for the LLM
-  const prompt = buildPrompt(officialBracket, htmlBracket.value, comparison, yearBracketString.value, bracketNames)
+  // Build prompt and get LLM description
+  const prompt = buildPrompt(
+    officialBracket,
+    htmlBracket.value,
+    comparison,
+    yearBracketString.value,
+    tournamentTeams.value
+  )
 
-  // 5. Get the LLM-based bracket description
-  breakdownDescription.value = await buildLlmDescription(prompt)
+  try {
+    breakdownDescription.value = await buildLlmDescription(prompt)
+  } catch (err) {
+    breakdownDescription.value = 'Unable to generate AI analysis at this time.'
+  }
+
   loading.value = false
 }
 
-const formatStringName = (seedString = "") =>{
-    let regionStr = seedString.slice(0,1)
-    let seed = seedString.slice(1,seedString.length)
-
-    if(regionStr === "e"){
-        return "East " + seed
-    }
-    else if(regionStr === "w"){
-        return "West" + seed
-    }
-    else if(regionStr === "s"){
-        return "South " + seed
-    }
-    else{
-        return "Midwest " + seed
-    }
-}
-
+// ─── Lifecycle ───
 onMounted(async () => {
+  loading.value = true
   await getBracket()
+  if (yearBracketString.value) {
+    await loadTournamentData(yearBracketString.value)
+  }
   await getBreakdown()
-});
-
+})
 </script>
 
 <style scoped>
-.bracket-breakdown-container {
-  max-width: 600px;
+.breakdown-page {
+  max-width: 800px;
   margin: 0 auto;
-  display:flex;
-  flex-direction:column;
-  justify-content:left;
-  align-items:center;
+  padding: 1rem;
 }
 
-.social {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.title {
-  text-align: center;
-}
-
-.subtitle {
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-  font-size: large;
-  text-align: center;
-}
-
-.matchup-card {
-  padding:2px 10px;
-  width: 900px;
-  font-weight: 500;
-  /* You can also style the v-card itself with additional props, e.g. "outlined", etc. */
-}
-
-@media only screen and (max-width: 700px) {
-  .matchup-card {
-    width:600px
-  }
+.breakdown-text {
+  line-height: 1.6;
+  white-space: pre-wrap;
 }
 </style>

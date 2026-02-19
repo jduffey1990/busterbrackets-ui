@@ -1,226 +1,256 @@
-// ui/src/utils/bracketStruc.js
-export const bracketNames = {
-  "2025": {
-    // EAST (e1–e16)
-    e1: "Duke",
-    e2: "Alabama",
-    e3: "Wisconsin",
-    e4: "Arizona",
-    e5: "Oregon",
-    e6: "BYU",
-    e7: "St. Mary's",
-    e8: "Mississippi St.",
-    e9: "Baylor",
-    e10: "Vanderbilt",
-    e11: "VCU",
-    e12: "Liberty",
-    e13: "Akron",
-    e14: "Montana",
-    e15: "Robert Morris",
-    e16: "Mt. St. Mary's",
-    
-    // MIDWEST (m1–m16)
-    m1: "Houston",
-    m2: "Tennessee",
-    m3: "Kentucky",
-    m4: "Purdue",
-    m5: "Clemson",
-    m6: "Illinois",
-    m7: "UCLA",
-    m8: "Gonzaga",
-    m9: "Georgia",
-    m10: "Utah St.",
-    m11: "Xavier",
-    m12: "McNeese",
-    m13: "High Point",
-    m14: "Troy",
-    m15: "Wofford",
-    m16: "SIUE",
-    
-    // SOUTH (s1–s16)
-    s1: "Auburn",
-    s2: "Michigan St.",
-    s3: "Iowa St.",
-    s4: "Texas A&M",
-    s5: "Michigan",
-    s6: "Ole Miss",
-    s7: "Marquette",
-    s8: "Louisville",
-    s9: "Creighton",
-    s10: "New Mexico",
-    s11: "UNC",
-    s12: "UCSD",
-    s13: "Yale",
-    s14: "Lipscomb",
-    s15: "Bryant",
-    s16: "Alabama St.",
+// src/utils/bracketStruc.js
+//
+// ─── REMOVED: bracketNames and bracketFinalYears ───
+// Team names and tournament results are now fetched from the backend's
+// tournamentData collection via the API. See Admin.vue for management.
+//
+// ─── KEPT: Odds data and starting bracket arrays ───
 
-    // WEST (w1–w16)
-    w1: "Florida",
-    w2: "St. John's",
-    w3: "Texas Tech",
-    w4: "Maryland",
-    w5: "Memphis",
-    w6: "Missouri",
-    w7: "Kansas",
-    w8: "UConn",
-    w9: "Oklahoma",
-    w10: "Arkansas",
-    w11: "Drake",
-    w12: "Colorado St.",
-    w13: "Grand Canyon",
-    w14: "UNCW",
-    w15: "Omaha",
-    w16: "Norfolk St.",
-  },
-  "base": {
-    // EAST (e1–e16)
-    e1: "East 1 Seed",
-    e2: "East 2 Seed",
-    e3: "East 3 Seed",
-    e4: "East 4 Seed",
-    e5: "East 5 Seed",
-    e6: "East 6 Seed",
-    e7: "East 7 Seed",
-    e8: "East 8 Seed",
-    e9: "East 9 Seed",
-    e10: "East 10 Seed",
-    e11: "East 11 Seed",
-    e12: "East 12 Seed",
-    e13: "East 13 Seed",
-    e14: "East 14 Seed",
-    e15: "East 15 Seed",
-    e16: "East 16 Seed",
-    
-    // WEST (w1–w16)
-    w1: "West 1 Seed",
-    w2: "West 2 Seed",
-    w3: "West 3 Seed",
-    w4: "West 4 Seed",
-    w5: "West 5 Seed",
-    w6: "West 6 Seed",
-    w7: "West 7 Seed",
-    w8: "West 8 Seed",
-    w9: "West 9 Seed",
-    w10: "West 10 Seed",
-    w11: "West 11 Seed",
-    w12: "West 12 Seed",
-    w13: "West 13 Seed",
-    w14: "West 14 Seed",
-    w15: "West 15 Seed",
-    w16: "West 16 Seed",
-    
-    // MIDWEST (m1–m16)
-    m1: "Midwest 1 Seed",
-    m2: "Midwest 2 Seed",
-    m3: "Midwest 3 Seed",
-    m4: "Midwest 4 Seed",
-    m5: "Midwest 5 Seed",
-    m6: "Midwest 6 Seed",
-    m7: "Midwest 7 Seed",
-    m8: "Midwest 8 Seed",
-    m9: "Midwest 9 Seed",
-    m10: "Midwest 10 Seed",
-    m11: "Midwest 11 Seed",
-    m12: "Midwest 12 Seed",
-    m13: "Midwest 13 Seed",
-    m14: "Midwest 14 Seed",
-    m15: "Midwest 15 Seed",
-    m16: "Midwest 16 Seed",
-    
-    // SOUTH (s1–s16)
-    s1: "South 1 Seed",
-    s2: "South 2 Seed",
-    s3: "South 3 Seed",
-    s4: "South 4 Seed",
-    s5: "South 5 Seed",
-    s6: "South 6 Seed",
-    s7: "South 7 Seed",
-    s8: "South 8 Seed",
-    s9: "South 9 Seed",
-    s10: "South 10 Seed",
-    s11: "South 11 Seed",
-    s12: "South 12 Seed",
-    s13: "South 13 Seed",
-    s14: "South 14 Seed",
-    s15: "South 15 Seed",
-    s16: "South 16 Seed",
-  }
+export const recordsOver20 = {
+  // Real historical odds
+  "1vs16": "154-2",
+  "8vs9": "75-81",
+  "5vs12": "101-55",
+  "4vs13": "123-33",
+  "6vs11": "95-61",
+  "3vs14": "133-23",
+  "7vs10": "95-61",
+  "2vs15": "145-11",
+  "1vs8": "61-17",
+  "4vs5": "47-36",
+  "3vs6": "48-31",
+  "2vs7": "63-27",
+  "1vs4": "49-20",
+  "2vs3": "37-24",
+  "1vs2": "38-30",
+  "1vs9": "74-6",
+  "3vs11": "36-20",
+  "1vs5": "43-11",
+  "2vs11": "16-4",
+  "5vs13": "18-3",
+  "4vs12": "30-13",
+  "1vs12": "20-0",
+  "1vs3": "23-14",
+  "2vs10": "36-19",
+  "2vs6": "24-8",
+  // Even odds for same-seed matchups (cross-region in finals)
+  "1vs1": "10-10",
+  "2vs2": "10-10",
+  "3vs3": "10-10",
+  "4vs4": "10-10",
+  "5vs5": "10-10",
+  "6vs6": "10-10",
+  "7vs7": "10-10",
+  "8vs8": "10-10",
+  "9vs9": "10-10",
+  "10vs10": "10-10",
+  "11vs11": "10-10",
+  "12vs12": "10-10",
+  "13vs13": "10-10",
+  "14vs14": "10-10",
+  "15vs15": "10-10",
+  "16vs16": "10-10",
 };
 
-  export const bracketFinalYears = {
-    "base": ["e1", "e8", "e5", "e4", "e6", "e3", "e7", "e2", "e1", "e4", "e6", "e2", "e1", "e2", "m1", "m8", "m5", "m4", "m6", "m3", "m7", "m2", "m1", "m4", "m3", "m2", "m1", "m2", "s1", "s8", "s5", "s4", "s6", "s3", "s7", "s2", "s1", "s4", "s6", "s2", "s1", "s2", "w1", "w8", "w5", "w4", "w6", "w3", "w7", "w2", "w1", "w4", "w3", "w2", "w1", "w2", "e1", "m1", "s1", "w1", "e1", "s1", "e1"],
+export const fixRecords = (obj) => {
+  const records = new Map();
+  for (const key in obj) {
+    const [winsStr, lossesStr] = obj[key].split("-");
+    const wins = parseFloat(winsStr);
+    const losses = parseFloat(lossesStr);
+    const total = wins + losses;
+    if (!total) continue;
+    const percentage = Math.round((wins / total) * 100);
+    records.set(key, percentage);
+  }
+  return records;
+};
 
-    "2025": ["e1", "e9", "e5", "e4", "e6", "e3", "e7", "e2", "e1", "e4", "e6", "e2", "e1", "e2", "m1", "m8", "m12", "m4", "m6", "m3", "m7", "m2", "m1", "m4", "m3", "m2", "m1", "m2", "s1", "s9", "s5", "s4", "s6", "s3", "s10", "s2", "s1", "s5", "s6", "s2", "s1", "s2", "w1", "w8", "w12", "w4", "w11", "w3", "w10", "w2", "w1", "w4", "w3", "w10", "w1", "w3", "e1", "m1", "s1", "w1", "e1", "w1", "w1"]
-    };
+// ─── Starting bracket arrays (bracket-order for round of 64) ───
+// These represent the standard 1v16, 8v9, 5v12, 4v13 ... matchup order.
 
-  export const recordsOver20 = {
-    //real odds
-    "1vs16": "154-2",
-    "8vs9": "75-81",
-    "5vs12": "101-55",
-    "4vs13": "123-33",
-    "6vs11": "95-61",
-    "3vs14": "133-23",
-    "7vs10": "95-61",
-    "2vs15": "145-11",
-    "1vs8": "61-17",
-    "4vs5": "47-36",
-    "3vs6": "48-31",
-    "2vs7": "63-27",
-    "1vs4": "49-20",
-    "2vs3": "37-24",
-    "1vs2": "38-30",
-    "1vs9": "74-6",
-    "3vs11": "36-20",
-    "1vs5": "43-11",
-    "2vs11": "16-4",
-    "5vs13": "18-3",
-    "4vs12": "30-13",
-    "1vs12": "20-0",
-    "1vs3": "23-14",
-    "2vs10": "36-19",
-    "2vs6": "24-8",
-    //even odds mocked
-    "1vs1": "10-10",
-    "2vs2": "10-10",
-    "3vs3": "10-10",
-    "4vs4": "10-10",
-    "5vs5": "10-10",
-    "6vs6": "10-10",
-    "7vs7": "10-10",
-    "8vs8": "10-10",
-    "9vs9": "10-10",
-    "10vs10": "10-10",
-    "11vs11": "10-10",
-    "12vs12": "10-10",
-    "13vs13": "10-10",
-    "14vs14": "10-10",
-    "15vs15": "10-10",
-    "16vs16": "10-10",
-  };
+export const startingBracketEast = [
+  "e1", "e16", "e8", "e9", "e5", "e12", "e4", "e13",
+  "e6", "e11", "e3", "e14", "e7", "e10", "e2", "e15"
+];
+export const startingBracketWest = [
+  "w1", "w16", "w8", "w9", "w5", "w12", "w4", "w13",
+  "w6", "w11", "w3", "w14", "w7", "w10", "w2", "w15"
+];
+export const startingBracketMidwest = [
+  "m1", "m16", "m8", "m9", "m5", "m12", "m4", "m13",
+  "m6", "m11", "m3", "m14", "m7", "m10", "m2", "m15"
+];
+export const startingBracketSouth = [
+  "s1", "s16", "s8", "s9", "s5", "s12", "s4", "s13",
+  "s6", "s11", "s3", "s14", "s7", "s10", "s2", "s15"
+];
 
-  export const fixRecords = (obj) => {
-    const records = new Map();
-  
-    for (const key in obj) {
-      const [winsStr, lossesStr] = obj[key].split("-");
-      const wins = parseFloat(winsStr);
-      const losses = parseFloat(lossesStr);
-      const total = wins + losses;
-  
-      // If there's no data or total is zero, skip or set to 0
-      if (!total) {
-        continue; // or records.set(key, 0) if you'd prefer
-      }
-  
-      // Convert to an integer percentage
-      const percentage = Math.round((wins / total) * 100);
-  
-      records.set(key, percentage);
+// ─── Generic base names (fallback when no tournament data is loaded) ───
+
+export const baseTeamNames = (() => {
+  const names = {};
+  const regions = { e: "East", w: "West", m: "Midwest", s: "South" };
+  for (const [prefix, regionName] of Object.entries(regions)) {
+    for (let seed = 1; seed <= 16; seed++) {
+      names[`${prefix}${seed}`] = `${regionName} ${seed} Seed`;
     }
-  
-    return records;
+  }
+  return names;
+})();
+
+// ─── Helpers for working with structured brackets ───
+
+/**
+ * Convert a StructuredBracket back into the display arrays needed by Bracket.vue.
+ * Returns { east, west, south, midwest } where each is:
+ *   startingSeeds(16) + round32(8) + sweet16(4) + elite8(2) = 30 entries
+ * Plus { semifinals, champion }.
+ */
+export function structuredToDisplay(bracket) {
+  const regions = {
+    east: {
+      starting: startingBracketEast,
+      data: bracket.east,
+    },
+    west: {
+      starting: startingBracketWest,
+      data: bracket.west,
+    },
+    south: {
+      starting: startingBracketSouth,
+      data: bracket.south,
+    },
+    midwest: {
+      starting: startingBracketMidwest,
+      data: bracket.midwest,
+    },
   };
-  
-  
+
+  const display = {};
+  for (const [name, { starting, data }] of Object.entries(regions)) {
+    display[name] = [
+      ...starting,
+      ...data.round32,
+      ...data.sweet16,
+      ...data.elite8,
+    ];
+  }
+
+  return {
+    ...display,
+    semifinals: [
+      bracket.east.regionChamp,
+      bracket.midwest.regionChamp,
+      bracket.south.regionChamp,
+      bracket.west.regionChamp,
+      ...bracket.finals.semifinals,
+    ],
+    champion: bracket.finals.champion,
+  };
+}
+
+/**
+ * Build a "base" (all-favorites) StructuredBracket for comparison.
+ * Each round the lower seed (favorite) wins.
+ */
+export function buildBaseBracket() {
+  function buildRegion(prefix) {
+    // R64 matchups in bracket order: 1v16, 8v9, 5v12, 4v13, 6v11, 3v14, 7v10, 2v15
+    const round32 = [1, 8, 5, 4, 6, 3, 7, 2].map(s => `${prefix}${s}`);
+    // S16: 1v8→1, 5v4→4, 6v3→3, 7v2→2
+    const sweet16 = [1, 4, 3, 2].map(s => `${prefix}${s}`);
+    // E8: 1v4→1, 3v2→2
+    const elite8 = [1, 2].map(s => `${prefix}${s}`);
+    const regionChamp = `${prefix}1`;
+    return { round32, sweet16, elite8, regionChamp };
+  }
+
+  return {
+    east: buildRegion('e'),
+    midwest: buildRegion('m'),
+    south: buildRegion('s'),
+    west: buildRegion('w'),
+    finals: {
+      teams: ["e1", "m1", "s1", "w1"],
+      semifinals: ["e1", "s1"],
+      champion: "e1",
+    },
+  };
+}
+
+/**
+ * Format a seed string like "e3" into "3. Wisconsin" (or "3. East 3 Seed" as fallback).
+ */
+export function formatTeamDisplay(seedString, teamNames) {
+  const seed = seedString.slice(1);
+  const name = teamNames?.[seedString] || baseTeamNames[seedString] || seedString;
+  return `${seed}. ${name}`;
+}
+
+/**
+ * Format just the team name (no seed number prefix).
+ */
+export function formatTeamTitle(seedString, teamNames) {
+  return teamNames?.[seedString] || baseTeamNames[seedString] || seedString;
+}
+
+/**
+ * Compare two structured brackets and return stats.
+ */
+export function compareBrackets(official, user) {
+  let correctPicks = 0;
+  let totalGames = 0;
+  const upsets = [];
+
+  const regions = ['east', 'midwest', 'south', 'west'];
+  const rounds = ['round32', 'sweet16', 'elite8'];
+
+  for (const region of regions) {
+    for (const round of rounds) {
+      const officialRound = official[region][round];
+      const userRound = user[region][round];
+      const len = Math.min(officialRound.length, userRound.length);
+      for (let i = 0; i < len; i++) {
+        totalGames++;
+        if (officialRound[i] === userRound[i]) {
+          correctPicks++;
+        } else {
+          const officialSeed = parseInt(officialRound[i].replace(/\D/g, ''));
+          const userSeed = parseInt(userRound[i].replace(/\D/g, ''));
+          if (userSeed > officialSeed) {
+            upsets.push(userRound[i]);
+          }
+        }
+      }
+    }
+
+    // Region champ
+    totalGames++;
+    if (official[region].regionChamp === user[region].regionChamp) {
+      correctPicks++;
+    }
+  }
+
+  // Finals
+  for (let i = 0; i < official.finals.semifinals.length; i++) {
+    totalGames++;
+    if (official.finals.semifinals[i] === user.finals.semifinals[i]) {
+      correctPicks++;
+    } else {
+      const officialSeed = parseInt(official.finals.semifinals[i].replace(/\D/g, ''));
+      const userSeed = parseInt(user.finals.semifinals[i].replace(/\D/g, ''));
+      if (userSeed > officialSeed) {
+        upsets.push(user.finals.semifinals[i]);
+      }
+    }
+  }
+
+  // Champion
+  totalGames++;
+  if (official.finals.champion === user.finals.champion) {
+    correctPicks++;
+  }
+
+  return { correctPicks, totalGames, upsets };
+}
