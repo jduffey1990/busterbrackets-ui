@@ -21,7 +21,22 @@
 
     <!-- Brackets Table -->
     <v-card class="card mb-6" elevation="1">
+      <!-- Server warming up -->
+      <div v-if="serverStatusStore.bracketsChecking" class="text-center pa-6">
+        <v-progress-circular indeterminate color="warning" class="mb-2"></v-progress-circular>
+        <p class="text-body-2 text-medium-emphasis">Warming up the brackets server, hang tight...</p>
+      </div>
+
+      <!-- Server failed to wake -->
+      <div v-else-if="serverStatusStore.bracketsError" class="text-center pa-6">
+        <v-icon color="error" size="32" class="mb-2">mdi-server-off</v-icon>
+        <p class="text-body-1 text-error">Could not reach the brackets server.</p>
+        <p class="text-body-2 text-medium-emphasis">Please refresh the page to try again.</p>
+      </div>
+
+      <!-- Ready -->
       <v-data-table
+        v-else
         :headers="bracketHeaders"
         :items="brackets"
         class="elevation-1"
@@ -64,11 +79,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, computed } from 'vue'
+import { ref, onMounted, inject, computed, watch } from 'vue'
 import { useUserStore } from '@/store/user'
+import { useServerStatusStore } from '@/store/serverStatus'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import moment from 'moment'
+
 const router = useRouter()
 
 const { show } = inject('toast')
@@ -76,11 +93,11 @@ const $brackets = inject('$bracketsApi')
 const $users = inject('$usersApi')
 
 const userStore = useUserStore()
+const serverStatusStore = useServerStatusStore()
 const { user } = storeToRefs(userStore)
 const isAdmin = computed(() => userStore.isAdmin)
 
 // ─── State ───
-const currentTab = ref(0)
 const brackets = ref([])
 const loadingNews = ref(true)
 const newsArticles = ref([])
@@ -93,7 +110,22 @@ const bracketHeaders = [
 
 // ─── Lifecycle ───
 onMounted(async () => {
-  await fetchUserBrackets()
+  // If server is already confirmed live (e.g. navigating back to dashboard
+  // mid-session), fetch immediately. Otherwise watch for the flag to flip.
+  if (serverStatusStore.bracketsReady) {
+    await fetchUserBrackets()
+  } else {
+    const unwatch = watch(
+      () => serverStatusStore.bracketsReady,
+      async (ready) => {
+        if (ready) {
+          unwatch()
+          await fetchUserBrackets()
+        }
+      }
+    )
+  }
+
   await fetchNewsArticles()
 })
 
@@ -105,7 +137,7 @@ const fetchUserBrackets = async () => {
       const oGBracket = {
         name: brack.name,
         createdAt: brack.createdAt,
-        updatedAt: "N/A (original bracket creation)",
+        updatedAt: 'N/A (original bracket creation)',
         id: brack._id,
       }
       brackets.value.push(oGBracket)
@@ -117,17 +149,11 @@ const fetchUserBrackets = async () => {
 }
 
 const goToBracket = (item) => {
-  router.push({
-    name: 'Bracket',
-    query: { id: item.id },
-  })
+  router.push({ name: 'Bracket', query: { id: item.id } })
 }
 
 const goToBreakdown = (item) => {
-  router.push({
-    name: 'Breakdown',
-    query: { id: item.id },
-  })
+  router.push({ name: 'Breakdown', query: { id: item.id } })
 }
 
 const fetchNewsArticles = async () => {
@@ -137,12 +163,12 @@ const fetchNewsArticles = async () => {
       {
         title: 'Selection Sunday Insights',
         snippet: 'Experts share their top seeds for the upcoming tournament...',
-        link: 'https://www.example.com/selection-sunday'
+        link: 'https://www.example.com/selection-sunday',
       },
       {
         title: 'Underdog Stories That Might Surprise You',
         snippet: 'Which unranked teams have the best shot at an upset?',
-        link: 'https://www.example.com/underdog-stories'
+        link: 'https://www.example.com/underdog-stories',
       },
     ]
   } catch (error) {
@@ -155,7 +181,7 @@ const fetchNewsArticles = async () => {
 
 function formatDate(date) {
   if (!date) return ''
-  else if (date === "N/A (original bracket creation)") return date
+  if (date === 'N/A (original bracket creation)') return date
   return moment(date).format('MMM DD, YYYY - HH:mm')
 }
 
@@ -164,9 +190,9 @@ const pickRoute = async () => {
     let response = await $users.get(`/get-user?id=${user.value._id}`)
     let userReturned = response.data
     if (userReturned.credits === 0) {
-      router.push("/payment")
+      router.push('/payment')
     } else {
-      router.push("/builder")
+      router.push('/builder')
     }
   } catch (error) {
     console.error(error)

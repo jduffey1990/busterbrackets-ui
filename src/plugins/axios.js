@@ -4,10 +4,10 @@ import { useCookies } from 'vue3-cookies';
 export default {
   install: (app) => {
     const { cookies } = useCookies();
-    
-    // --- FIRST SERVICE (e.g., Auth Service) ---
+
+    // --- FIRST SERVICE: Users ---
     const usersApi = axios.create({
-      baseURL: import.meta.env.VITE_USERS_BASE_URL, // e.g. http://localhost:3001 or https://my-auth-service.com
+      baseURL: import.meta.env.VITE_USERS_BASE_URL,
       withCredentials: true,
     });
 
@@ -16,10 +16,14 @@ export default {
       return config;
     });
 
-    // --- SECOND SERVICE (e.g., Brackets Service) ---
+    // --- SECOND SERVICE: Brackets ---
+    // timeout: 8000 ensures a cold-start hang fails quickly so the
+    // serverStatus store retry loop can cycle rather than waiting
+    // indefinitely for a single frozen request
     const bracketsApi = axios.create({
-      baseURL: import.meta.env.VITE_BRACKETS_BASE_URL, // e.g. http://localhost:3002 or https://my-brackets-service.com
+      baseURL: import.meta.env.VITE_BRACKETS_BASE_URL,
       withCredentials: true,
+      timeout: 8000,
     });
 
     bracketsApi.interceptors.request.use((config) => {
@@ -35,4 +39,3 @@ export default {
     app.provide('$bracketsApi', bracketsApi);
   },
 };
-

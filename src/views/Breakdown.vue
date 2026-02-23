@@ -2,9 +2,20 @@
   <div class="breakdown-page">
     <h2 class="mb-4">Bracket Breakdown</h2>
 
+    <!-- Loading / warming up -->
     <div v-if="loading" class="text-center mt-10">
-      <v-progress-circular indeterminate color="warning"></v-progress-circular>
-      <p>Analyzing your bracket...</p>
+      <v-progress-circular indeterminate color="warning" class="mb-2"></v-progress-circular>
+      <p v-if="serverStatusStore.bracketsChecking" class="text-body-2 text-medium-emphasis">
+        Warming up the brackets server...
+      </p>
+      <p v-else>Analyzing your bracket...</p>
+    </div>
+
+    <!-- Server failed to wake -->
+    <div v-else-if="serverError" class="text-center mt-10">
+      <v-icon color="error" size="40" class="mb-2">mdi-server-off</v-icon>
+      <p class="text-body-1">Could not reach the brackets server.</p>
+      <p class="text-body-2 text-medium-emphasis">Please refresh the page to try again.</p>
     </div>
 
     <div v-else-if="breakdownDescription">
@@ -37,9 +48,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, watch, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
+import { useServerStatusStore } from '@/store/serverStatus'
 import { storeToRefs } from 'pinia'
 import axios from 'axios'
 import {
@@ -55,16 +67,18 @@ const $brackets = inject('$bracketsApi')
 const $users = inject('$usersApi')
 
 const userStore = useUserStore()
+const serverStatusStore = useServerStatusStore()
 const { user } = storeToRefs(userStore)
 
 // ─── State ───
 const bracketReturned = ref({})
-const htmlBracket = ref({})           // StructuredBracket from the DB
-const tournamentTeams = ref({})       // team names from API
-const tournamentResults = ref(null)   // actual results from API (null if not available)
+const htmlBracket = ref({})
+const tournamentTeams = ref({})
+const tournamentResults = ref(null)
 const yearBracketString = ref('')
 const isPostTournament = ref(false)
-const loading = ref(false)
+const loading = ref(true) // true from the start — covers both warm-up and data fetching
+const serverError = ref(false)
 const breakdownDescription = ref('')
 const comparisonStats = ref(null)
 
@@ -76,7 +90,6 @@ const formatName = (seedString) => {
 }
 
 const formattedDescription = computed(() => {
-  // Convert newlines to <br> and bold markers if present
   return (breakdownDescription.value || '').replace(/\n/g, '<br>')
 })
 
@@ -97,53 +110,64 @@ const loadTournamentData = async (year) => {
     const { data } = await $brackets.get(`/tournament-data?year=${year}`)
     tournamentTeams.value = data.teams || {}
     tournamentResults.value = data.results || null
-    isPostTournament.value = !!data.results
-  } catch (err) {
-    console.log(`No tournament data for ${year}`)
-    tournamentTeams.value = baseTeamNames
-    tournamentResults.value = null
-    isPostTournament.value = false
+    isPostTournament.value = !tournamentResults.value
+  } catch (error) {
+    console.error(error)
   }
 }
 
-// ─── Analysis ───
-function buildPrompt(officialBracket, userBracket, comparison, yearBracketString, teamNames) {
-  const { correctPicks, totalGames, upsets } = comparison
+const getBreakdown = async () => {
+  loading.value = true
 
-  // Map seed codes to team names for the LLM
-  const upsetNames = upsets.map(u => {
-    const name = teamNames[u] || u
-    return `${u} (${name})`
-  })
+  const officialBracket = isPostTournament.value
+    ? tournamentResults.value
+    : buildBaseBracket()
 
-  const teamNamesJson = JSON.stringify(teamNames, null, 2)
+  const comparison = compareBrackets(officialBracket, htmlBracket.value)
+  comparisonStats.value = comparison
 
+  const prompt = buildPrompt(
+    officialBracket,
+    htmlBracket.value,
+    comparison,
+    yearBracketString.value,
+    tournamentTeams.value
+  )
+
+  try {
+    breakdownDescription.value = await buildLlmDescription(prompt)
+  } catch (err) {
+    breakdownDescription.value = 'Unable to generate AI analysis at this time.'
+  }
+
+  loading.value = false
+}
+
+function buildPrompt(officialBracket, userBracket, comparison, year, teamNames) {
+  const teamNamesJson = JSON.stringify(teamNames)
   if (isPostTournament.value) {
     return `
+      You are a sports analyst reviewing a college basketball tournament bracket.
+      Year: ${year}
       User's bracket: ${JSON.stringify(userBracket)}
-      Actual tournament results: ${JSON.stringify(officialBracket)}
-
-      The user had ${correctPicks} correct picks out of ${totalGames}.
-      They predicted the following underdogs: ${upsetNames.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
-
+      Official results: ${JSON.stringify(officialBracket)}
+      Comparison stats: ${JSON.stringify(comparison)}
       Team names mapping: ${teamNamesJson}
 
-      Please write a short (three paragraph max), sportscaster-style summary without copyright infringement describing:
-      1. The overall performance compared to the real results.
-      2. Two notable upsets they picked correctly (two sentences max) either:
-          a. big underdog (seed over 12)
-          b. deep run underdogs
-      3. Exclude words "March Madness, NCAA, Sweet Sixteen, Elite Eight, Final Four" due to copyright
+      Please write a short (three paragraph max), sportscaster-style post-tournament analysis without copyright infringement describing:
+      1. Notable correct upset picks (two sentences max)
+      2. How the bracket winner prediction fared (two sentences max)
+      3. Overall bracket performance summary
+      4. Do not hallucinate storylines not present in the data.
+      5. Exclude words "March Madness, NCAA, Sweet Sixteen, Elite Eight, Final Four" due to copyright
     `
   } else {
-    const baseBracket = buildBaseBracket()
     return `
-      benchmark, no-upset bracket: ${JSON.stringify(baseBracket)}
-      user's bracket: ${JSON.stringify(userBracket)}
-
-      The user bracket picks seeds that differ from the standard favorites
-      in these spots: ${upsetNames.join(", ")} where the deeper tournament runs are entries towards the end of the string, or values that have higher numerical values in the name.
-
+      You are a sports analyst previewing a college basketball tournament bracket.
+      Year: ${year}
+      User's bracket: ${JSON.stringify(userBracket)}
+      Benchmark bracket: ${JSON.stringify(officialBracket)}
+      Comparison stats: ${JSON.stringify(comparison)}
       Team names mapping: ${teamNamesJson}
 
       Please write a short (three paragraph max), sportscaster-style preview without copyright infringement describing:
@@ -168,7 +192,7 @@ async function buildLlmDescription(prompt) {
   }
 
   try {
-    if (window.location.origin === "http://localhost:4000") {
+    if (window.location.origin === 'http://localhost:4000') {
       const response = {
         data: `This bracket features some bold picks that challenge conventional seeding wisdom. The user isn't afraid to back underdogs in key matchups, showing confidence in teams that many would overlook.
 
@@ -205,44 +229,39 @@ async function buildLlmDescription(prompt) {
   }
 }
 
-const getBreakdown = async () => {
-  loading.value = true
-
-  // Determine which official bracket to compare against
-  const officialBracket = isPostTournament.value
-    ? tournamentResults.value
-    : buildBaseBracket()
-
-  // Compare
-  const comparison = compareBrackets(officialBracket, htmlBracket.value)
-  comparisonStats.value = comparison
-
-  // Build prompt and get LLM description
-  const prompt = buildPrompt(
-    officialBracket,
-    htmlBracket.value,
-    comparison,
-    yearBracketString.value,
-    tournamentTeams.value
-  )
-
-  try {
-    breakdownDescription.value = await buildLlmDescription(prompt)
-  } catch (err) {
-    breakdownDescription.value = 'Unable to generate AI analysis at this time.'
-  }
-
-  loading.value = false
-}
-
 // ─── Lifecycle ───
-onMounted(async () => {
-  loading.value = true
+const runDataLoad = async () => {
   await getBracket()
   if (yearBracketString.value) {
     await loadTournamentData(yearBracketString.value)
   }
   await getBreakdown()
+}
+
+onMounted(() => {
+  // loading starts true — spinner shows immediately regardless of path below
+
+  if (serverStatusStore.bracketsReady) {
+    runDataLoad()
+  } else if (serverStatusStore.bracketsError) {
+    loading.value = false
+    serverError.value = true
+  } else {
+    // Server still warming up — watch for resolution
+    const unwatch = watch(
+      () => [serverStatusStore.bracketsReady, serverStatusStore.bracketsError],
+      ([ready, error]) => {
+        if (ready) {
+          unwatch()
+          runDataLoad()
+        } else if (error) {
+          unwatch()
+          loading.value = false
+          serverError.value = true
+        }
+      }
+    )
+  }
 })
 </script>
 

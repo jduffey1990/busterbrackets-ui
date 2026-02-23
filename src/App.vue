@@ -11,7 +11,6 @@
       </v-main>
     </UiToast>
 
-    <!-- Conditionally render Overlay component based on store state -->
     <Overlay
         v-if="overlayStore.showOverlay"
         :title="overlayStore.overlayContent.title"
@@ -28,37 +27,24 @@
 import Header from './components/Header.vue';
 import Footer from './components/Footer.vue';
 import UiToast from '@/components/ui/Toast.vue';
-import {useRouter} from 'vue-router';
-// Import the Overlay component
+import { useRouter } from 'vue-router';
 import Overlay from './components/Overlay.vue';
 
-// Import the Pinia store for overlay management
-import {useOverlayStore} from '@/store/overlay';
+import { useOverlayStore } from '@/store/overlay';
+import { useUserStore } from '@/store/user';
+import { useServerStatusStore } from '@/store/serverStatus';
+import { storeToRefs } from 'pinia';
+import { inject, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
-// Use the overlay store to manage state
 const overlayStore = useOverlayStore();
-import {inject, ref} from 'vue';
+const serverStatusStore = useServerStatusStore();
 
-const $axios = inject('$axios');
-const $users = inject('$usersApi')
-const $brackets = inject('$bracketsApi')
+const $users = inject('$usersApi');
+const $brackets = inject('$bracketsApi');
 
-import {useUserStore} from '@/store/user';
-import {storeToRefs} from 'pinia';
-
-const {user} = storeToRefs(useUserStore());
+const { user } = storeToRefs(useUserStore());
 const router = useRouter();
-
-const screenWidth = window.innerWidth;
-
-
-// Define the classes for the background
-const appBackground = 'appBackground';
-const whiteBackground = 'whiteBackground';
-
-import {onMounted, watch} from 'vue';
-import {useRoute} from 'vue-router';
-
 const route = useRoute();
 
 let timeout;
@@ -70,28 +56,6 @@ const startTimer = () => {
     router.push('/login');
   }, 600000); // 10 minutes
 };
-
-const pingBackendUser = async () => {
-  try {
-    const response = await $users.get('/ping-user')
-    if(response.status === 200){
-      console.log("backend users pinged baby")
-    }
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const pingBackendBrackets = async () => {
-  try {
-    const response = await $brackets.get('/ping-bracket')
-    if(response.status === 200){
-      console.log("backend brackets pinged baby")
-    }
-  } catch (error) {
-    console.error(error)
-  }
-}
 
 const resetTimer = () => {
   clearTimeout(timeout);
@@ -109,10 +73,25 @@ const debounce = (func, delay) => {
 
 const debouncedResetTimer = debounce(resetTimer, 1000);
 
+// Users backend: still a one-shot ping (assumed always live)
+const pingBackendUser = async () => {
+  try {
+    const response = await $users.get('/ping-user');
+    if (response.status === 200) {
+      console.log('backend users pinged');
+    }
+  } catch (error) {
+    console.error('Users backend ping failed:', error);
+  }
+};
+
 onMounted(() => {
   startTimer();
-  pingBackendUser()
-  pingBackendBrackets()
+  pingBackendUser();
+
+  // Brackets backend: retry-polling until live or exhausted
+  // Sets bracketsReady / bracketsError / bracketsChecking on the store
+  serverStatusStore.awaitBracketsReady($brackets);
 });
 
 document.addEventListener('click', debouncedResetTimer);
@@ -128,7 +107,7 @@ document.addEventListener('scroll', debouncedResetTimer);
 }
 .header-div {
   height: 150px;
-}  
+}
 
 .padding-add {
   padding-top: 10px !important;
@@ -151,8 +130,8 @@ document.addEventListener('scroll', debouncedResetTimer);
 }
 
 @media only screen and (max-width: 700px) {
-  .header-div{
-    height:190px;
+  .header-div {
+    height: 190px;
     transform: translateY(20px);
   }
 }
