@@ -67,9 +67,10 @@
           Loading articles...
         </div>
         <div v-else-if="newsArticles.length">
-          <div v-for="article in newsArticles" :key="article.link" class="mb-2">
-            <a :href="article.link" target="_blank">{{ article.title }}</a>
-            <p class="text-body-2">{{ article.snippet }}</p>
+          <div v-for="article in newsArticles" :key="article.link" class="mb-3">
+            <a :href="article.link" target="_blank" rel="noopener">{{ article.title }}</a>
+            <p class="text-body-2 mb-0">{{ article.snippet }}</p>
+            <span class="text-caption text-medium-emphasis">{{ article.source }}</span>
           </div>
         </div>
         <p v-else>No news articles available.</p>
@@ -113,20 +114,18 @@ onMounted(async () => {
   // If server is already confirmed live (e.g. navigating back to dashboard
   // mid-session), fetch immediately. Otherwise watch for the flag to flip.
   if (serverStatusStore.bracketsReady) {
-    await fetchUserBrackets()
+    await Promise.all([fetchUserBrackets(), fetchNewsArticles()])
   } else {
     const unwatch = watch(
       () => serverStatusStore.bracketsReady,
       async (ready) => {
         if (ready) {
           unwatch()
-          await fetchUserBrackets()
+          await Promise.all([fetchUserBrackets(), fetchNewsArticles()])
         }
       }
     )
   }
-
-  await fetchNewsArticles()
 })
 
 // ─── Fetch user brackets ───
@@ -159,18 +158,8 @@ const goToBreakdown = (item) => {
 const fetchNewsArticles = async () => {
   loadingNews.value = true
   try {
-    newsArticles.value = [
-      {
-        title: 'Selection Sunday Insights',
-        snippet: 'Experts share their top seeds for the upcoming tournament...',
-        link: 'https://www.example.com/selection-sunday',
-      },
-      {
-        title: 'Underdog Stories That Might Surprise You',
-        snippet: 'Which unranked teams have the best shot at an upset?',
-        link: 'https://www.example.com/underdog-stories',
-      },
-    ]
+    const { data } = await $brackets.get('/news')
+    newsArticles.value = data
   } catch (error) {
     console.error('Failed to fetch news articles:', error)
     newsArticles.value = []
