@@ -103,7 +103,11 @@ document.addEventListener('scroll', debouncedResetTimer);
 <style>
 .overall-app {
   width: 100%;
-  background: linear-gradient(135deg, #28F6F4 0%, #1071A0 100%) !important;
+  background:
+    radial-gradient(1100px 500px at 85% -5%, rgba(255, 255, 255, 0.28), transparent 60%),
+    radial-gradient(900px 600px at -10% 100%, rgba(7, 21, 42, 0.22), transparent 55%),
+    linear-gradient(160deg, #28F6F4 0%, #1BB6C9 38%, #1071A0 100%) !important;
+  background-attachment: fixed !important;
 }
 .header-div {
   height: 150px;
