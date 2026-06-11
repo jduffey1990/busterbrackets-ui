@@ -18,13 +18,16 @@
       <p class="text-body-2 text-medium-emphasis">Please refresh the page to try again.</p>
     </div>
 
-    <div v-else-if="breakdownDescription">
+    <div v-else-if="comparisonStats || breakdownDescription">
       <v-card class="pa-4 mb-4" elevation="3">
         <v-card-title>
           {{ bracketName || 'Bracket' }} — {{ isPostTournament ? 'Post-Tournament Analysis' : 'Preview' }}
         </v-card-title>
         <v-card-text>
-          <div class="breakdown-text" v-html="formattedDescription"></div>
+          <div v-if="breakdownDescription" class="breakdown-text" v-html="formattedDescription"></div>
+          <p v-else class="text-medium-emphasis mb-0">
+            The AI recap is temporarily unavailable. Your stats are below.
+          </p>
         </v-card-text>
       </v-card>
 
@@ -35,7 +38,11 @@
             Correct picks: <strong>{{ comparisonStats.correctPicks }}</strong> / {{ comparisonStats.totalGames }}
           </p>
           <p v-if="comparisonStats.upsets.length">
-            Underdog picks: <strong>{{ comparisonStats.upsets.join(', ') }}</strong>
+            {{ isPostTournament ? 'Underdog picks you nailed' : 'Bold underdog picks' }}:
+            <strong>{{ comparisonStats.upsets.join(', ') }}</strong>
+          </p>
+          <p v-else-if="isPostTournament" class="text-medium-emphasis mb-0">
+            No double-digit-seed upsets called correctly — you played it chalky.
           </p>
         </v-card-text>
       </v-card>
@@ -80,13 +87,16 @@ const getBreakdown = async () => {
     // Override the default 8s bracketsApi timeout: a first-time breakdown
     // blocks on an OpenAI call, which can take longer than 8s.
     const { data } = await $brackets.get(`/breakdown?id=${bracketId}`, { timeout: 30000 })
-    breakdownDescription.value = data.content
+    // content may be null if the AI recap couldn't be generated; stats still render.
+    breakdownDescription.value = data.content || ''
     comparisonStats.value = data.stats
     isPostTournament.value = data.isPostTournament
     bracketName.value = data.bracketName
   } catch (err) {
     console.error('Error generating breakdown:', err)
-    breakdownDescription.value = 'Unable to generate AI analysis at this time.'
+    // Hard failure (server/network) — no stats to show either.
+    comparisonStats.value = null
+    breakdownDescription.value = ''
   }
   loading.value = false
 }
