@@ -15,12 +15,12 @@
           <h3 class="text-capitalize mb-2">{{ region }} Region</h3>
           <div class="bracket-region">
             <div
-              v-for="(round, rIdx) in bracketData[region]"
-              :key="rIdx"
+              v-for="roundKey in ['round32', 'sweet16', 'elite8']"
+              :key="roundKey"
               class="round"
             >
               <div
-                v-for="(matchup, mIdx) in chunkArray(round, 2)"
+                v-for="(matchup, mIdx) in chunkArray(bracketData[region][roundKey], 2)"
                 :key="mIdx"
                 class="matchup"
               >
@@ -40,7 +40,7 @@
           <div class="region-champ mt-4">
             <span class="text-subtitle-2 mr-2">Region Champion:</span>
             <v-card class="matchup-card champion-card" elevation="2">
-              {{ formatName(finalsData.semifinals?.find(s => s?.region === region)?.winner) }}
+              {{ formatName(bracketData[region]?.regionChamp) }}
             </v-card>
           </div>
         </div>
@@ -50,19 +50,25 @@
       <div class="finals-section mt-6">
         <h3 class="mb-2">Final Four &amp; Champion</h3>
         <div class="bracket-region">
-          <div class="round">
-            <div v-for="(semi, idx) in finalsData.semifinals" :key="idx" class="matchup">
-              <v-card class="matchup-card" elevation="1">{{ formatName(semi?.team1) }}</v-card>
-              <v-card class="matchup-card" elevation="1">{{ formatName(semi?.team2) }}</v-card>
-            </div>
-          </div>
+          <!-- Final Four matchups: teams[0] vs teams[1], teams[2] vs teams[3] -->
           <div class="round">
             <div class="matchup">
-              <v-card v-for="(semi, idx) in finalsData.semifinals" :key="idx" class="matchup-card" elevation="1">
-                {{ formatName(semi?.winner) }}
-              </v-card>
+              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[0]) }}</v-card>
+              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[1]) }}</v-card>
+            </div>
+            <div class="matchup">
+              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[2]) }}</v-card>
+              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[3]) }}</v-card>
             </div>
           </div>
+          <!-- Semifinal winners (championship game participants) -->
+          <div class="round">
+            <div class="matchup">
+              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.semifinals?.[0]) }}</v-card>
+              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.semifinals?.[1]) }}</v-card>
+            </div>
+          </div>
+          <!-- Champion -->
           <div class="round">
             <div class="matchup">
               <v-card class="matchup-card champion-card" elevation="3">
