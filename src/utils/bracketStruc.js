@@ -4,67 +4,9 @@
 // Team names and tournament results are now fetched from the backend's
 // tournamentData collection via the API. See Admin.vue for management.
 //
-// ─── KEPT: Odds data and starting bracket arrays ───
-
-export const recordsOver20 = {
-  // Real historical odds
-  "1vs16": "158-2",
-  "8vs9": "77-83",
-  "5vs12": "103-57",
-  "4vs13": "127-33",
-  "6vs11": "95-61",
-  "3vs14": "137-23",
-  "7vs10": "97-63",
-  "2vs15": "149-11",
-  "1vs8": "63-17",
-  "4vs5": "48-37",
-  "3vs6": "49-33",
-  "2vs7": "65-27",
-  "1vs4": "52-20",
-  "2vs3": "38-24",
-  "1vs2": "41-30",
-  "1vs9": "76-6",
-  "3vs11": "37-20",
-  "1vs5": "44-11",
-  "2vs11": "16-4",
-  "5vs13": "18-3",
-  "4vs12": "32-13",
-  "1vs12": "20-0",
-  "1vs3": "24-14",
-  "2vs10": "37-20",
-  "2vs6": "26-8",
-  // Even odds for same-seed matchups (cross-region in finals)
-  "1vs1": "10-10",
-  "2vs2": "10-10",
-  "3vs3": "10-10",
-  "4vs4": "10-10",
-  "5vs5": "10-10",
-  "6vs6": "10-10",
-  "7vs7": "10-10",
-  "8vs8": "10-10",
-  "9vs9": "10-10",
-  "10vs10": "10-10",
-  "11vs11": "10-10",
-  "12vs12": "10-10",
-  "13vs13": "10-10",
-  "14vs14": "10-10",
-  "15vs15": "10-10",
-  "16vs16": "10-10",
-};
-
-export const fixRecords = (obj) => {
-  const records = new Map();
-  for (const key in obj) {
-    const [winsStr, lossesStr] = obj[key].split("-");
-    const wins = parseFloat(winsStr);
-    const losses = parseFloat(lossesStr);
-    const total = wins + losses;
-    if (!total) continue;
-    const percentage = Math.round((wins / total) * 100);
-    records.set(key, percentage);
-  }
-  return records;
-};
+// ─── REMOVED: recordsOver20 and fixRecords ───
+// The odds table and the simulation live in the brackets service
+// (GET /odds, POST /simulate-bracket). This file keeps the bracket shape only.
 
 // ─── Starting bracket arrays (bracket-order for round of 64) ───
 // These represent the standard 1v16, 8v9, 5v12, 4v13 ... matchup order.
