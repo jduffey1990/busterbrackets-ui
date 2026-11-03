@@ -1,7 +1,6 @@
 // src/store/user.js
 import router from '@/router';
 import { defineStore } from 'pinia';
-import { useCookies } from 'vue3-cookies';
 
 export const useUserStore = defineStore('user', {
     state: () => ({
@@ -27,26 +26,22 @@ export const useUserStore = defineStore('user', {
             console.log("description cached for id");
         },
         async login(credentials) {
-            try {
-                const response = await this.$users({
-                    method: 'post',
-                    url: '/login',
-                    data: credentials,
-                });
-                const tokenReturned = response.data.token;
-                const userReturned = response.data.user;
+            const response = await this.$users({
+                method: 'post',
+                url: '/login',
+                data: credentials,
+            });
+            const tokenReturned = response.data.token;
+            const userReturned = response.data.user;
 
-                localStorage.setItem('token', tokenReturned);
-                this.user = userReturned;
-                this.token = tokenReturned;
+            localStorage.setItem('token', tokenReturned);
+            this.user = userReturned;
+            this.token = tokenReturned;
 
-                this.$users.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
-                this.$brackets.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            this.$users.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+            this.$brackets.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
 
-                router.push('/dashboard');
-            } catch (error) {
-                throw error;
-            }
+            router.push('/dashboard');
         },
         async getSession() {
             if (!this.token) return;
@@ -61,7 +56,7 @@ export const useUserStore = defineStore('user', {
                 localStorage.removeItem('token');
             }
         },
-        async logout(apiInstance) {
+        async logout() {
             this.user = {};
             this.token = null;
             localStorage.removeItem('token');
