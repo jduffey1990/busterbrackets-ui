@@ -43,7 +43,7 @@
 
           <!-- Empty state -->
           <div v-else-if="!brackets.length" class="text-center pa-8">
-            <v-icon size="40" class="mb-2 empty-icon">mdi-bracket</v-icon>
+            <v-icon size="40" class="mb-2 empty-icon">mdi-tournament</v-icon>
             <p class="text-body-1 mb-1">No brackets yet.</p>
             <p class="text-body-2 text-medium-emphasis mb-4">Build your first one and see how far it goes.</p>
             <v-btn color="warning" @click="pickRoute">Build a Bracket</v-btn>

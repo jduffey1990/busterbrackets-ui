@@ -234,6 +234,15 @@ onMounted(() => {
 
 .upset-chip {
   font-weight: 600;
+  height: auto;
+  max-width: 100%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  white-space: normal;
+}
+
+.upset-chip :deep(.v-chip__content) {
+  white-space: normal;
 }
 
 .narrative-card {
