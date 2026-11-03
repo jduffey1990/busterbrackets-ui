@@ -1,5 +1,5 @@
 @use 'vuetify/settings' with (
-  $body-font-family: "Inter",
+  $body-font-family: ("Inter", "Helvetica Neue", Arial, sans-serif),
   //$container-max-widths: (
   //  'lg': 1800px,
   //)
