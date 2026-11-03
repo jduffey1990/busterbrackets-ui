@@ -1,0 +1,33 @@
+# no-mistakes gate configuration for the ui. Honored only from the copy on
+# main. The daemon is a launchd process without the shell's nvm PATH, hence
+# the explicit node bin directory; yarn is on /opt/homebrew/bin, which the
+# daemon has. yarn mirrors the Dockerfile, which is what production builds.
+
+agent: claude
+
+commands:
+  prepare: "PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH yarn install --frozen-lockfile"
+  lint: "PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH npx eslint . --ignore-path .gitignore"
+  # There is no unit test runner in this repo; the production build is the
+  # check that the app still compiles. Live validation is the gate's test agent.
+  test: "PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH yarn build"
+
+ignore_patterns:
+  - "dist/**"
+
+review:
+  conversation: true
+  path_instructions:
+    - path: "src/**"
+      instructions: |
+        The brackets service owns the odds and the simulation (GET /odds,
+        POST /simulate-bracket); the client must not carry a copy of either.
+        Pages reach the services only through the $usersApi and $bracketsApi
+        axios instances from src/plugins/axios.js. Bracket shape constants
+        (seed keys, round-of-64 order) live in src/utils/bracketStruc.js.
+
+pr:
+  publish_intent: false
+
+ci:
+  revalidate_repairs: true
