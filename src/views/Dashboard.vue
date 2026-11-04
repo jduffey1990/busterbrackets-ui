@@ -1,126 +1,153 @@
 <template>
-  <div class="px-4 py-6">
-    <!-- Dashboard Title & Build Button -->
-    <div class="table-title">
-      <h2 class="dashboard-title">My Dashboard</h2>
-      <v-btn color="warning" class="build-bracket-btn" @click="pickRoute">
-        Build a Bracket
-      </v-btn>
+  <div class="dashboard">
+    <!-- Status strip -->
+    <div class="status-strip">
+      <v-card class="status-tile">
+        <p class="eyebrow my-0">{{ nextField.year }} field</p>
+        <p class="status-value my-0">{{ nextField.headline }}</p>
+        <p class="status-note my-0">{{ nextField.note }}</p>
+      </v-card>
+      <v-card class="status-tile">
+        <p class="eyebrow my-0">Credits</p>
+        <p class="status-value my-0">
+          <template v-if="credits === null">Checking</template>
+          <template v-else>{{ credits }} {{ credits === 1 ? 'bracket' : 'brackets' }} left</template>
+        </p>
+        <p class="status-note my-0">
+          <router-link to="/payment" class="status-link">Add credits</router-link>
+          <template v-if="credits === 0"> to build your next bracket.</template>
+          <template v-else> any time. One credit builds one bracket.</template>
+        </p>
+      </v-card>
+      <v-card class="status-tile">
+        <p class="eyebrow my-0">Your brackets</p>
+        <p class="status-value my-0">{{ brackets.length }} built</p>
+        <p class="status-note my-0">
+          <template v-if="bracketYears.length">Across {{ bracketYears.join(', ') }}.</template>
+          <template v-else>None yet. The first one is one click away.</template>
+        </p>
+      </v-card>
     </div>
 
-    <!-- Admin link (only visible to admins) -->
-    <v-btn
-      v-if="isAdmin"
-      color="primary"
-      variant="outlined"
-      class="mb-4"
-      @click="$router.push('/admin')"
-    >
-      Tournament Admin
-    </v-btn>
-
-    <v-row>
-      <!-- Brackets Table -->
-      <v-col cols="12" lg="7">
-        <v-card class="card" elevation="0">
-          <v-card-title class="card-head">
-            <v-icon color="warning" class="mr-2">mdi-tournament</v-icon>
-            My Brackets
-          </v-card-title>
-
-          <!-- Server warming up -->
-          <div v-if="serverStatusStore.bracketsChecking" class="text-center pa-6">
-            <v-progress-circular indeterminate color="warning" class="mb-2"></v-progress-circular>
-            <p class="text-body-2 text-medium-emphasis">Warming up the brackets server, hang tight...</p>
+    <div class="dashboard-body">
+      <section class="brackets">
+        <div class="section-head">
+          <div>
+            <h1>My brackets</h1>
+            <p class="text-muted my-0 section-sub">Every bracket you have built, newest first.</p>
           </div>
-
-          <!-- Server failed to wake -->
-          <div v-else-if="serverStatusStore.bracketsError" class="text-center pa-6">
-            <v-icon color="error" size="32" class="mb-2">mdi-server-off</v-icon>
-            <p class="text-body-1 text-error">Could not reach the brackets server.</p>
-            <p class="text-body-2 text-medium-emphasis">Please refresh the page to try again.</p>
+          <div class="section-actions">
+            <v-btn v-if="isAdmin" variant="outlined" color="secondary" :to="{ name: 'Admin' }">Tournament admin</v-btn>
+            <v-btn color="primary" @click="pickRoute">Build a bracket</v-btn>
           </div>
+        </div>
 
-          <!-- Empty state -->
-          <div v-else-if="!brackets.length" class="text-center pa-8">
-            <v-icon size="40" class="mb-2 empty-icon">mdi-tournament</v-icon>
-            <p class="text-body-1 mb-1">No brackets yet.</p>
-            <p class="text-body-2 text-medium-emphasis mb-4">Build your first one and see how far it goes.</p>
-            <v-btn color="warning" @click="pickRoute">Build a Bracket</v-btn>
-          </div>
+        <!-- Server warming up -->
+        <v-card v-if="serverStatusStore.bracketsChecking" class="state-card">
+          <v-progress-circular indeterminate color="primary" class="mb-2"></v-progress-circular>
+          <p class="text-muted my-0">Warming up the brackets server, hang tight...</p>
+        </v-card>
 
-          <!-- Ready -->
-          <v-data-table
-            v-else
-            :headers="bracketHeaders"
-            :items="brackets"
-            item-value="id"
-          >
-            <template v-slot:item.createdAt="{ item }">
-              {{ formatDate(item.createdAt) }}
-            </template>
-            <template v-slot:item.name="{ item }">
-              <v-btn variant="text" @click="goToBracket(item)">
-                {{ item.name || '(unnamed)' }}
+        <!-- Server failed to wake -->
+        <v-card v-else-if="serverStatusStore.bracketsError" class="state-card">
+          <v-icon color="error" size="32" class="mb-2">mdi-server-off</v-icon>
+          <p class="my-0">Could not reach the brackets server.</p>
+          <p class="text-muted my-0">Please refresh the page to try again.</p>
+        </v-card>
+
+        <!-- Ready -->
+        <div v-else class="card-grid">
+          <v-card v-for="item in bracketCards" :key="item.id" class="bracket-card">
+            <div class="card-head">
+              <div class="card-title">
+                <h2>{{ item.name || '(unnamed)' }}</h2>
+                <p class="text-muted my-0 card-meta">{{ item.year }} · built {{ item.createdLabel }}</p>
+              </div>
+              <v-chip v-if="item.upsetCount" size="small" variant="tonal" color="success">
+                {{ item.upsetCount }} {{ item.upsetCount === 1 ? 'upset' : 'upsets' }}
+              </v-chip>
+            </div>
+
+            <TeamRow v-bind="item.champion" champ/>
+
+            <div class="final-four">
+              <p class="eyebrow my-0">Final Four</p>
+              <div class="chip-row">
+                <span v-for="team in item.finalFour" :key="team.seedKey" class="team-chip">
+                  <span class="chip-seed">{{ team.seedKey.slice(1) }}</span>{{ team.name }}
+                </span>
+                <span v-if="!item.finalFour.length" class="text-muted">Not played yet</span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <v-btn size="small" color="primary" variant="tonal" :to="{ name: 'Bracket', query: { id: item.id } }">
+                View bracket
               </v-btn>
-            </template>
-            <template v-slot:item.breakdown="{ item }">
-              <v-btn size="small" color="warning" @click="goToBreakdown(item)">
+              <v-btn size="small" variant="outlined" color="secondary" :to="{ name: 'Breakdown', query: { id: item.id } }">
                 Breakdown
               </v-btn>
-            </template>
-          </v-data-table>
-        </v-card>
-      </v-col>
+            </div>
+          </v-card>
 
-      <!-- News Section -->
-      <v-col cols="12" lg="5">
-        <v-card class="card" elevation="0">
-          <v-card-title class="card-head">
-            <v-icon color="warning" class="mr-2">mdi-newspaper-variant-outline</v-icon>
-            NCAA News
-          </v-card-title>
-          <v-card-text class="pt-1">
-            <div v-if="loadingNews" class="text-center py-6">
-              <v-progress-circular indeterminate size="24" color="warning" class="mb-2"></v-progress-circular>
-              <p class="text-body-2 text-medium-emphasis mb-0">Loading articles...</p>
-            </div>
-            <div v-else-if="newsArticles.length" class="news-list">
-              <a
-                v-for="article in newsArticles"
-                :key="article.link"
-                :href="article.link"
-                target="_blank"
-                rel="noopener"
-                class="news-item"
-              >
-                <p class="news-title">{{ article.title }}</p>
-                <p class="news-snippet">{{ article.snippet }}</p>
-                <p class="news-meta">
-                  {{ article.source }}
-                  <template v-if="article.publishedAt"> · {{ timeAgo(article.publishedAt) }}</template>
-                </p>
-              </a>
-            </div>
-            <p v-else class="text-medium-emphasis">No news articles available.</p>
-          </v-card-text>
+          <button type="button" class="new-card" @click="pickRoute">
+            <span class="new-plus">+</span>
+            <span class="new-title">New bracket</span>
+            <span class="text-muted new-note">
+              <template v-if="credits === 0">You are out of credits. Add some and build the next one.</template>
+              <template v-else-if="credits === null">Name it, pick a team to boost, and let Buster run the field.</template>
+              <template v-else>You have {{ credits }} {{ credits === 1 ? 'credit' : 'credits' }}. Name it, pick a team to boost, and let Buster run the field.</template>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <aside class="news">
+        <v-card class="news-card">
+          <div class="news-head">
+            <h2>NCAA news</h2>
+          </div>
+          <div v-if="loadingNews" class="text-center py-6">
+            <v-progress-circular indeterminate size="24" color="primary" class="mb-2"></v-progress-circular>
+            <p class="text-muted my-0">Loading articles...</p>
+          </div>
+          <div v-else-if="newsArticles.length" class="news-list">
+            <a
+              v-for="article in newsArticles"
+              :key="article.link"
+              :href="article.link"
+              target="_blank"
+              rel="noopener"
+              class="news-item"
+            >
+              <span class="news-title">{{ article.title }}</span>
+              <span class="news-snippet">{{ article.snippet }}</span>
+              <span class="news-meta">
+                {{ article.source }}
+                <template v-if="article.publishedAt"> · {{ timeAgo(article.publishedAt) }}</template>
+              </span>
+            </a>
+          </div>
+          <p v-else class="text-muted my-0">No news articles available.</p>
         </v-card>
-      </v-col>
-    </v-row>
+      </aside>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, inject, computed, watch } from 'vue'
-import { useUserStore } from '@/store/user'
+import TeamRow from '@/components/bracket/TeamRow.vue'
 import { useServerStatusStore } from '@/store/serverStatus'
-import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
+import { useUserStore } from '@/store/user'
+import { buildBracketModel } from '@/utils/bracketModel'
+import { baseTeamNames, formatTeamTitle } from '@/utils/bracketStruc'
+import { selectionSunday } from '@/utils/tournamentDates'
 import moment from 'moment'
+import { storeToRefs } from 'pinia'
+import { computed, inject, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
-const { show } = inject('toast')
 const $brackets = inject('$bracketsApi')
 const $users = inject('$usersApi')
 
@@ -131,59 +158,118 @@ const isAdmin = computed(() => userStore.isAdmin)
 
 // ─── State ───
 const brackets = ref([])
+const teamsByYear = ref({})       // { 2026: { e1: 'Duke', ... } }
+const credits = ref(null)         // null until /get-user answers
+const fieldYears = ref([])        // years that have tournament data
 const loadingNews = ref(true)
 const newsArticles = ref([])
 
-const bracketHeaders = [
-  { title: 'Bracket Name', value: 'name' },
-  { title: 'Created On', value: 'createdAt' },
-  { title: 'Bracket Breakdown', value: 'breakdown' },
-]
+// ─── Next field ───
+// After the championship (first Monday in April at the latest) the next
+// tournament is next year's.
+const nextField = computed(() => {
+  const today = moment()
+  const year = today.month() >= 4 ? today.year() + 1 : today.year()
+  const sunday = moment(selectionSunday(year))
+  const days = sunday.diff(today.startOf('day'), 'days')
+  if (fieldYears.value.includes(year)) {
+    return { year, headline: 'The field is set', note: 'Team boosts are live in the builder.' }
+  }
+  if (days > 0) {
+    return {
+      year,
+      headline: `Selection Sunday in ${days} ${days === 1 ? 'day' : 'days'}`,
+      note: `Team boosts unlock when the field is announced, ${sunday.format('MMM D')}.`,
+    }
+  }
+  return { year, headline: 'Selection Sunday has passed', note: 'The field will appear here once it is entered.' }
+})
+
+// ─── Bracket cards ───
+const teamNameFor = (year) => (seedKey) => formatTeamTitle(seedKey, teamsByYear.value[year] || baseTeamNames)
+
+const bracketCards = computed(() =>
+  brackets.value.map((item) => {
+    const model = buildBracketModel(item.bracket || {}, teamNameFor(item.year))
+    return {
+      id: item.id,
+      name: item.name,
+      year: item.year,
+      createdLabel: moment(item.createdAt).format('MMM D, YYYY'),
+      champion: model.champion,
+      finalFour: model.finalFour,
+      upsetCount: model.upsetCount,
+    }
+  })
+)
+
+const bracketYears = computed(() => [...new Set(brackets.value.map((item) => item.year))].sort())
 
 // ─── Lifecycle ───
 onMounted(async () => {
+  fetchCredits()
   // If server is already confirmed live (e.g. navigating back to dashboard
   // mid-session), fetch immediately. Otherwise watch for the flag to flip.
   if (serverStatusStore.bracketsReady) {
-    await Promise.all([fetchUserBrackets(), fetchNewsArticles()])
+    await Promise.all([fetchUserBrackets(), fetchNewsArticles(), fetchFieldYears()])
   } else {
     const unwatch = watch(
       () => serverStatusStore.bracketsReady,
       async (ready) => {
         if (ready) {
           unwatch()
-          await Promise.all([fetchUserBrackets(), fetchNewsArticles()])
+          await Promise.all([fetchUserBrackets(), fetchNewsArticles(), fetchFieldYears()])
         }
       }
     )
   }
 })
 
-// ─── Fetch user brackets ───
+// ─── Fetches ───
 const fetchUserBrackets = async () => {
   try {
     const { data } = await $brackets.get(`get-user-brackets?id=${user.value._id}`)
-    data.forEach((brack) => {
-      const oGBracket = {
+    brackets.value = data
+      .map((brack) => ({
+        id: brack._id,
         name: brack.name,
         createdAt: brack.createdAt,
-        updatedAt: 'N/A (original bracket creation)',
-        id: brack._id,
-      }
-      brackets.value.push(oGBracket)
-    })
-    brackets.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        year: Number(String(brack.createdAt).slice(0, 4)),
+        bracket: brack.bracket,
+      }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    await Promise.all(bracketYears.value.map(loadTeamsForYear))
   } catch (error) {
     console.error('Failed to fetch brackets:', error)
   }
 }
 
-const goToBracket = (item) => {
-  router.push({ name: 'Bracket', query: { id: item.id } })
+const loadTeamsForYear = async (year) => {
+  if (teamsByYear.value[year]) return
+  try {
+    const { data } = await $brackets.get(`/tournament-data?year=${year}`)
+    teamsByYear.value = { ...teamsByYear.value, [year]: data.teams }
+  } catch {
+    // No tournament data for that year: cards fall back to "East 1 Seed" names.
+  }
 }
 
-const goToBreakdown = (item) => {
-  router.push({ name: 'Breakdown', query: { id: item.id } })
+const fetchFieldYears = async () => {
+  try {
+    const { data } = await $brackets.get('/tournament-data/years')
+    fieldYears.value = (data.years || []).map(Number)
+  } catch (error) {
+    console.error('Failed to fetch tournament years:', error)
+  }
+}
+
+const fetchCredits = async () => {
+  try {
+    const { data } = await $users.get(`/get-user?id=${user.value._id}`)
+    credits.value = Number(data.credits) || 0
+  } catch (error) {
+    console.error('Failed to fetch credits:', error)
+  }
 }
 
 const fetchNewsArticles = async () => {
@@ -199,21 +285,14 @@ const fetchNewsArticles = async () => {
   }
 }
 
-function formatDate(date) {
-  if (!date) return ''
-  if (date === 'N/A (original bracket creation)') return date
-  return moment(date).format('MMM DD, YYYY - HH:mm')
-}
-
 function timeAgo(date) {
   return moment(date).fromNow()
 }
 
 const pickRoute = async () => {
   try {
-    let response = await $users.get(`/get-user?id=${user.value._id}`)
-    let userReturned = response.data
-    if (userReturned.credits === 0) {
+    const { data } = await $users.get(`/get-user?id=${user.value._id}`)
+    if (data.credits === 0) {
       router.push('/payment')
     } else {
       router.push('/builder')
@@ -225,14 +304,225 @@ const pickRoute = async () => {
 </script>
 
 <style scoped>
-.card-head {
+.dashboard {
   display: flex;
-  align-items: center;
-  padding-top: 16px;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.empty-icon {
-  color: rgba(7, 21, 42, 0.4);
+/* ─── Status strip ─── */
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.status-tile {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-value {
+  font-family: var(--bb-font-display);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.status-note {
+  font-size: 13px;
+  color: var(--bb-muted);
+}
+
+.status-link {
+  color: var(--bb-ball);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.status-link:hover {
+  color: var(--bb-gold);
+}
+
+/* ─── Body ─── */
+.dashboard-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.brackets {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.section-sub {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.state-card {
+  padding: 32px;
+  text-align: center;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.bracket-card {
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card-title {
+  min-width: 0;
+}
+
+.card-title h2 {
+  font-size: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-meta {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.final-four {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.team-chip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip-seed {
+  color: var(--bb-muted);
+  margin-right: 4px;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--bb-line);
+}
+
+.new-card {
+  min-height: 240px;
+  padding: 18px;
+  border: 1px dashed var(--bb-line-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--bb-paper);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.new-card:hover {
+  border-color: var(--bb-ball);
+}
+
+.new-plus {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--bb-ball-tint);
+  color: var(--bb-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--bb-font-display);
+  font-weight: 800;
+  font-size: 26px;
+}
+
+.new-title {
+  font-family: var(--bb-font-display);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.new-note {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ─── News ─── */
+.news {
+  flex: 1 1 320px;
+  max-width: 380px;
+  min-width: 0;
+}
+
+.news-card {
+  padding: 18px;
+}
+
+.news-head {
+  margin-bottom: 6px;
+}
+
+.news-head h2 {
+  font-size: 24px;
 }
 
 .news-list {
@@ -241,39 +531,33 @@ const pickRoute = async () => {
 }
 
 .news-item {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 0;
+  border-top: 1px solid var(--bb-line);
   text-decoration: none;
-  padding: 10px 12px;
-  margin: 0 -12px;
-  border-radius: 10px;
-  transition: background-color 0.15s ease;
+  color: var(--bb-paper);
 }
 
-.news-item:hover {
-  background-color: rgba(255, 255, 255, 0.45);
-}
-
-.news-item + .news-item {
-  border-top: 1px solid rgba(7, 21, 42, 0.08);
+.news-item:first-child {
+  border-top: 0;
 }
 
 .news-title {
   font-size: 14px;
   font-weight: 600;
-  color: #07152a;
   line-height: 1.35;
-  margin: 0 0 2px;
 }
 
 .news-item:hover .news-title {
-  color: #ff6801;
+  color: var(--bb-ball);
 }
 
 .news-snippet {
   font-size: 13px;
-  color: rgba(7, 21, 42, 0.75);
   line-height: 1.4;
-  margin: 0 0 4px;
+  color: var(--bb-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -285,29 +569,20 @@ const pickRoute = async () => {
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: rgba(7, 21, 42, 0.5);
-  margin: 0;
+  color: var(--bb-muted);
 }
 
-.dashboard-title {
-  font-weight: 600;
-  text-align: start;
-}
-.build-bracket-btn {
-  min-width: 200px;
-  margin-left: 1rem;
-}
-.table-title {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: start;
-  padding-bottom: 10px;
-}
-@media (max-width: 700px) {
-  .dashboard-title { text-align: center; }
-  .elevation-1 { font-size: x-small; }
-  .elevation-1 .v-btn { font-size: 7px; padding: 3px; }
-  .build-bracket-btn { font-size: 7px; min-width: 0; width: 100px !important; }
+@media (max-width: 900px) {
+  .status-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .news {
+    max-width: none;
+  }
 }
 </style>
