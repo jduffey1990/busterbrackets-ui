@@ -1,10 +1,9 @@
 <template>
   <div class="builder-page">
-    <div class="title-card">
-      <h2>
-        <span class="user-name">{{ user.name }}</span>'s Bracket Builder
-      </h2>
-      <p class="title-sub">Boost a team if you're feeling loyal, name your bracket, and let Buster run the madness.</p>
+    <div class="builder-head">
+      <p class="eyebrow my-0">Bracket builder</p>
+      <h1>Let Buster run the field</h1>
+      <p class="title-sub my-0">Boost a team if you're feeling loyal, name your bracket, and let the simulation play all 63 games.</p>
     </div>
 
     <!-- Step 1: optional team boost -->
@@ -49,7 +48,7 @@
 
       <div v-else class="blurred">
         <div class="blurred-overlay">
-          This year's official bracket hasn't been released yet. Team boosts unlock once the field is set — you can still build a bracket below.
+          This year's official bracket hasn't been released yet. Team boosts unlock once the field is set. You can still build a bracket below.
         </div>
         <div class="blur-me">
           <v-autocomplete
@@ -105,14 +104,11 @@
       </v-expand-transition>
     </v-card>
 
-    <!-- How it works + disclaimer -->
+    <!-- How it works -->
     <v-card class="disclaimer-card" elevation="0">
       <h6 class="mb-2">How the simulation works</h6>
-      <p class="fine-print">
-        Every matchup is a weighted roll. The odds come from every tournament game since 1985: each seed earns a strength from that history, and each pairing's actual record is blended with it, so a 1 seed against a 16 is close to a lock while an 8 against a 9 is close to a coin flip. Pairings that rarely happen still get a sensible number instead of a guess. A boost adds its percentage to your team's chance in every one of its games. We roll round by round in each region, then play the Final Four and the championship.
-      </p>
       <p class="fine-print mb-0">
-        All predictions, projections, and suggestions provided on this website are for entertainment purposes only. We do not guarantee the accuracy or outcome of any bracket, and we cannot be held liable for any financial losses, wagering issues, or other damages incurred by following these picks or strategies. By using Buster Brackets, you acknowledge that all final decisions are your own and agree to hold Buster Brackets and its creators harmless for any results or consequences thereof.
+        Every matchup is a weighted roll. The odds come from every tournament game since 1985: each seed earns a strength from that history, and each pairing's actual record is blended with it, so a 1 seed against a 16 is close to a lock while an 8 against a 9 is close to a coin flip. Pairings that rarely happen still get a sensible number instead of a guess. A boost adds its percentage to your team's chance in every one of its games. We roll round by round in each region, then play the Final Four and the championship.
       </p>
     </v-card>
   </div>
@@ -147,7 +143,7 @@ const midwestDisplay = ref(false)
 const finalsDisplay = ref(false)
 const simRunning = ref(false)
 
-// Order matches the reveal order in createBracket; the simulation itself runs on the server.
+// Order matches the simulation order in createBracket
 const simSteps = computed(() => [
   { label: 'East region', done: eastDisplay.value },
   { label: 'Midwest region', done: midwestDisplay.value },
@@ -273,40 +269,24 @@ onMounted(async () => {
 .builder-page {
   max-width: 820px;
   margin: 0 auto;
-  padding: 0.5rem 1rem 2rem;
+  padding: 0.5rem 0 1rem;
 }
 
-.title-card {
+.builder-head {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, #ff6801 0%, #fcc35b 100%);
-  border-radius: 16px;
-  padding: 1.75rem 1.5rem;
+  gap: 8px;
   margin-bottom: 1.5rem;
-  text-align: center;
-  box-shadow: 0 10px 26px rgba(255, 104, 1, 0.3);
-}
-
-.title-card h2 {
-  margin: 0;
-  color: #fff;
-}
-
-.user-name {
-  color: #07152a;
 }
 
 .title-sub {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--bb-muted);
   font-size: 15px;
 }
 
 .step-card {
   padding: 1.5rem 1.75rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .step-header {
@@ -324,25 +304,28 @@ onMounted(async () => {
   flex: 0 0 30px;
   height: 30px;
   width: 30px;
-  border-radius: 50%;
-  background: #1071a0;
-  color: #fff;
+  border-radius: 8px;
+  background: var(--bb-ball);
+  color: var(--bb-court);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--bb-font-display);
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .optional {
-  font-weight: 400;
-  color: rgba(7, 21, 42, 0.55);
-  font-size: 15px;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--bb-muted);
 }
 
 .hint-text {
   font-size: 13px;
-  color: rgba(7, 21, 42, 0.65);
+  color: var(--bb-muted);
   margin: 0;
 }
 
@@ -353,7 +336,7 @@ onMounted(async () => {
 }
 
 .info-icon {
-  color: #1071a0;
+  color: var(--bb-muted);
 }
 
 .blurred {
@@ -371,8 +354,8 @@ onMounted(async () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.55);
-  border-radius: 12px;
+  background: rgba(20, 36, 64, 0.8);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -400,7 +383,7 @@ onMounted(async () => {
   gap: 0.6rem;
   margin-top: 1.25rem;
   padding-top: 1.25rem;
-  border-top: 1px solid rgba(7, 21, 42, 0.1);
+  border-top: 1px solid var(--bb-line);
 }
 
 .sim-step {
@@ -408,16 +391,16 @@ onMounted(async () => {
   align-items: center;
   gap: 0.6rem;
   font-size: 14px;
-  color: rgba(7, 21, 42, 0.55);
+  color: var(--bb-muted);
 }
 
 .sim-step.done {
-  color: #07152a;
+  color: var(--bb-paper);
   font-weight: 600;
 }
 
 .pending-icon {
-  color: rgba(7, 21, 42, 0.3);
+  color: var(--bb-line-strong);
 }
 
 .disclaimer-card {
@@ -425,10 +408,9 @@ onMounted(async () => {
 }
 
 .fine-print {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
-  color: rgba(7, 21, 42, 0.65);
-  margin-bottom: 0.75rem;
+  color: var(--bb-muted);
 }
 
 @media (max-width: 700px) {
