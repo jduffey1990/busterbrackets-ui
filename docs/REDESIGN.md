@@ -11,7 +11,8 @@ The move was a stash, reset to `origin/main`, and stash pop; the three conflicts
 The diff against `main` is now the redesign alone; the Builder shows only the restyle.
 After the move: lint clean, `yarn build` passes, and one simulation ran through the restyled Builder against the merged `/simulate-bracket` (both calls 200, screenshots in the session scratchpad under `shots-rebase/`).
 
-Resume here: all four phases are built and verified; nothing is committed. Next is Jordan's review of the diff, then commits in this grouping: (1) foundation and page color fixes, (2) bracket view, (3) dashboard, (4) builder.
+Resume here: all four phases are built, verified, and committed in this grouping: (1) foundation and page color fixes, (2) bracket view, (3) dashboard, (4) builder.
+Next is the no-mistakes gate run and the PR.
 
 ```bash
 cd ~/code/buster && docker compose up -d            # users on :3011, brackets on :3012
