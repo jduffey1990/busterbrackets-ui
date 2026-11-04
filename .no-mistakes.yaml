@@ -8,9 +8,11 @@ agent: claude
 commands:
   prepare: "PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH yarn install --frozen-lockfile"
   lint: "PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH npx eslint . --ignore-path .gitignore"
-  # There is no unit test runner in this repo; the production build is the
-  # check that the app still compiles. Live validation is the gate's test agent.
-  test: "PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH yarn build"
+  # The production build proves the app compiles; the Playwright smoke suite
+  # (e2e/, services mocked in the browser) proves every page still works at
+  # desktop and phone widths. Chromium comes from ~/Library/Caches/ms-playwright,
+  # installed once with `npx playwright install chromium`.
+  test: "PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH yarn build && PATH=/Users/jordanduffey/.nvm/versions/node/v20.19.6/bin:$PATH yarn test:e2e"
 
 ignore_patterns:
   - "dist/**"
