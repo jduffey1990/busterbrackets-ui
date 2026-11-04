@@ -1,10 +1,8 @@
 <template>
   <v-app class="overall-app">
-    <div class="header-div">
-      <Header/>
-    </div>
+    <Header/>
     <UiToast>
-      <v-main class="padding-add">
+      <v-main>
         <v-container>
           <router-view></router-view>
         </v-container>
@@ -33,9 +31,7 @@ import Overlay from './components/Overlay.vue';
 import { useOverlayStore } from '@/store/overlay';
 import { useUserStore } from '@/store/user';
 import { useServerStatusStore } from '@/store/serverStatus';
-import { storeToRefs } from 'pinia';
-import { inject, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { inject, onMounted } from 'vue';
 
 const overlayStore = useOverlayStore();
 const serverStatusStore = useServerStatusStore();
@@ -43,9 +39,7 @@ const serverStatusStore = useServerStatusStore();
 const $users = inject('$usersApi');
 const $brackets = inject('$bracketsApi');
 
-const { user } = storeToRefs(useUserStore());
 const router = useRouter();
-const route = useRoute();
 
 let timeout;
 let debounceTimeout;
@@ -103,40 +97,6 @@ document.addEventListener('scroll', debouncedResetTimer);
 <style>
 .overall-app {
   width: 100%;
-  background:
-    radial-gradient(1100px 500px at 85% -5%, rgba(255, 255, 255, 0.28), transparent 60%),
-    radial-gradient(900px 600px at -10% 100%, rgba(7, 21, 42, 0.22), transparent 55%),
-    linear-gradient(160deg, #28F6F4 0%, #1BB6C9 38%, #1071A0 100%) !important;
-  background-attachment: fixed !important;
-}
-.header-div {
-  height: 150px;
-}
-
-.padding-add {
-  padding-top: 10px !important;
-}
-
-.appBackground {
-  background: linear-gradient(180deg, #E1EFFF 50%, #F9BBA9 90.05%) !important;
-  min-height: 87vh;
-  width: 100% !important;
-}
-
-.whiteBackground {
-  background-color: white !important;
-  min-height: 87vh;
-  width: 100% !important;
-}
-
-.trans-background {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-@media only screen and (max-width: 700px) {
-  .header-div {
-    height: 190px;
-    transform: translateY(20px);
-  }
+  background: var(--bb-court) !important;
 }
 </style>

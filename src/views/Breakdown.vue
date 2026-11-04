@@ -38,7 +38,7 @@
             :size="92"
             :width="9"
             color="warning"
-            bg-color="rgba(7, 21, 42, 0.1)"
+            bg-color="rgba(255, 255, 255, 0.12)"
           >
             <span class="ring-score">{{ comparisonStats.correctPicks }}<small>/{{ comparisonStats.totalGames }}</small></span>
           </v-progress-circular>
@@ -58,7 +58,7 @@
                 :key="upset"
                 size="small"
                 variant="flat"
-                color="info"
+                color="success"
                 class="upset-chip"
               >
                 {{ upset }}
@@ -77,7 +77,7 @@
       <v-card class="narrative-card" elevation="0">
         <div class="narrative-title">
           <v-avatar color="warning" size="36">
-            <v-icon color="white">mdi-basketball</v-icon>
+            <v-icon>mdi-basketball</v-icon>
           </v-avatar>
           <h4>Buster's Take</h4>
         </div>
@@ -217,13 +217,13 @@ onMounted(() => {
 .ring-score {
   font-size: 18px;
   font-weight: 700;
-  color: #07152a;
+  color: var(--bb-paper);
 }
 
 .ring-score small {
   font-size: 12px;
   font-weight: 500;
-  color: rgba(7, 21, 42, 0.6);
+  color: var(--bb-muted);
 }
 
 .upset-chips {

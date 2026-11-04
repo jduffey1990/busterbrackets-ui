@@ -1,166 +1,103 @@
 <template>
-  <!-- Page Container -->
-  <div class="px-0 py-0 d-flex flex-column">
-    <!-- Registration/Log In Notice -->
-    <div class="center">
-    </div>
-    <!-- Hero / Header Section -->
-    <div class="hero-header">
-      <h1 class="display-1 font-weight-bold mb-3 mt-10 white--text">
-        Welcome to Buster Brackets!
-      </h1>
-      <p class="subtitle-1 white--text">
-        Where every bracket is a masterpiece in the making.
+  <div class="home">
+    <section class="hero">
+      <p class="eyebrow">NCAA tournament bracket builder</p>
+      <h1 class="hero-title">A bracket with forty years of history behind every pick</h1>
+      <p class="hero-sub">
+        Buster simulates the whole field from the record of every tournament game since 1985, lets you give your team an edge, and tells you how it went when the real games are played.
       </p>
+      <div class="hero-actions">
+        <v-btn color="primary" size="large" to="/login">Get started</v-btn>
+        <v-btn variant="outlined" color="secondary" size="large" to="/login">Log in</v-btn>
+      </div>
+    </section>
 
-      <iframe src="https://www.loom.com/embed/99926e7b2b5c497a9afe4149e0692a03?sid=84a2c702-e044-4aa5-9c33-18b12ae215da&hideEmbedTopBar=true" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen class="video"></iframe>
-    </div>
-
-    <!-- Main Content Section -->
-    <v-row justify="center" >
-      <v-col class="content-bottom">
-        <!-- Registration/Log In Notice -->
-        <!-- Services Card -->
-        <v-card
-          elevation="6"
-          class="mb-6 services-card"
-        >
-          <v-card-title class="white--text">
-            What We Offer
-          </v-card-title>
-          <v-card-text class="white--text px-8">
-            <p>
-              At Buster Brackets, we strive to bring you the ultimate college basketball 
-              championship bracket experience. Here’s what you can expect:
-            </p>
-            <ul class="white--text">
-              <li>
-                <strong>Bracket Management:</strong>
-                Create and save your bracket so you can track its performance. PDF downloads allow you to share with your tournament competition or even stick your pride-and-joy to the fridge!
-              </li>
-              <li>
-                <strong>Smart Algorithm:</strong>
-                We use historical win/loss records, advanced analytics, and 
-                an odds mapping system to help you make informed picks, 
-                even when data is limited.
-              </li>
-              <li>
-                <strong>Developing AI Insights:</strong>
-                Our AI is constantly learning and will soon provide 
-                an even deeper analysis of your bracket picks.
-              </li>
-            </ul>
-          </v-card-text>
-        </v-card>
-
-        <v-btn
-        href="/login"
-        color="warning"
-        elevation="3"
-        large
-        rounded
-        class="mx-auto mt-4 mb-4"
-      >
-        Get Started
-      </v-btn>
-
-        <!-- Disclaimer -->
-        <v-alert
-          type="warning"
-          elevation="2"
-          border="start"
-          class="mb-6"
-        >
-          <strong>Disclaimer:</strong> All predictions, projections, and suggestions 
-          provided on this website are for entertainment purposes only. We do not 
-          guarantee the accuracy or outcome of any bracket, and we cannot be held liable 
-          for any financial losses, wagering issues, or other damages incurred by following 
-          these picks or strategies. By using Buster Brackets, you acknowledge that all final 
-          decisions are your own and agree to hold Buster Brackets and its creators harmless 
-          for any results or consequences thereof.
-        </v-alert>
-
-
-      </v-col>
-    </v-row>
+    <section class="features">
+      <v-card class="feature">
+        <v-icon color="primary" size="28">mdi-tournament</v-icon>
+        <h4>Build and keep</h4>
+        <p class="mb-0">Name a bracket, run the simulation, and keep every one you build. Download a PDF for the pool or the fridge.</p>
+      </v-card>
+      <v-card class="feature">
+        <v-icon color="primary" size="28">mdi-chart-bell-curve</v-icon>
+        <h4>Odds, not coin flips</h4>
+        <p class="mb-0">Every matchup is weighted by the real seed-versus-seed record. A 1 seed against a 16 is close to a lock. An 8 against a 9 is close to even.</p>
+      </v-card>
+      <v-card class="feature">
+        <v-icon color="primary" size="28">mdi-basketball</v-icon>
+        <h4>Buster's take</h4>
+        <p class="mb-0">After the games, see how many you called, which upsets you nailed, and a recap of what your bracket got right.</p>
+      </v-card>
+    </section>
   </div>
 </template>
 
 <style scoped>
-/* Page Container to allow for a gradient hero header */
-.center{
-display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.hero-header {
+.home {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 40px;
-}
-.display-1 {
-  text-align: center;
-  padding: 10px;
+  gap: 48px;
+  padding: 24px 0 32px;
 }
 
-/* Subtitle style tweak */
-.subtitle-1 {
+.hero {
+  max-width: 760px;
+  margin: 0 auto;
   text-align: center;
-  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-title {
+  font-size: clamp(40px, 6vw, 64px);
+  line-height: 0.95;
+}
+
+.hero-sub {
   max-width: 600px;
+  font-size: 16px;
+  color: var(--bb-muted);
   margin: 0;
 }
 
-.content-bottom {
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.feature {
+  padding: 22px 22px 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  gap: 10px;
 }
 
-/* Services card slight style changes */
-.services-card {
-  border-radius: 12px;
-  background-color: rgba(255,255,255,0.2);
-  margin-top:20px
+.feature p {
+  font-size: 14px;
+  color: var(--bb-muted);
 }
 
-/* Tweak the look of bullet points */
-.services-card ul {
-  list-style: disc;
-}
-
-/* Button hover effect (just an example) */
-.v-btn:hover {
-  transform: scale(1.02);
-  transition: transform 0.2s ease-in-out;
-}
-
-/* Minor text shadow for that “pop” */
-.hero-header h1 {
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-}
-.video {
-  width: 640px;
-  height: 372px;
+@media (max-width: 900px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 700px) {
-  .content-bottom {
-    margin-top: 80px;
+  .home {
+    gap: 36px;
+    padding-top: 12px;
   }
-  .hero-header {
-    height: 30vh;
-  }
-
-  .video {
-  width: 350px;
-  height: 203px;
-}
 }
 </style>
