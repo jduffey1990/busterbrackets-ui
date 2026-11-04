@@ -7,3 +7,6 @@ dist
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+dist-e2e
+playwright-report
+test-results
