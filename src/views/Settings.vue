@@ -198,7 +198,7 @@ const account = ref({
   credits: ""
 });
 
-const accountCopy = ref({...account});
+const accountCopy = ref({...account.value});
 
 const getUser = async () => {
   try {
@@ -223,19 +223,19 @@ const startEditing = () => {
 const cancelEdit = () => {
   isEditing.value = false;
   // Reset the account to the saved state
-  Object.assign(account, accountCopy);
+  account.value = {...accountCopy.value};
 };
 
 // Function to check if there are unsaved changes
 const hasUnsavedChanges = () => {
-  return JSON.stringify(account) !== JSON.stringify(accountCopy);
+  return JSON.stringify(account.value) !== JSON.stringify(accountCopy.value);
 };
 
 // Save profile function
 const saveProfile = async () => {
   try {
     await $users.patch('/edit-user', account.value);
-    Object.assign(accountCopy, {...account}); // Update accountCopy after saving
+    accountCopy.value = {...account.value}; // Update accountCopy after saving
     show({message: 'Account saved!'});
     isEditing.value=false
   } catch (error) {
