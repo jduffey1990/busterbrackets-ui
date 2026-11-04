@@ -107,7 +107,10 @@ onUnmounted(() => {
 
 const appBarStyle = computed(() => {
   return {
-    backgroundColor: `rgba(255, 255, 255, ${opacity.value})`,
+    backgroundColor: `rgba(255, 255, 255, ${opacity.value * 0.7})`,
+    backdropFilter: opacity.value ? 'blur(14px)' : 'none',
+    borderBottom: opacity.value ? '1px solid rgba(255, 255, 255, 0.5)' : 'none',
+    transition: 'background-color 0.25s ease, border-bottom 0.25s ease',
   };
 });
 

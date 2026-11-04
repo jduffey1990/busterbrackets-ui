@@ -1,83 +1,67 @@
 <template>
   <div class="bracket-page">
     <div v-if="displayData">
-      <!-- Region Tabs -->
+      <!-- Bracket header -->
+      <div class="bracket-header">
+        <h2>{{ bracketReturned.name || 'My Bracket' }}</h2>
+        <div class="bracket-meta">
+          <v-chip size="small" variant="flat" color="secondary">
+            {{ yearBracketString }} Tournament
+          </v-chip>
+          <v-chip
+            v-if="finalsData.champion"
+            size="small"
+            variant="flat"
+            color="warning"
+            prepend-icon="mdi-trophy"
+          >
+            Champion: {{ teamTitle(finalsData.champion) }}
+          </v-chip>
+        </div>
+      </div>
+
+      <!-- Region / Finals Tabs -->
       <v-tabs v-model="selectedRegion" color="warning" class="mb-4">
         <v-tab value="east">East</v-tab>
         <v-tab value="west">West</v-tab>
         <v-tab value="south">South</v-tab>
         <v-tab value="midwest">Midwest</v-tab>
+        <v-tab value="finals">Final Four</v-tab>
       </v-tabs>
 
-      <!-- Region Bracket -->
-      <div v-for="region in ['east', 'west', 'south', 'midwest']" :key="region">
-        <div v-if="selectedRegion === region">
-          <h3 class="text-capitalize mb-2">{{ region }} Region</h3>
-          <div class="bracket-region">
-            <div
-              v-for="roundKey in ['round32', 'sweet16', 'elite8']"
-              :key="roundKey"
-              class="round"
-            >
-              <div
-                v-for="(matchup, mIdx) in chunkArray(bracketData[region][roundKey], 2)"
-                :key="mIdx"
-                class="matchup"
-              >
-                <v-card
-                  v-for="(seed, sIdx) in matchup"
-                  :key="sIdx"
-                  class="matchup-card"
-                  elevation="1"
-                >
-                  {{ formatName(seed) }}
-                </v-card>
+      <!-- Staged bracket -->
+      <div class="bracket-scroll">
+        <div class="bracket-grid" :class="{ 'finals-grid': selectedRegion === 'finals' }">
+          <div
+            v-for="(col, cIdx) in activeColumns"
+            :key="col.label"
+            class="round"
+            :class="{ 'straight-in': col.straightIn }"
+          >
+            <div class="round-label">{{ col.label }}</div>
+            <div class="round-body">
+              <div v-for="(pair, pIdx) in col.pairs" :key="pIdx" class="matchup">
+                <div class="pair">
+                  <div
+                    v-for="(seed, sIdx) in pair"
+                    :key="sIdx"
+                    class="team-card"
+                    :class="{
+                      advanced: col.next && seed && col.next.includes(seed),
+                      champ: col.champ,
+                    }"
+                  >
+                    <span class="seed-badge">{{ seedNum(seed) }}</span>
+                    <span class="team-name">{{ teamTitle(seed) }}</span>
+                    <v-icon v-if="col.champ" size="20" class="trophy">mdi-trophy</v-icon>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          <!-- Region Champion -->
-          <div class="region-champ mt-4">
-            <span class="text-subtitle-2 mr-2">Region Champion:</span>
-            <v-card class="matchup-card champion-card" elevation="2">
-              {{ formatName(bracketData[region]?.regionChamp) }}
-            </v-card>
-          </div>
         </div>
       </div>
-
-      <!-- Finals -->
-      <div class="finals-section mt-6">
-        <h3 class="mb-2">Final Four &amp; Champion</h3>
-        <div class="bracket-region">
-          <!-- Final Four matchups: teams[0] vs teams[1], teams[2] vs teams[3] -->
-          <div class="round">
-            <div class="matchup">
-              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[0]) }}</v-card>
-              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[1]) }}</v-card>
-            </div>
-            <div class="matchup">
-              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[2]) }}</v-card>
-              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.teams?.[3]) }}</v-card>
-            </div>
-          </div>
-          <!-- Semifinal winners (championship game participants) -->
-          <div class="round">
-            <div class="matchup">
-              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.semifinals?.[0]) }}</v-card>
-              <v-card class="matchup-card" elevation="1">{{ formatName(finalsData.semifinals?.[1]) }}</v-card>
-            </div>
-          </div>
-          <!-- Champion -->
-          <div class="round">
-            <div class="matchup">
-              <v-card class="matchup-card champion-card" elevation="3">
-                🏆 {{ formatName(finalsData.champion) }}
-              </v-card>
-            </div>
-          </div>
-        </div>
-      </div>
+      <p class="scroll-hint text-caption">Scroll sideways to follow the rounds →</p>
     </div>
 
     <!-- Server error -->
@@ -103,14 +87,14 @@ import { useServerStatusStore } from '@/store/serverStatus'
 import { useUserStore } from '@/store/user'
 import {
   baseTeamNames,
-  formatTeamDisplay,
+  formatTeamTitle,
   startingBracketEast,
   startingBracketMidwest,
   startingBracketSouth,
   startingBracketWest,
 } from '@/utils/bracketStruc'
 import { storeToRefs } from 'pinia'
-import { inject, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -140,9 +124,11 @@ const startingSeeds = {
 const bracketId = route.query.id
 
 // ─── Formatting ───
-const formatName = (seedString) => {
-  if (!seedString) return ''
-  return formatTeamDisplay(seedString, tournamentTeams.value)
+const seedNum = (seedString) => (seedString ? seedString.slice(1) : '')
+
+const teamTitle = (seedString) => {
+  if (!seedString) return 'TBD'
+  return formatTeamTitle(seedString, tournamentTeams.value)
 }
 
 const chunkArray = (arr, size) => {
@@ -152,6 +138,38 @@ const chunkArray = (arr, size) => {
   }
   return chunks
 }
+
+// ─── Bracket columns ───
+// Each column: { label, pairs, next, champ?, straightIn? }
+//  - pairs: matchups (arrays of 1-2 seed strings) rendered top to bottom
+//  - next: the following round's seeds, used to highlight advancing teams
+//  - straightIn: column has a 1:1 feeder (no forking bracket connector)
+const regionColumns = (region) => {
+  const data = bracketData.value[region]
+  if (!data) return []
+  return [
+    { label: 'First Round', pairs: chunkArray(startingSeeds[region], 2), next: data.round32 },
+    { label: 'Second Round', pairs: chunkArray(data.round32, 2), next: data.sweet16 },
+    { label: 'Sweet 16', pairs: chunkArray(data.sweet16, 2), next: data.elite8 },
+    { label: 'Elite Eight', pairs: chunkArray(data.elite8, 2), next: [data.regionChamp] },
+    { label: 'Region Champion', pairs: [[data.regionChamp]], champ: true, straightIn: true },
+  ]
+}
+
+const finalsColumns = () => {
+  const finals = finalsData.value
+  if (!finals.teams) return []
+  return [
+    { label: 'Final Four', pairs: chunkArray(finals.teams, 2), next: finals.semifinals },
+    { label: 'Championship', pairs: [finals.semifinals || []], next: [finals.champion] },
+    { label: 'National Champion', pairs: [[finals.champion]], champ: true, straightIn: true },
+  ]
+}
+
+const activeColumns = computed(() => {
+  if (selectedRegion.value === 'finals') return finalsColumns()
+  return regionColumns(selectedRegion.value)
+})
 
 // ─── Data loading ───
 const getBracket = async () => {
@@ -221,63 +239,226 @@ onMounted(() => {
 <style scoped>
 .bracket-page {
   padding: 1rem;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
-.region-champ {
+.bracket-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-.bracket-region {
+.bracket-header h2 {
+  margin: 0;
+}
+
+.bracket-meta {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ─── Bracket grid ─────────────────────────────────────────────
+   Every round column stretches to the height of the tallest
+   (the first round). Matchups flex evenly within that height, so
+   each game sits vertically centered between its two feeder games
+   — the classic staged-bracket shape. */
+.bracket-scroll {
   overflow-x: auto;
+  padding: 0.5rem 0.25rem 1rem;
+}
+
+.bracket-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 34px;
+  min-width: 960px;
+}
+
+.finals-grid {
+  min-width: 640px;
+  max-width: 760px;
+  margin: 0 auto;
 }
 
 .round {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  min-width: 140px;
+  flex: 1 1 0;
+  min-width: 160px;
+}
+
+.round-label {
+  height: 30px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(7, 21, 42, 0.65);
+}
+
+.round-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .matchup {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  margin: 0.25rem 0;
+  justify-content: center;
+  position: relative;
+  padding: 5px 0;
 }
 
-.matchup-card {
-  padding: 0.4rem 0.6rem;
-  margin: 1px 0;
-  font-size: 0.8rem;
-  min-width: 130px;
+.pair {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── Connector lines ─── */
+/* outgoing stub from each matchup's center toward the next round */
+.round:not(:last-child) .pair::after {
+  content: '';
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  width: 18px;
+  height: 2px;
+  margin-top: -1px;
+  background: rgba(7, 21, 42, 0.3);
+}
+
+/* incoming stub into each matchup's center */
+.round:not(:first-child) .pair::before {
+  content: '';
+  position: absolute;
+  left: -17px;
+  top: 50%;
+  width: 17px;
+  height: 2px;
+  margin-top: -1px;
+  background: rgba(7, 21, 42, 0.3);
+}
+
+/* vertical joiner between the two feeder games (skipped for 1:1 columns) */
+.round:not(:first-child):not(.straight-in) .matchup::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 25%;
+  height: 50%;
+  width: 2px;
+  background: rgba(7, 21, 42, 0.3);
+}
+
+/* ─── Team cards ─── */
+.team-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-left: 3px solid transparent;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  font-size: 13px;
+  font-weight: 500;
+  color: #07152a;
   white-space: nowrap;
+  overflow: hidden;
 }
 
-.champion-card {
-  font-weight: bold;
-  font-size: 1rem;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #333;
+.team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.finals-section {
-  border-top: 2px solid #e6cc80;
-  padding-top: 1rem;
+.seed-badge {
+  flex: 0 0 22px;
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  background: rgba(16, 113, 160, 0.9);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.team-card.advanced {
+  background: rgba(255, 255, 255, 0.88);
+  border-left: 3px solid #ff6801;
+  font-weight: 600;
+}
+
+.team-card.champ {
+  height: 56px;
+  background: linear-gradient(135deg, #ff6801, #fcc35b);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 8px 20px rgba(255, 104, 1, 0.35);
+}
+
+.team-card.champ .seed-badge {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.team-card.champ .trophy {
+  margin-left: auto;
+  color: #fff;
+}
+
+.scroll-hint {
+  display: none;
+  color: rgba(7, 21, 42, 0.55);
+  margin: 0 0 0.5rem 0.25rem;
+}
+
+@media (max-width: 980px) {
+  .scroll-hint {
+    display: block;
+  }
 }
 
 @media (max-width: 700px) {
-  .matchup-card {
-    font-size: 0.65rem;
-    min-width: 90px;
-    padding: 0.3rem 0.4rem;
+  .bracket-grid {
+    min-width: 820px;
+    gap: 28px;
+  }
+
+  .round {
+    min-width: 130px;
+  }
+
+  .team-card {
+    height: 36px;
+    font-size: 11px;
+    padding: 0 7px;
+    gap: 6px;
+  }
+
+  .seed-badge {
+    flex-basis: 18px;
+    height: 18px;
+    width: 18px;
+    font-size: 10px;
   }
 }
 </style>
