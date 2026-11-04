@@ -3,29 +3,8 @@
 // the browser by e2e/mock-api.js. Each test saves a full-page screenshot
 // under test-results/ so a reviewer can look at what the run saw.
 import { expect, test } from '@playwright/test'
-import { installMockApi, PASSWORD, USER } from './mock-api.mjs'
-
-const isMobile = () => test.info().project.name === 'mobile'
-
-// animations: 'disabled' lets CSS transitions (floating labels, menus) finish
-// before capture, so a screenshot under parallel load is not mid-animation.
-const snap = (page, name) =>
-  page.screenshot({ path: test.info().outputPath(`${name}.png`), fullPage: true, animations: 'disabled' })
-
-const loginForm = {
-  username: (page) => page.getByLabel('Username'),
-  password: (page) => page.locator('input[type="password"]'),
-  // The header carries a "Log in" link too; the submit is the last match.
-  submit: (page) => page.getByRole('button', { name: 'Log in', exact: true }).last(),
-}
-
-async function logIn(page) {
-  await page.goto('/login')
-  await loginForm.username(page).fill(USER.username)
-  await loginForm.password(page).fill(PASSWORD)
-  await loginForm.submit(page).click()
-  await page.waitForURL('**/dashboard')
-}
+import { isMobile, logIn, loginForm, snap } from './helpers.mjs'
+import { installMockApi, USER } from './mock-api.mjs'
 
 test.describe('logged out', () => {
   test.beforeEach(async ({ page }) => {

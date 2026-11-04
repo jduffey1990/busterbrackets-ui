@@ -11,8 +11,14 @@ const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, 
 const TOURNAMENT = fixture('tournament-2026.json')
 const BRACKETS = fixture('brackets.json')
 
+// The app asks for the current year's field (builder, dashboard strip) and
+// for the year each bracket was built (cards). Both resolve to the same
+// fixture so the suite does not depend on the calendar.
+export const FIELD_YEAR = new Date().getFullYear()
+
 export const PASSWORD = 'password123'
 export const TOKEN = 'e2e-token'
+export const RESET_TOKEN = 'good-reset-token'
 export const USER = {
   _id: '6e2e00000000000000000001',
   username: 'user1',
@@ -61,17 +67,62 @@ export const BREAKDOWN = {
 
 const teamName = (seedKey) => TOURNAMENT.teams[seedKey]
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// Stand-in for https://js.stripe.com/v3. The real script renders card fields
+// in iframes that a test cannot drive; this one mounts a labelled box per
+// element and makes confirmPayment do what the test asked for.
+const stripeStub = (outcome) => `
+window.Stripe = function () {
+  return {
+    elements: function () {
+      return {
+        create: function (type) {
+          return {
+            mount: function (selector) {
+              var el = document.querySelector(selector)
+              el.innerHTML = '<div class="e2e-stripe-element" data-type="' + type + '">Stripe ' + type + ' element</div>'
+            },
+          }
+        },
+      }
+    },
+    confirmPayment: function (opts) {
+      if (${JSON.stringify(outcome)} === 'redirect') {
+        window.location.href = opts.confirmParams.return_url
+        return new Promise(function () {})
+      }
+      return Promise.resolve({ error: { message: 'Your card was declined.' } })
+    },
+  }
+}
+`
+
 /**
  * Routes every request to the two fake service hosts through fixtures and
  * returns the mutable state the handlers read and write, so a test can
  * inspect what was called and what was created.
+ *
+ * options.user         fields merged over USER (role: 'admin', credits: 0, ...)
+ * options.pingDelayMs  hold /ping-bracket this long, to show the warming state
+ * options.breakdowns   { [bracketId]: partial breakdown } overrides per bracket
+ * options.stripe       'decline' | 'redirect': installs the Stripe stub
+ * options.noField      true: no tournament exists for the current year
  */
-export async function installMockApi(page) {
+export async function installMockApi(page, options = {}) {
   const state = {
-    user: { ...USER },
+    user: { ...USER, ...options.user },
     brackets: structuredClone(BRACKETS),
+    tournaments: {
+      2026: structuredClone(TOURNAMENT),
+      [FIELD_YEAR]: { ...structuredClone(TOURNAMENT), year: FIELD_YEAR },
+    },
     calls: [],
   }
+  if (options.noField) delete state.tournaments[FIELD_YEAR]
+
+  const findBracket = (params) => state.brackets.find((b) => b._id === params.get('id'))
+  const notFound = (what) => ({ status: 404, body: { error: `${what} not found` } })
 
   const users = {
     'GET /ping-user': () => ({ body: 'pinged backend' }),
@@ -86,23 +137,65 @@ export async function installMockApi(page) {
       state.user.credits -= 1
       return { body: state.user }
     },
+    'PATCH /edit-user': (params, body) => {
+      state.user = { ...state.user, name: `${body.firstName} ${body.lastName}`, email: body.email }
+      return { body: state.user }
+    },
+    'PATCH /change-password': (params, body) =>
+      body?.currentPassword === PASSWORD
+        ? { body: { message: 'Password updated.' } }
+        : { status: 400, body: { error: 'Current password is incorrect.' } },
+    'POST /forgot-password': () => ({ body: { message: 'If that account exists, a reset link is on its way.' } }),
+    'POST /reset-password': (params, body) =>
+      body?.token === RESET_TOKEN
+        ? { body: { message: 'Password reset.' } }
+        : { status: 400, body: { error: 'That reset token has expired.' } },
+    'POST /create-user': (params, body) =>
+      body?.username === USER.username || body?.email === USER.email
+        ? { status: 409, body: { error: 'duplicate key value violates unique constraint "users_username_key"' } }
+        : { status: 201, body: { ...USER, _id: '6e2e00000000000000000002', username: body.username, email: body.email, name: body.name, credits: 0 } },
+    'GET /create-payment-intent': () => ({ body: { clientSecret: 'pi_e2e_secret_placeholder' } }),
   }
 
   const brackets = {
-    'GET /ping-bracket': () => ({ body: 'pinged backend' }),
+    'GET /ping-bracket': async () => {
+      if (options.pingDelayMs) await sleep(options.pingDelayMs)
+      return { body: 'pinged backend' }
+    },
     'GET /get-user-brackets': () => ({ body: state.brackets }),
     'GET /get-bracket': (params) => {
-      const found = state.brackets.find((b) => b._id === params.get('id'))
-      return found ? { body: found } : { status: 404, body: { error: 'Bracket not found' } }
+      const found = findBracket(params)
+      return found ? { body: found } : notFound('Bracket')
     },
-    'GET /tournament-data/years': () => ({ body: { years: [TOURNAMENT.year] } }),
-    'GET /tournament-data': (params) => ({ body: { ...TOURNAMENT, year: Number(params.get('year')) } }),
+    'GET /tournament-data/years': () => ({
+      body: { years: Object.keys(state.tournaments).map(Number).sort((a, b) => b - a) },
+    }),
+    'GET /tournament-data': (params) => {
+      const found = state.tournaments[params.get('year')]
+      return found ? { body: found } : notFound('Tournament')
+    },
+    'POST /tournament-data': (params, body) => {
+      state.tournaments[body.year] = { year: body.year, teams: body.teams, results: null }
+      return { status: 201, body: state.tournaments[body.year] }
+    },
+    'PUT /tournament-data/teams': (params, body) => {
+      const found = state.tournaments[body.year]
+      if (!found) return notFound('Tournament')
+      found.teams = body.teams
+      return { body: found }
+    },
+    'PUT /tournament-data/results': (params, body) => {
+      const found = state.tournaments[body.year]
+      if (!found) return notFound('Tournament')
+      found.results = body.results
+      return { body: found }
+    },
     'GET /news': () => ({ body: NEWS }),
     'GET /breakdown': (params) => {
-      const found = state.brackets.find((b) => b._id === params.get('id'))
+      const found = findBracket(params)
       return found
-        ? { body: { ...BREAKDOWN, bracketName: found.name } }
-        : { status: 404, body: { error: 'Bracket not found' } }
+        ? { body: { ...BREAKDOWN, bracketName: found.name, ...options.breakdowns?.[found._id] } }
+        : notFound('Bracket')
     },
     // The simulation always returns the second fixture bracket, so the
     // builder test can assert on a known champion.
@@ -145,7 +238,7 @@ export async function installMockApi(page) {
 
     const handler = service[`${method} ${url.pathname}`]
     const result = handler
-      ? handler(url.searchParams, body, authed)
+      ? await handler(url.searchParams, body, authed)
       : { status: 404, body: { error: `no mock for ${method} ${url.pathname}` } }
     return route.fulfill({
       status: result.status || 200,
@@ -154,6 +247,12 @@ export async function installMockApi(page) {
       body: JSON.stringify(result.body),
     })
   })
+
+  if (options.stripe) {
+    await page.route(/^https:\/\/js\.stripe\.com\/v3/, (route) =>
+      route.fulfill({ status: 200, contentType: 'application/javascript', body: stripeStub(options.stripe) }),
+    )
+  }
 
   return { state, teamName, tournament: TOURNAMENT, brackets: BRACKETS }
 }
