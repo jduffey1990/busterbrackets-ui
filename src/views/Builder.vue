@@ -147,7 +147,7 @@ const midwestDisplay = ref(false)
 const finalsDisplay = ref(false)
 const simRunning = ref(false)
 
-// Order matches the simulation order in createBracket
+// Order matches the reveal order in createBracket; the simulation itself runs on the server.
 const simSteps = computed(() => [
   { label: 'East region', done: eastDisplay.value },
   { label: 'Midwest region', done: midwestDisplay.value },
