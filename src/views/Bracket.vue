@@ -1,59 +1,93 @@
 <template>
   <div class="bracket-page">
     <div v-if="displayData">
-      <!-- Bracket header -->
       <div class="bracket-header">
-        <h2>{{ bracketReturned.name || 'My Bracket' }}</h2>
-        <div class="bracket-meta">
-          <v-chip size="small" variant="flat" color="secondary">
-            {{ yearBracketString }} Tournament
-          </v-chip>
-          <v-chip
-            v-if="finalsData.champion"
-            size="small"
-            variant="flat"
-            color="warning"
-            prepend-icon="mdi-trophy"
-          >
-            Champion: {{ teamTitle(finalsData.champion) }}
-          </v-chip>
+        <div class="bracket-heading">
+          <router-link to="/dashboard" class="back-link">← My brackets</router-link>
+          <h1>{{ bracketReturned.name || 'My bracket' }}</h1>
+          <div class="bracket-meta">
+            <v-chip size="small" variant="tonal" color="secondary">{{ yearBracketString }} field</v-chip>
+            <v-chip v-if="finalsData.champion" size="small" variant="tonal" color="primary" prepend-icon="mdi-trophy">
+              Champion · {{ teamTitle(finalsData.champion) }}
+            </v-chip>
+            <v-chip v-if="upsetCount" size="small" variant="tonal" color="success">
+              {{ upsetCount }} {{ upsetCount === 1 ? 'upset' : 'upsets' }}
+            </v-chip>
+            <span class="text-muted created">Built {{ createdLabel }}</span>
+          </div>
+        </div>
+        <div class="bracket-actions">
+          <v-btn variant="outlined" color="secondary" :to="{ name: 'Breakdown', query: { id: bracketId } }">
+            Breakdown
+          </v-btn>
         </div>
       </div>
 
-      <!-- Region / Finals Tabs -->
-      <v-tabs v-model="selectedRegion" color="warning" class="mb-4">
-        <v-tab value="east">East</v-tab>
-        <v-tab value="west">West</v-tab>
-        <v-tab value="south">South</v-tab>
-        <v-tab value="midwest">Midwest</v-tab>
-        <v-tab value="finals">Final Four</v-tab>
-      </v-tabs>
+      <!-- Wide screens: the whole field, four regions converging on the center -->
+      <p v-if="fullField" class="scroll-hint text-muted">Scroll sideways to see the whole field</p>
+      <div v-if="fullField" class="field-scroll">
+        <div class="field">
+          <div class="round-labels">
+            <div class="labels-side">
+              <span v-for="label in roundLabels" :key="label" class="eyebrow">{{ label }}</span>
+            </div>
+            <div class="labels-center eyebrow">Final Four</div>
+            <div class="labels-side mirrored">
+              <span v-for="label in roundLabels" :key="label" class="eyebrow">{{ label }}</span>
+            </div>
+          </div>
 
-      <!-- Staged bracket -->
-      <div class="bracket-scroll">
-        <div class="bracket-grid" :class="{ 'finals-grid': selectedRegion === 'finals' }">
-          <div
-            v-for="(col, cIdx) in activeColumns"
-            :key="col.label"
-            class="round"
-            :class="{ 'straight-in': col.straightIn }"
-          >
-            <div class="round-label">{{ col.label }}</div>
-            <div class="round-body">
-              <div v-for="(pair, pIdx) in col.pairs" :key="pIdx" class="matchup">
+          <div class="field-body">
+            <div class="side left">
+              <div v-for="region in leftRegions" :key="region.key" class="region">
+                <div class="region-title">
+                  <span>{{ region.label }}</span>
+                  <span class="region-champ">Region champion · {{ region.champName }}</span>
+                </div>
+                <div class="rounds">
+                  <div v-for="(round, r) in region.rounds" :key="r" class="round">
+                    <div v-for="(game, g) in round.games" :key="g" class="game">
+                      <div class="pair">
+                        <TeamRow v-bind="game.a" dense/>
+                        <TeamRow v-bind="game.b" dense/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="center">
+              <div v-for="(semi, i) in semis" :key="i" class="semi">
                 <div class="pair">
-                  <div
-                    v-for="(seed, sIdx) in pair"
-                    :key="sIdx"
-                    class="team-card"
-                    :class="{
-                      advanced: col.next && seed && col.next.includes(seed),
-                      champ: col.champ,
-                    }"
-                  >
-                    <span class="seed-badge">{{ seedNum(seed) }}</span>
-                    <span class="team-name">{{ teamTitle(seed) }}</span>
-                    <v-icon v-if="col.champ" size="20" class="trophy">mdi-trophy</v-icon>
+                  <TeamRow v-bind="semi.a" dense/>
+                  <TeamRow v-bind="semi.b" dense/>
+                </div>
+              </div>
+              <div class="final-block">
+                <TeamRow v-bind="championRow" champ/>
+                <p class="eyebrow text-center my-0">Championship</p>
+                <div class="pair">
+                  <TeamRow v-bind="finalGame.a" dense/>
+                  <TeamRow v-bind="finalGame.b" dense/>
+                </div>
+              </div>
+            </div>
+
+            <div class="side right">
+              <div v-for="region in rightRegions" :key="region.key" class="region">
+                <div class="region-title mirrored">
+                  <span class="region-champ">Region champion · {{ region.champName }}</span>
+                  <span>{{ region.label }}</span>
+                </div>
+                <div class="rounds">
+                  <div v-for="(round, r) in region.rounds" :key="r" class="round">
+                    <div v-for="(game, g) in round.games" :key="g" class="game">
+                      <div class="pair">
+                        <TeamRow v-bind="game.a" dense/>
+                        <TeamRow v-bind="game.b" dense/>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -61,20 +95,78 @@
           </div>
         </div>
       </div>
-      <p class="scroll-hint text-caption">Scroll sideways to follow the rounds →</p>
+
+      <!-- Narrow screens: one region and one round at a time -->
+      <div v-else class="compact">
+        <TeamRow v-bind="championRow" champ/>
+
+        <div class="segmented" role="tablist" aria-label="Region">
+          <button
+            v-for="option in regionOptions"
+            :key="option.key"
+            type="button"
+            role="tab"
+            class="segment"
+            :class="{ on: selectedRegion === option.key }"
+            :aria-selected="selectedRegion === option.key"
+            @click="selectedRegion = option.key"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+
+        <template v-if="selectedRegion !== 'finals'">
+          <div class="round-pills">
+            <button
+              v-for="(label, r) in roundShortLabels"
+              :key="label"
+              type="button"
+              class="pill"
+              :class="{ on: selectedRound === r }"
+              @click="selectedRound = r"
+            >
+              {{ label }}
+            </button>
+            <span class="text-muted pill-caption">{{ compactRegion.label }} · {{ roundLabels[selectedRound] }}</span>
+          </div>
+
+          <div class="game-list">
+            <div v-for="(game, g) in compactRegion.rounds[selectedRound].games" :key="g" class="game-card">
+              <TeamRow v-bind="game.a"/>
+              <TeamRow v-bind="game.b"/>
+              <p class="game-note">{{ advanceNote(game, selectedRound) }}</p>
+            </div>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="game-list">
+            <div v-for="(semi, i) in semis" :key="i" class="game-card">
+              <p class="eyebrow my-0">Semifinal {{ i + 1 }}</p>
+              <TeamRow v-bind="semi.a"/>
+              <TeamRow v-bind="semi.b"/>
+            </div>
+            <div class="game-card">
+              <p class="eyebrow my-0">Championship</p>
+              <TeamRow v-bind="finalGame.a"/>
+              <TeamRow v-bind="finalGame.b"/>
+            </div>
+          </div>
+        </template>
+      </div>
     </div>
 
     <!-- Server error -->
     <div v-else-if="serverError" class="text-center mt-10">
       <v-icon color="error" size="40" class="mb-2">mdi-server-off</v-icon>
       <p class="text-body-1">Could not reach the brackets server.</p>
-      <p class="text-body-2 text-medium-emphasis">Please refresh the page to try again.</p>
+      <p class="text-body-2 text-muted">Please refresh the page to try again.</p>
     </div>
 
     <!-- Loading / warming up -->
     <div v-else class="text-center mt-10">
-      <v-progress-circular indeterminate color="warning" class="mb-2"></v-progress-circular>
-      <p v-if="serverStatusStore.bracketsChecking" class="text-body-2 text-medium-emphasis">
+      <v-progress-circular indeterminate color="primary" class="mb-2"></v-progress-circular>
+      <p v-if="serverStatusStore.bracketsChecking" class="text-body-2 text-muted">
         Warming up the brackets server...
       </p>
       <p v-else>Loading bracket...</p>
@@ -83,115 +175,82 @@
 </template>
 
 <script setup>
+import TeamRow from '@/components/bracket/TeamRow.vue'
 import { useServerStatusStore } from '@/store/serverStatus'
-import { useUserStore } from '@/store/user'
-import {
-  baseTeamNames,
-  formatTeamTitle,
-  startingBracketEast,
-  startingBracketMidwest,
-  startingBracketSouth,
-  startingBracketWest,
-} from '@/utils/bracketStruc'
-import { storeToRefs } from 'pinia'
+import { REGION_META, ROUND_LABELS, buildBracketModel } from '@/utils/bracketModel'
+import { baseTeamNames, formatTeamTitle } from '@/utils/bracketStruc'
+import moment from 'moment'
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 const route = useRoute()
 const $brackets = inject('$bracketsApi')
-
-const userStore = useUserStore()
 const serverStatusStore = useServerStatusStore()
-const { user } = storeToRefs(userStore)
+const { width } = useDisplay()
 
 // ─── State ───
 const bracketReturned = ref({})
-const bracketData = ref({})
-const finalsData = ref({})
 const tournamentTeams = ref({})
 const yearBracketString = ref('')
 const displayData = ref(false)
 const serverError = ref(false)
 const selectedRegion = ref('east')
-
-const startingSeeds = {
-  east: startingBracketEast,
-  west: startingBracketWest,
-  south: startingBracketSouth,
-  midwest: startingBracketMidwest,
-}
+const selectedRound = ref(0)
 
 const bracketId = route.query.id
 
+// The full field needs about 1400px; below that, one region at a time.
+const fullField = computed(() => width.value >= 1100)
+
+const roundLabels = ROUND_LABELS
+const roundShortLabels = ['R64', 'R32', 'S16', 'E8']
+const nextRoundNames = ['the Round of 32', 'the Sweet 16', 'the Elite Eight', 'the Final Four']
+
+const regionOptions = [
+  ...Object.entries(REGION_META).map(([key, meta]) => ({ key, label: meta.label })),
+  { key: 'finals', label: 'F4' },
+]
+
 // ─── Formatting ───
-const seedNum = (seedString) => (seedString ? seedString.slice(1) : '')
-
-const teamTitle = (seedString) => {
-  if (!seedString) return 'TBD'
-  return formatTeamTitle(seedString, tournamentTeams.value)
+const teamTitle = (seedKey) => {
+  if (!seedKey) return 'TBD'
+  return formatTeamTitle(seedKey, tournamentTeams.value)
 }
 
-const chunkArray = (arr, size) => {
-  const chunks = []
-  for (let i = 0; i < arr.length; i += size) {
-    chunks.push(arr.slice(i, i + size))
-  }
-  return chunks
-}
+const createdLabel = computed(() =>
+  bracketReturned.value.createdAt ? moment(bracketReturned.value.createdAt).format('MMM D, YYYY') : ''
+)
 
-// ─── Bracket columns ───
-// Each column: { label, pairs, next, champ?, straightIn? }
-//  - pairs: matchups (arrays of 1-2 seed strings) rendered top to bottom
-//  - next: the following round's seeds, used to highlight advancing teams
-//  - straightIn: column has a 1:1 feeder (no forking bracket connector)
-const regionColumns = (region) => {
-  const data = bracketData.value[region]
-  if (!data) return []
-  return [
-    { label: 'First Round', pairs: chunkArray(startingSeeds[region], 2), next: data.round32 },
-    { label: 'Second Round', pairs: chunkArray(data.round32, 2), next: data.sweet16 },
-    { label: 'Sweet 16', pairs: chunkArray(data.sweet16, 2), next: data.elite8 },
-    { label: 'Elite Eight', pairs: chunkArray(data.elite8, 2), next: [data.regionChamp] },
-    { label: 'Region Champion', pairs: [[data.regionChamp]], champ: true, straightIn: true },
-  ]
-}
+// ─── Game model ───
+const model = computed(() =>
+  displayData.value ? buildBracketModel(bracketReturned.value.bracket, teamTitle) : null
+)
 
-const finalsColumns = () => {
-  const finals = finalsData.value
-  if (!finals.teams) return []
-  return [
-    { label: 'Final Four', pairs: chunkArray(finals.teams, 2), next: finals.semifinals },
-    { label: 'Championship', pairs: [finals.semifinals || []], next: [finals.champion] },
-    { label: 'National Champion', pairs: [[finals.champion]], champ: true, straightIn: true },
-  ]
-}
+const finalsData = computed(() => bracketReturned.value.bracket?.finals || {})
+const leftRegions = computed(() => model.value.sides.left.map((key) => model.value.regions[key]))
+const rightRegions = computed(() => model.value.sides.right.map((key) => model.value.regions[key]))
+const semis = computed(() => model.value.semis)
+const finalGame = computed(() => model.value.finalGame)
+const championRow = computed(() => model.value.champion)
+const upsetCount = computed(() => model.value.upsetCount)
+const compactRegion = computed(() => model.value.regions[selectedRegion.value] || model.value.regions.east)
 
-const activeColumns = computed(() => {
-  if (selectedRegion.value === 'finals') return finalsColumns()
-  return regionColumns(selectedRegion.value)
-})
+const advanceNote = (game, roundIndex) => {
+  const winner = game.a.state === 'win' ? game.a : game.b.state === 'win' ? game.b : null
+  if (!winner) return 'Not played yet'
+  return `${winner.name} advances to ${nextRoundNames[roundIndex]}`
+}
 
 // ─── Data loading ───
 const getBracket = async () => {
   try {
     const response = await $brackets.get(`get-bracket?id=${bracketId}`)
     bracketReturned.value = response.data
-
-    const bracket = response.data.bracket
     yearBracketString.value = response.data.createdAt.slice(0, 4)
-
-    bracketData.value = {
-      east: bracket.east,
-      west: bracket.west,
-      south: bracket.south,
-      midwest: bracket.midwest,
-    }
-    finalsData.value = bracket.finals
-
-    displayData.value = true
   } catch (error) {
     console.error(error)
-    // Don't set serverError here — a 404 for a bad ID is different
+    // Don't set serverError here: a 404 for a bad ID is different
     // from the server being down. serverError is set by the store watch below.
   }
 }
@@ -210,6 +269,7 @@ const loadData = async () => {
   await getBracket()
   if (yearBracketString.value) {
     await loadTournamentTeams(yearBracketString.value)
+    displayData.value = true
   }
 }
 
@@ -219,7 +279,7 @@ onMounted(() => {
   } else if (serverStatusStore.bracketsError) {
     serverError.value = true
   } else {
-    // Server is still warming up — watch for resolution
+    // Server is still warming up: watch for resolution
     const unwatch = watch(
       () => [serverStatusStore.bracketsReady, serverStatusStore.bracketsError],
       ([ready, error]) => {
@@ -238,227 +298,344 @@ onMounted(() => {
 
 <style scoped>
 .bracket-page {
-  padding: 1rem;
-  max-width: 1240px;
-  margin: 0 auto;
+  padding: 4px 0 16px;
 }
 
+/* ─── Header ─── */
 .bracket-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.bracket-header h2 {
-  margin: 0;
+.bracket-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.back-link {
+  font-size: 13px;
+  color: var(--bb-muted);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--bb-paper);
 }
 
 .bracket-meta {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-/* ─── Bracket grid ─────────────────────────────────────────────
-   Every round column stretches to the height of the tallest
-   (the first round). Matchups flex evenly within that height, so
-   each game sits vertically centered between its two feeder games
-   — the classic staged-bracket shape. */
-.bracket-scroll {
+.created {
+  font-size: 12px;
+}
+
+/* ─── Full field ─── */
+.scroll-hint {
+  display: none;
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+
+@media (max-width: 1439px) {
+  .scroll-hint {
+    display: block;
+  }
+}
+
+.field-scroll {
   overflow-x: auto;
-  padding: 0.5rem 0.25rem 1rem;
+  padding-bottom: 8px;
 }
 
-.bracket-grid {
+.field {
+  min-width: 1392px;
   display: flex;
-  align-items: stretch;
-  gap: 34px;
-  min-width: 960px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.finals-grid {
-  min-width: 640px;
-  max-width: 760px;
-  margin: 0 auto;
+.round-labels,
+.field-body {
+  display: flex;
+  gap: 16px;
+}
+
+.labels-side {
+  flex: 1 1 0;
+  display: flex;
+  gap: 16px;
+}
+
+.labels-side span {
+  flex: 1 1 0;
+  text-align: center;
+}
+
+.labels-side.mirrored {
+  flex-direction: row-reverse;
+}
+
+.labels-center {
+  flex: 0 0 190px;
+  text-align: center;
+  color: var(--bb-ball);
+}
+
+.side {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.region {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.region-title {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--bb-font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.region-title.mirrored {
+  justify-content: flex-end;
+}
+
+.region-champ {
+  font-family: var(--bb-font-body);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--bb-muted);
+}
+
+.rounds {
+  display: flex;
+  gap: 16px;
+  height: 470px;
+}
+
+.right .rounds {
+  flex-direction: row-reverse;
 }
 
 .round {
-  display: flex;
-  flex-direction: column;
   flex: 1 1 0;
-  min-width: 160px;
-}
-
-.round-label {
-  height: 30px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(7, 21, 42, 0.65);
-}
-
-.round-body {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  flex: 1;
 }
 
-.matchup {
+/* Every round column is the same height, so each game centers between the
+   two games that feed it. */
+.game {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   position: relative;
-  padding: 5px 0;
+  padding: 3px 0;
 }
 
 .pair {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
 
-/* ─── Connector lines ─── */
-/* outgoing stub from each matchup's center toward the next round */
-.round:not(:last-child) .pair::after {
+/* Connectors: a stub out of each game, a stub into each later game, and a
+   vertical joiner between the two feeders. Mirrored on the right side. */
+.left .pair::after,
+.right .pair::after,
+.left .round:not(:first-child) .pair::before,
+.right .round:not(:first-child) .pair::before,
+.left .round:not(:first-child) .game::before,
+.right .round:not(:first-child) .game::before {
   content: '';
   position: absolute;
-  right: -18px;
+  background: var(--bb-line-strong);
+}
+
+.left .pair::after,
+.right .pair::after {
   top: 50%;
-  width: 18px;
-  height: 2px;
-  margin-top: -1px;
-  background: rgba(7, 21, 42, 0.3);
+  width: 9px;
+  height: 1px;
 }
 
-/* incoming stub into each matchup's center */
-.round:not(:first-child) .pair::before {
-  content: '';
-  position: absolute;
-  left: -17px;
+.left .pair::after {
+  right: -9px;
+}
+
+.right .pair::after {
+  left: -9px;
+}
+
+.left .round:not(:first-child) .pair::before,
+.right .round:not(:first-child) .pair::before {
   top: 50%;
-  width: 17px;
-  height: 2px;
-  margin-top: -1px;
-  background: rgba(7, 21, 42, 0.3);
+  width: 8px;
+  height: 1px;
 }
 
-/* vertical joiner between the two feeder games (skipped for 1:1 columns) */
-.round:not(:first-child):not(.straight-in) .matchup::before {
-  content: '';
-  position: absolute;
-  left: -18px;
+.left .round:not(:first-child) .pair::before {
+  left: -8px;
+}
+
+.right .round:not(:first-child) .pair::before {
+  right: -8px;
+}
+
+.left .round:not(:first-child) .game::before,
+.right .round:not(:first-child) .game::before {
   top: 25%;
   height: 50%;
-  width: 2px;
-  background: rgba(7, 21, 42, 0.3);
+  width: 1px;
 }
 
-/* ─── Team cards ─── */
-.team-card {
+.left .round:not(:first-child) .game::before {
+  left: -9px;
+}
+
+.right .round:not(:first-child) .game::before {
+  right: -9px;
+}
+
+.center {
+  flex: 0 0 190px;
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 10px;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-left: 3px solid transparent;
-  border-radius: 10px;
-  backdrop-filter: blur(6px);
-  font-size: 13px;
-  font-weight: 500;
-  color: #07152a;
-  white-space: nowrap;
-  overflow: hidden;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.team-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.seed-badge {
-  flex: 0 0 22px;
-  height: 22px;
-  width: 22px;
-  border-radius: 50%;
-  background: rgba(16, 113, 160, 0.9);
-  color: #fff;
+/* Each semifinal block matches a region block (22px title + 6px gap + 470px
+   rounds) so the semifinal sits level with the Elite Eight game feeding it. */
+.semi {
+  height: 498px;
+  box-sizing: border-box;
+  padding-top: 28px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
 }
 
-.team-card.advanced {
-  background: rgba(255, 255, 255, 0.88);
-  border-left: 3px solid #ff6801;
+.final-block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── Compact ─── */
+.compact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--bb-surface);
+}
+
+.segment {
+  flex: 1 1 0;
+  height: 40px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--bb-muted);
+  font-family: var(--bb-font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.segment.on {
+  background: var(--bb-ball);
+  color: var(--bb-court);
+}
+
+.round-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.pill {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--bb-line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bb-muted);
+  font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 
-.team-card.champ {
-  height: 56px;
-  background: linear-gradient(135deg, #ff6801, #fcc35b);
-  border: none;
-  border-radius: 12px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 15px;
-  box-shadow: 0 8px 20px rgba(255, 104, 1, 0.35);
+.pill.on {
+  background: var(--bb-paper);
+  color: var(--bb-court);
+  border-color: var(--bb-paper);
 }
 
-.team-card.champ .seed-badge {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.team-card.champ .trophy {
+.pill-caption {
   margin-left: auto;
-  color: #fff;
+  font-size: 12px;
 }
 
-.scroll-hint {
-  display: none;
-  color: rgba(7, 21, 42, 0.55);
-  margin: 0 0 0.5rem 0.25rem;
+.game-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-@media (max-width: 980px) {
-  .scroll-hint {
-    display: block;
-  }
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--bb-surface);
 }
 
-@media (max-width: 700px) {
-  .bracket-grid {
-    min-width: 820px;
-    gap: 28px;
-  }
-
-  .round {
-    min-width: 130px;
-  }
-
-  .team-card {
-    height: 36px;
-    font-size: 11px;
-    padding: 0 7px;
-    gap: 6px;
-  }
-
-  .seed-badge {
-    flex-basis: 18px;
-    height: 18px;
-    width: 18px;
-    font-size: 10px;
-  }
+.game-note {
+  margin: 2px 0 0 4px;
+  font-size: 11px;
+  color: var(--bb-muted);
 }
 </style>
