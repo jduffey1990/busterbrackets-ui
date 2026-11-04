@@ -25,7 +25,7 @@
         ></v-autocomplete>
         <p class="hint-text">The team you choose gets a boost in every simulated matchup.</p>
 
-        <div v-if="selectedTeam.length" class="mt-4">
+        <div v-if="selectedTeam" class="mt-4">
           <v-select
             label="How much of an edge?"
             v-model="addedBenefit"
@@ -109,7 +109,7 @@
     <v-card class="disclaimer-card" elevation="0">
       <h6 class="mb-2">How the simulation works</h6>
       <p class="fine-print">
-        Our bracket simulation assigns a "favored" team in each matchup based on seed differences and user-selected odds adjustments, then runs a calculation to decide who advances. We repeat this process round by round until we have winners from each region, culminating in a final showdown. This approach reflects a powerful, but fun, weighted die roll (1's versus 16's is historically far from a toss up for example). We select out historical matchups that have under 20 meetings due to skewed results, and use a matchup gradient instead.
+        Every matchup is a weighted roll. The odds come from every tournament game since 1985: each seed earns a strength from that history, and each pairing's actual record is blended with it, so a 1 seed against a 16 is close to a lock while an 8 against a 9 is close to a coin flip. Pairings that rarely happen still get a sensible number instead of a guess. A boost adds its percentage to your team's chance in every one of its games. We roll round by round in each region, then play the Final Four and the championship.
       </p>
       <p class="fine-print mb-0">
         All predictions, projections, and suggestions provided on this website are for entertainment purposes only. We do not guarantee the accuracy or outcome of any bracket, and we cannot be held liable for any financial losses, wagering issues, or other damages incurred by following these picks or strategies. By using Buster Brackets, you acknowledge that all final decisions are your own and agree to hold Buster Brackets and its creators harmless for any results or consequences thereof.
@@ -128,15 +128,6 @@ const router = useRouter()
 import moment from 'moment'
 const { show } = inject('toast')
 
-import {
-  recordsOver20,
-  fixRecords,
-  startingBracketEast,
-  startingBracketWest,
-  startingBracketMidwest,
-  startingBracketSouth,
-} from '@/utils/bracketStruc'
-
 const $brackets = inject('$bracketsApi')
 const $users = inject('$usersApi')
 
@@ -148,26 +139,6 @@ const tournamentTeams = ref({})     // { "e1": "Duke", ... } from API
 const yearHasBracket = ref(false)   // true once we've loaded teams for the current year
 const yearNowString = String(new Date().getFullYear())
 
-// ─── Region simulation working arrays ───
-const simEast = ref([])
-const simWest = ref([])
-const simSouth = ref([])
-const simMidwest = ref([])
-
-// ─── Structured results per region (replaces flat array accumulation) ───
-const regionResults = ref({
-  east: { round32: [], sweet16: [], elite8: [], regionChamp: '' },
-  west: { round32: [], sweet16: [], elite8: [], regionChamp: '' },
-  south: { round32: [], sweet16: [], elite8: [], regionChamp: '' },
-  midwest: { round32: [], sweet16: [], elite8: [], regionChamp: '' },
-})
-
-const finalsResults = ref({
-  teams: [],
-  semifinals: [],
-  champion: '',
-})
-
 // ─── Display flags ───
 const eastDisplay = ref(false)
 const westDisplay = ref(false)
@@ -176,7 +147,7 @@ const midwestDisplay = ref(false)
 const finalsDisplay = ref(false)
 const simRunning = ref(false)
 
-// Order matches the simulation order in createBracket
+// Order matches the reveal order in createBracket; the simulation itself runs on the server.
 const simSteps = computed(() => [
   { label: 'East region', done: eastDisplay.value },
   { label: 'Midwest region', done: midwestDisplay.value },
@@ -185,11 +156,9 @@ const simSteps = computed(() => [
   { label: 'Final Four & Championship', done: finalsDisplay.value },
 ])
 
-// ─── Odds ───
-const oddsTable = fixRecords(recordsOver20)
-
 // ─── User input ───
-const selectedTeam = ref("")
+// null, not "", or the chips autocomplete renders an empty chip before any pick.
+const selectedTeam = ref(null)
 const teamsThisYear = ref([])
 const addedBenefit = ref(0)
 const benefitLevels = ref([
@@ -210,198 +179,16 @@ const newBracket = ref({
 })
 
 
-// ─── Core simulation logic ───
-
-/**
- * Simulate a single region's tournament.
- * Returns the region champ seed string, populates regionResults[regionName].
- */
-const simulateRegion = (startingSeeds, regionName, regionStr) => {
-  // Clone the starting seeds as the working pool
-  let pool = [...startingSeeds]
-  const result = regionResults.value[regionName]
-
-  // Reset
-  result.round32 = []
-  result.sweet16 = []
-  result.elite8 = []
-  result.regionChamp = ''
-
-  const roundNames = ['round32', 'sweet16', 'elite8', 'regionChamp']
-  let roundIndex = 0
-
-  while (pool.length > 1) {
-    const survivors = []
-
-    for (let i = 0; i < pool.length; i += 2) {
-      const teamA = pool[i]
-      const teamB = pool[i + 1]
-
-      const seedA = parseInt(teamA.slice(1))
-      const seedB = parseInt(teamB.slice(1))
-
-      let favored, notFavored
-      if (seedA < seedB) {
-        favored = seedA
-        notFavored = seedB
-      } else {
-        favored = seedB
-        notFavored = seedA
-      }
-
-      const matchup = `${favored}vs${notFavored}`
-      let odd = getOdds(matchup, favored, notFavored)
-
-      if (selectedTeam.value !== "") {
-        odd = checkOddForAlterations(favored, notFavored, odd, regionStr)
-      }
-
-      const winner = Math.random() < (odd / 100)
-        ? addBack(favored, regionStr)
-        : addBack(notFavored, regionStr)
-
-      survivors.push(winner)
-    }
-
-    // Store the round results
-    const roundName = roundNames[roundIndex]
-    if (roundName === 'regionChamp') {
-      result.regionChamp = survivors[0]
-    } else {
-      result[roundName] = [...survivors]
-    }
-
-    pool = survivors
-    roundIndex++
-  }
-
-  return pool[0] // region champ
-}
-
-const getOdds = (matchup, favored, notFavored) => {
-  if (oddsTable.has(matchup)) {
-    return oddsTable.get(matchup)
-  } else if ((notFavored - favored) < 3) {
-    return 60
-  } else if ((notFavored - favored) < 6) {
-    return 65
-  } else if ((notFavored - favored) < 9) {
-    return 75
-  } else if ((notFavored - favored) < 12) {
-    return 80
-  } else {
-    return 85
-  }
-}
-
-const addBack = (num, regionStr) => {
-  const prefixMap = { east: 'e', west: 'w', south: 's', midwest: 'm' }
-  return (prefixMap[regionStr] || 'm') + num.toString()
-}
-
-const checkOddForAlterations = (favored, notFavored, odd, regionStr) => {
-  const favoredStr = addBack(favored, regionStr)
-  const unfavoredStr = addBack(notFavored, regionStr)
-
-  if (selectedTeam.value === tournamentTeams.value[favoredStr]) {
-    return Math.min(100, odd + addedBenefit.value)
-  } else if (selectedTeam.value === tournamentTeams.value[unfavoredStr]) {
-    return Math.max(0, odd - addedBenefit.value)
-  }
-  return odd
-}
-
-const checkFinalOddForAlterations = (favored, notFavored, odd) => {
-  const favoredStr = addBack(favored.seed, favored.region)
-  const unfavoredStr = addBack(notFavored.seed, notFavored.region)
-
-  if (selectedTeam.value === tournamentTeams.value[favoredStr]) {
-    return Math.min(100, odd + addedBenefit.value)
-  } else if (selectedTeam.value === tournamentTeams.value[unfavoredStr]) {
-    return Math.max(0, odd - addedBenefit.value)
-  }
-  return odd
-}
-
-/**
- * Simulate the Final Four.
- */
-const simulateFinals = (regionChamps) => {
-  // regionChamps = [{ seed: "e3", region: "east" }, ...]
-  finalsResults.value.teams = regionChamps.map(r => r.seed)
-  finalsResults.value.semifinals = []
-  finalsResults.value.champion = ''
-
-  let pool = [...regionChamps]
-
-  // Semifinal round (2 games from 4 teams)
-  const semiFinalWinners = []
-  for (let i = 0; i < pool.length; i += 2) {
-    const team1 = pool[i]
-    const team2 = pool[i + 1]
-
-    const seed1 = parseInt(team1.seed.slice(1))
-    const seed2 = parseInt(team2.seed.slice(1))
-
-    let favored, notFavored
-    if (seed1 < seed2) {
-      favored = { seed: seed1, region: team1.region }
-      notFavored = { seed: seed2, region: team2.region }
-    } else {
-      favored = { seed: seed2, region: team2.region }
-      notFavored = { seed: seed1, region: team1.region }
-    }
-
-    const matchup = `${favored.seed}vs${notFavored.seed}`
-    let odd = getOdds(matchup, favored.seed, notFavored.seed)
-
-    if (selectedTeam.value !== "") {
-      odd = checkFinalOddForAlterations(favored, notFavored, odd)
-    }
-
-    const winner = Math.random() < (odd / 100)
-      ? { seed: addBack(favored.seed, favored.region), region: favored.region }
-      : { seed: addBack(notFavored.seed, notFavored.region), region: notFavored.region }
-
-    semiFinalWinners.push(winner)
-  }
-  finalsResults.value.semifinals = semiFinalWinners.map(w => w.seed)
-
-  // Championship game
-  const team1 = semiFinalWinners[0]
-  const team2 = semiFinalWinners[1]
-
-  const seed1 = parseInt(team1.seed.slice(1))
-  const seed2 = parseInt(team2.seed.slice(1))
-
-  let favored, notFavored
-  if (seed1 < seed2) {
-    favored = { seed: seed1, region: team1.region }
-    notFavored = { seed: seed2, region: team2.region }
-  } else {
-    favored = { seed: seed2, region: team2.region }
-    notFavored = { seed: seed1, region: team1.region }
-  }
-
-  const matchup = `${favored.seed}vs${notFavored.seed}`
-  let odd = getOdds(matchup, favored.seed, notFavored.seed)
-
-  if (selectedTeam.value !== "") {
-    odd = checkFinalOddForAlterations(favored, notFavored, odd)
-  }
-
-  const champion = Math.random() < (odd / 100)
-    ? addBack(favored.seed, favored.region)
-    : addBack(notFavored.seed, notFavored.region)
-
-  finalsResults.value.champion = champion
-}
-
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+// The selected team's seed key ("m1"), which is what the server boosts.
+const favoriteKey = computed(() =>
+  Object.keys(tournamentTeams.value).find((key) => tournamentTeams.value[key] === selectedTeam.value) || null
+)
+
+// The simulation runs on the server (POST /simulate-bracket); this reveals the
+// result region by region at the pace the page always had.
 const createBracket = async () => {
-  // Reset results and progress display
-  finalsResults.value = { teams: [], semifinals: [], champion: '' }
   simRunning.value = true
   eastDisplay.value = false
   westDisplay.value = false
@@ -409,45 +196,29 @@ const createBracket = async () => {
   midwestDisplay.value = false
   finalsDisplay.value = false
 
-  // Process each region
-  const eastChamp = simulateRegion([...startingBracketEast], 'east', 'east')
-  eastDisplay.value = true
-  await sleep(2000)
+  let result
+  try {
+    const { data } = await $brackets.post('/simulate-bracket', {
+      year: Number(yearNowString),
+      favorite: favoriteKey.value || undefined,
+      boost: favoriteKey.value ? addedBenefit.value : 0,
+    })
+    result = data
+  } catch (error) {
+    console.error(error)
+    simRunning.value = false
+    show({ message: error.response?.data?.error || 'The simulation is unavailable right now. Please try again.' })
+    return
+  }
 
-  const midwestChamp = simulateRegion([...startingBracketMidwest], 'midwest', 'midwest')
-  midwestDisplay.value = true
-  await sleep(2000)
-
-  const southChamp = simulateRegion([...startingBracketSouth], 'south', 'south')
-  southDisplay.value = true
-  await sleep(2000)
-
-  const westChamp = simulateRegion([...startingBracketWest], 'west', 'west')
-  westDisplay.value = true
-  await sleep(2000)
-
-  // Finals
-  const final4 = [
-    { seed: eastChamp, region: 'east' },
-    { seed: midwestChamp, region: 'midwest' },
-    { seed: southChamp, region: 'south' },
-    { seed: westChamp, region: 'west' },
-  ]
-
-  simulateFinals(final4)
+  for (const regionDone of [eastDisplay, midwestDisplay, southDisplay, westDisplay]) {
+    regionDone.value = true
+    await sleep(2000)
+  }
   finalsDisplay.value = true
   await sleep(1000)
 
-  // ─── Assemble the StructuredBracket ───
-  const structuredBracket = {
-    east: { ...regionResults.value.east },
-    midwest: { ...regionResults.value.midwest },
-    south: { ...regionResults.value.south },
-    west: { ...regionResults.value.west },
-    finals: { ...finalsResults.value },
-  }
-
-  newBracket.value.bracket = structuredBracket
+  newBracket.value.bracket = result.bracket
   simRunning.value = false
   submitNewBracket()
 }

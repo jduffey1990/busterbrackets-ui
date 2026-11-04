@@ -168,14 +168,15 @@
           <!-- Finals tab -->
           <v-tabs-window-item value="r-finals">
             <div class="results-section mt-4">
-              <h4 class="mb-2">Final Four Teams (4 region champs)</h4>
+              <h4 class="mb-2">Final Four teams, in the order the semifinals are played</h4>
+              <p class="hint-text mb-2">Each semifinal is one pair: the two teams of semifinal 1, then the two of semifinal 2. Region order is not the played order.</p>
               <div class="results-grid">
                 <v-autocomplete
                   v-for="i in 4"
                   :key="`finals-team-${i}`"
                   v-model="results.finals.teams[i - 1]"
                   :items="allSeedOptions"
-                  :label="`Region champ ${i}`"
+                  :label="`Semifinal ${Math.ceil(i / 2)}: team ${i % 2 ? 'A' : 'B'}`"
                   density="compact"
                   variant="outlined"
                   class="result-input"

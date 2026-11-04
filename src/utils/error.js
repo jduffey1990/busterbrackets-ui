@@ -6,7 +6,9 @@ export const parseError = (err, defaultMessage) => {
     }
 
     return errArr.join('<br/>');
-  } catch (error) {}
+  } catch {
+    // Not the shape we expected; fall through to the default message.
+  }
 
   return (
     defaultMessage ||
