@@ -42,54 +42,18 @@
   let elements;
   const messages = ref([]);
   
+  // Mirrors the arena tokens in assets/scss/misc.scss; Stripe renders in
+  // its own iframe, so it cannot read the CSS custom properties.
   const appearance = {
-    theme: 'stripe',
+    theme: 'night',
     variables: {
-      borderRadius: '6px',
-    },
-    rules: {
-      '.Input': {
-        boxShadow: 'inset 0 0 0 1px #07152A',
-        padding: '0.75em 1em',
-        color: '#FF6801',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-      },
-      '.Input:focus': {
-        boxShadow: 'inset 0 0 0 2px #FF6801',
-      },
-      '.Input:hover': {
-        boxShadow: 'inset 0 0 0 1px #FF6801',
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-      },
-      '.Button': {
-        alignItems: 'center'
-      },
-      '.Tab': {
-        padding: '10px 20px',
-        margin: '15px 5px',
-        border: '4px',
-        borderRadius: '50px',
-        borderColor: '#07152A',
-        fontWeight: '500',
-        fontSize: '16px',
-        textTransform: 'uppercase',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textDecoration: 'none',
-        fontFamily: '"halyard-text" !important',
-      },
-      '.Tab:hover': {
-        backgroundColor: '#FF6801',
-        color: '#fff',
-      },
-      '.Tab--selected': {
-        boxShadow: '0px 0px 10px #FF6801',
-        color: '#07152A',
-      },
-      '.Tab--selected:hover': {
-        backgroundColor: '#ECECEC',
-        color: '#fff',
-      },
+      colorPrimary: '#FF6801',
+      colorBackground: '#1B2F52',
+      colorText: '#F4F1EA',
+      colorTextSecondary: '#9FB0C8',
+      colorDanger: '#FF6B6B',
+      fontFamily: 'Inter, "Helvetica Neue", Arial, sans-serif',
+      borderRadius: '8px',
     },
   };
   
@@ -167,92 +131,48 @@ onMounted(async () => {
   </script>
   
   <style scoped>
-  .success-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    background-color: transparent;
-    padding: 20px;
-  }
-  
-  .success-container {
-    text-align: center;
-    max-width: 700px;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .intent-button {
-    background-color: var(--Primary-Dark, #07152A);
-    color: #ffffff;
-    display: inline-block;
-    padding: 10px 20px;
-    margin: 15px 5px;
-    border-radius: 50px;
-    font-weight: 500;
-    font-size: 16px;
-    text-transform: uppercase;
-    text-decoration: none;
-    font-family: "halyard-text" !important;
-  }
-  
-  p {
-    color: var(--Primary-Dark, #07152A);
-    font-family: "halyard-text" !important;
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 130%;
-    margin-bottom: 20px;
-  }
-  
-  h2 {
-    color: var(--Primary-Dark, #07152A);
-    font-family: "halyard-display" !important;
-    font-size: 46px;
-    font-weight: 400;
-    line-height: 110%;
-    margin-top: 30px;
-    margin-bottom: 15px;
-  }
-  
-  h3 {
-    color: var(--Primary-Dark, #07152A);
-    font-family: "halyard-display" !important;
-    font-size: 38px;
-    font-weight: 400;
-    line-height: 120%;
-    margin-top: 40px;
-    margin-bottom: 15px;
-  }
-  
-  .next-steps {
-    text-align: left;
-    padding-left: 20px;
-    margin: 20px 0;
-    font-size: 20px;
-    font-family: "halyard-text" !important;
-    color: var(--Primary-Dark, #07152A);
-  }
-  
-  .next-steps li {
-    line-height: 130%;
-    margin-bottom: 10px;
-  }
-  
-  .disclosure-payment {
-    font-size: 14px !important;
-    color: rgba(7, 21, 42, 0.6);
-    line-height: 1.3;
-    margin-top: 20px;
-  }
-  
-  .contact-info p, .contact-info a {
-    font-size: 20px;
-    font-family: "halyard-text" !important;
-    color: var(--Primary-Dark, #07152A);
-  }
-  
-  </style>
+.success-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 20px;
+}
+
+.success-container {
+  text-align: center;
+  width: 100%;
+  max-width: 560px;
+  background: var(--bb-surface);
+  border: 1px solid var(--bb-line);
+  padding: 32px;
+  border-radius: 8px;
+}
+
+.intent-button {
+  background-color: var(--bb-ball);
+  color: var(--bb-court);
+  display: inline-block;
+  height: 44px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 8px;
+  font-family: var(--bb-font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.intent-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.small {
+  font-size: 13px;
+  color: var(--bb-gold);
+  margin-top: 12px;
+}
+</style>

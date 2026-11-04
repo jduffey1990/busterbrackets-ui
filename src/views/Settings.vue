@@ -1,36 +1,37 @@
 <template>
   <v-layout class="justify-center pa-4">
     <v-card class="main-card">
-      <v-toolbar class="title-holder">
-        <v-toolbar-title class="title">Settings</v-toolbar-title>
-
-        <v-toolbar-items>
+      <v-card-title class="title-holder">
+        <span>Settings</span>
+        <div class="d-flex ga-2">
           <v-btn
               v-if="isEditing"
               color="primary"
-              variant="elevated"
+              size="small"
               @click="saveProfile()"
           >
             Save
           </v-btn>
           <v-btn
               v-if="isEditing"
-              color="warning"
-              variant="elevated"
+              variant="outlined"
+              color="secondary"
+              size="small"
               @click="cancelEdit"
           >
-            Cancel Edit
+            Cancel
           </v-btn>
           <v-btn
               v-else
-              color="primary"
-              variant="elevated"
+              variant="outlined"
+              color="secondary"
+              size="small"
               @click="startEditing"
           >
-            Edit Settings
+            Edit
           </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
+        </div>
+      </v-card-title>
 
       <v-card-text>
         <!-- Name and Email Fields -->
@@ -159,7 +160,7 @@
 import { useUserStore } from '@/store/user';
 import { parseError } from '@/utils/error';
 import { storeToRefs } from "pinia";
-import { inject, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 // Inject dependencies
 const $users = inject('$usersApi');
@@ -316,38 +317,31 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.sub_header {
-  margin-top: 10px;
-  margin-bottom: 20px;
-  font-size: 1.25rem;
-  color: #666;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid black;
-  padding-bottom: 5px;
-  width: fit-content;
-}
-
-.toggle {
-  transform: translateY(-10px);
-}
-
 .main-card {
-  width: 600px !important;
+  width: 100%;
+  max-width: 600px;
 }
 
-.client-move {
+.button-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
+
+.title-holder {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .match-field {
   margin-top: 20px;
-  padding: 10px;
-  background-color: #f8f9fa;
+  padding: 12px;
+  background-color: var(--bb-raised);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -357,33 +351,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.green-span, .red-span {
-  font-family: "halyard-text" !important;
   font-size: 14px;
-  font-weight: 400;
   line-height: 1.4;
 }
-
-@media (max-width: 700px) {
-  .main-card {
-    min-width: 95vw;
-  }
-
-  .title-holder {
-    max-height: 64px !important;
-  }
-
-  .title-holder .v-btn {
-    font-size: xx-small;
-  }
-
-  .title {
-    margin-bottom: 80px;
-    font-size: small;
-  }
-}
-
 </style>
-

@@ -23,31 +23,26 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh;
-  background-color: transparent;
+  min-height: 60vh;
   padding: 20px;
 }
 
 .success-container {
   text-align: center;
   max-width: 700px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bb-surface);
+  border: 1px solid var(--bb-line);
   padding: 40px;
   border-radius: 8px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .next-steps {
   text-align: left;
   padding-left: 20px;
   margin: 20px 0;
-  font-size: 20px;
-  font-family: "halyard-text" !important;
-  color: var(--Primary-Dark, #07152A);
 }
 
 .next-steps li {
-  line-height: 130%;
   margin-bottom: 10px;
 }
 </style>

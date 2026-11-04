@@ -1,9 +1,7 @@
 <template>
   <v-layout class="justify-center pa-4">
     <v-card width="450px">
-      <v-toolbar class="title-holder">
-        <v-toolbar-title class="title">Reset Password</v-toolbar-title>
-      </v-toolbar>
+      <v-card-title>Reset password</v-card-title>
 
       <!-- Token expired / invalid state -->
       <v-card-text v-if="resetFailed">
@@ -177,10 +175,9 @@ const submitReset = async () => {
 
 .match-field {
   margin-top: 20px;
-  padding: 10px;
-  background-color: #f8f9fa;
+  padding: 12px;
+  background-color: var(--bb-raised);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -190,14 +187,7 @@ const submitReset = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.green-span, .red-span {
-  color: inherit;
-  font-family: "halyard-text" !important;
   font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
   line-height: 1.4;
 }
 </style>

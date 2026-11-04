@@ -1,9 +1,7 @@
 <template>
   <v-layout v-if="!showCreationSection" class="justify-center pa-4">
     <v-card width="400px">
-      <v-toolbar class="title-holder">
-        <v-toolbar-title class="title">Login</v-toolbar-title>
-      </v-toolbar>
+      <v-card-title>Log in</v-card-title>
 
       <v-form @submit.prevent="loginUser()">
         <v-card-text>
@@ -19,7 +17,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn type="submit">Login</v-btn>
+          <v-btn type="submit" color="primary" variant="flat">Log in</v-btn>
         </v-card-actions>
       </v-form>
 
@@ -67,12 +65,12 @@
   <v-layout v-if="showCreationSection" class="button-section">
 
     <v-card class="main-card">
-      <v-toolbar class="title-holder">
-        <v-toolbar-title class="title">Create New User</v-toolbar-title>
-        <button class="close-button" @click="updateCreationSection" color="error">
+      <v-card-title class="title-holder">
+        <span>Create an account</span>
+        <button type="button" class="close-button" aria-label="Close" @click="updateCreationSection">
           <v-icon>mdi-close</v-icon>
         </button>
-      </v-toolbar>
+      </v-card-title>
 
       <v-card-text>
         <!-- Name and Email Fields -->
@@ -347,72 +345,43 @@ watch(passwordTwo, () => {
 }
 
 .main-card {
-  min-width: 600px;
+  width: 100%;
+  max-width: 600px;
 }
 
 .title-holder {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
-
 .match-field {
-  margin-top: 20px; /* Adds space above the div */
-  padding: 10px; /* Adds padding inside the div */
-  background-color: #f8f9fa; /* Light grey background for better contrast */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  display: flex; /* Use flexbox for layout */
-  flex-direction: column; /* Stack child elements vertically */
-  gap: 10px; /* Space between each span */
+  margin-top: 20px;
+  padding: 12px;
+  background-color: var(--bb-raised);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .match-field span {
-  display: flex; /* Enables flexbox layout within each span */
-  align-items: center; /* Centers items vertically within each span */
-  gap: 8px; /* Space between icon and text */
-}
-
-.green-span, .red-span {
-  color: inherit; /* Ensures text color matches dynamic class */
-  font-family: "halyard-text" !important;
-  font-size: 14px; /* Slightly larger text for better readability */
-  font-style: normal;
-  font-weight: 400; /* Normal font weight */
-  line-height: 1.4; /* Adjust line height for better readability */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .v-icon {
-  font-size: 20px; /* Size of the icon */
+  font-size: 20px;
 }
 
 .close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   background: none;
   border: none;
-  color: grey;
-  font-family: "halyard-text" !important;
-  font-size: 30px;
+  color: var(--bb-muted);
   cursor: pointer;
-  z-index: 100; /* Ensure button stays on top of other content */
-
+  display: flex;
 }
-
-
-@media (max-width: 700px) {
-  .title-holder {
-    max-height: 64px !important;
-
-  }
-
-  .title {
-    margin-bottom: 80px;
-  }
-  .main-card {
-  min-width: 90%;
-}
-}
-
 </style>
