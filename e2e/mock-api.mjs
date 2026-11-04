@@ -154,7 +154,7 @@ export async function installMockApi(page, options = {}) {
       body?.username === USER.username || body?.email === USER.email
         ? { status: 409, body: { error: 'duplicate key value violates unique constraint "users_username_key"' } }
         : { status: 201, body: { ...USER, _id: '6e2e00000000000000000002', username: body.username, email: body.email, name: body.name, credits: 0 } },
-    'GET /create-payment-intent': () => ({ body: { clientSecret: 'pi_e2e_secret_placeholder' } }),
+    'GET /create-payment-intent': () => ({ body: { clientSecret: 'stub-client-secret' } }),
   }
 
   const brackets = {
