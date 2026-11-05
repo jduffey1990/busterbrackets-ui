@@ -31,6 +31,16 @@ test.describe('logged out', () => {
     await snap(page, 'login-rejected')
   })
 
+  test('login button lines up with the field column', async ({ page }) => {
+    await page.goto('/login')
+    // Vuetify pads card actions 8px and card text 16px by default, so without
+    // the matching padding the button overhangs the fields by 8px.
+    const field = await page.locator('.v-card .v-input').first().boundingBox()
+    const button = await loginForm.submit(page).boundingBox()
+    expect(Math.abs(field.x + field.width - (button.x + button.width))).toBeLessThanOrEqual(1)
+    await snap(page, 'login-button-aligned')
+  })
+
   test('disclaimer opens from the footer', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: /read the full disclaimer/i }).click()
