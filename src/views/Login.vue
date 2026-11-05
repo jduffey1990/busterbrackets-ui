@@ -15,7 +15,9 @@
           <UiPassword v-model="credentials.password"></UiPassword>
         </v-card-text>
 
-        <v-card-actions>
+        <!-- Vuetify pads card actions 8px but card text 16px, so the button
+             overhung the field column by 8px. Match the text padding. -->
+        <v-card-actions class="px-4">
           <v-spacer></v-spacer>
           <v-btn type="submit" color="primary" variant="flat">Log in</v-btn>
         </v-card-actions>
