@@ -73,6 +73,30 @@ test.describe('logged in', () => {
     await snap(page, 'account-menu')
   })
 
+  // Desktop uses the header links; a phone hides them and uses the account
+  // menu entries instead. Both must route without a full page load.
+  test('header navigation reaches the builder and back to the dashboard', async ({ page }) => {
+    const goTo = async (desktopLink, menuItem) => {
+      if (isMobile()) {
+        await expect(page.locator('.primary-nav')).toBeHidden()
+        await page.locator('button.avatar').click()
+        await page.locator('.v-overlay--active .v-list').getByText(menuItem, { exact: true }).click()
+      } else {
+        await page.locator('.primary-nav').getByRole('link', { name: desktopLink, exact: true }).click()
+      }
+    }
+
+    await goTo('Build', 'Build a bracket')
+    await expect(page).toHaveURL(/\/builder$/)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Let Buster run the field')
+    if (!isMobile()) await expect(page.locator('.primary-nav .nav-link.active')).toHaveText('Build')
+
+    await goTo('Dashboard', 'Dashboard')
+    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('My brackets')
+    if (!isMobile()) await expect(page.locator('.primary-nav .nav-link.active')).toHaveText('Dashboard')
+  })
+
   test('bracket page renders the full field on desktop and region tabs on a phone', async ({ page }) => {
     await page.locator('.bracket-card', { hasText: 'Chaos run' }).getByRole('link', { name: /view bracket/i }).click()
     await expect(page).toHaveURL(/\/bracket\?id=/)
