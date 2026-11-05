@@ -157,36 +157,25 @@
     </div>
 
     <!-- Server error -->
-    <div v-else-if="serverError" class="text-center mt-10">
-      <v-icon color="error" size="40" class="mb-2">mdi-server-off</v-icon>
-      <p class="text-body-1">Could not reach the brackets server.</p>
-      <p class="text-body-2 text-muted">Please refresh the page to try again.</p>
-    </div>
-
-    <!-- Loading / warming up -->
+    <!-- Loading -->
     <div v-else class="text-center mt-10">
       <v-progress-circular indeterminate color="primary" class="mb-2"></v-progress-circular>
-      <p v-if="serverStatusStore.bracketsChecking" class="text-body-2 text-muted">
-        Warming up the brackets server...
-      </p>
-      <p v-else>Loading bracket...</p>
+      <p>Loading bracket...</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import TeamRow from '@/components/bracket/TeamRow.vue'
-import { useServerStatusStore } from '@/store/serverStatus'
 import { REGION_META, ROUND_LABELS, buildBracketModel } from '@/utils/bracketModel'
 import { baseTeamNames, formatTeamTitle } from '@/utils/bracketStruc'
 import moment from 'moment'
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const route = useRoute()
 const $brackets = inject('$bracketsApi')
-const serverStatusStore = useServerStatusStore()
 const { width } = useDisplay()
 
 // ─── State ───
@@ -194,7 +183,6 @@ const bracketReturned = ref({})
 const tournamentTeams = ref({})
 const yearBracketString = ref('')
 const displayData = ref(false)
-const serverError = ref(false)
 const selectedRegion = ref('east')
 const selectedRound = ref(0)
 
@@ -250,8 +238,6 @@ const getBracket = async () => {
     yearBracketString.value = response.data.createdAt.slice(0, 4)
   } catch (error) {
     console.error(error)
-    // Don't set serverError here: a 404 for a bad ID is different
-    // from the server being down. serverError is set by the store watch below.
   }
 }
 
@@ -274,25 +260,7 @@ const loadData = async () => {
 }
 
 onMounted(() => {
-  if (serverStatusStore.bracketsReady) {
-    loadData()
-  } else if (serverStatusStore.bracketsError) {
-    serverError.value = true
-  } else {
-    // Server is still warming up: watch for resolution
-    const unwatch = watch(
-      () => [serverStatusStore.bracketsReady, serverStatusStore.bracketsError],
-      ([ready, error]) => {
-        if (ready) {
-          unwatch()
-          loadData()
-        } else if (error) {
-          unwatch()
-          serverError.value = true
-        }
-      }
-    )
-  }
+  loadData()
 })
 </script>
 

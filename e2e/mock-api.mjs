@@ -67,8 +67,6 @@ export const BREAKDOWN = {
 
 const teamName = (seedKey) => TOURNAMENT.teams[seedKey]
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
 // Stand-in for https://js.stripe.com/v3. The real script renders card fields
 // in iframes that a test cannot drive; this one mounts a labelled box per
 // element and makes confirmPayment do what the test asked for.
@@ -104,7 +102,6 @@ window.Stripe = function () {
  * inspect what was called and what was created.
  *
  * options.user         fields merged over USER (role: 'admin', credits: 0, ...)
- * options.pingDelayMs  hold /ping-bracket this long, to show the warming state
  * options.breakdowns   { [bracketId]: partial breakdown } overrides per bracket
  * options.stripe       'decline' | 'redirect': installs the Stripe stub
  * options.noField      true: no tournament exists for the current year
@@ -125,7 +122,6 @@ export async function installMockApi(page, options = {}) {
   const notFound = (what) => ({ status: 404, body: { error: `${what} not found` } })
 
   const users = {
-    'GET /ping-user': () => ({ body: 'pinged backend' }),
     'POST /login': (params, body) =>
       body?.username === USER.username && body?.password === PASSWORD
         ? { body: { token: TOKEN, user: state.user } }
@@ -158,10 +154,6 @@ export async function installMockApi(page, options = {}) {
   }
 
   const brackets = {
-    'GET /ping-bracket': async () => {
-      if (options.pingDelayMs) await sleep(options.pingDelayMs)
-      return { body: 'pinged backend' }
-    },
     'GET /get-user-brackets': () => ({ body: state.brackets }),
     'GET /get-bracket': (params) => {
       const found = findBracket(params)

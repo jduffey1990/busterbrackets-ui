@@ -17,13 +17,9 @@ export default {
     });
 
     // --- SECOND SERVICE: Brackets ---
-    // timeout: 8000 ensures a cold-start hang fails quickly so the
-    // serverStatus store retry loop can cycle rather than waiting
-    // indefinitely for a single frozen request
     const bracketsApi = axios.create({
       baseURL: import.meta.env.VITE_BRACKETS_BASE_URL,
       withCredentials: true,
-      timeout: 8000,
     });
 
     bracketsApi.interceptors.request.use((config) => {
