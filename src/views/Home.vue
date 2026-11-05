@@ -21,7 +21,7 @@
       <v-card class="feature">
         <v-icon color="primary" size="28">mdi-chart-bell-curve</v-icon>
         <h4>Odds, not coin flips</h4>
-        <p class="mb-0">Every matchup is weighted by the real seed-versus-seed record. A 1 seed against a 16 is close to a lock. An 8 against a 9 is close to even.</p>
+        <p class="mb-0">Every matchup is weighted by the real seed-versus-seed record for every game in the modern tournament era (since 1985). A 1 seed against a 16 is close to a lock. An 8 against a 9 is close to even.</p>
       </v-card>
       <v-card class="feature">
         <v-icon color="primary" size="28">mdi-basketball</v-icon>

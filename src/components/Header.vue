@@ -8,10 +8,10 @@
 
       <nav v-if="isLoggedIn" class="primary-nav">
         <router-link to="/dashboard" custom v-slot="{ navigate, isActive }">
-          <a href="/dashboard" class="nav-link" :class="{ active: isActive }" @click.prevent="navigate">Dashboard</a>
+          <a href="/dashboard" class="nav-link" :class="{ active: isActive }" @click="navigate">Dashboard</a>
         </router-link>
         <router-link to="/builder" custom v-slot="{ navigate, isActive }">
-          <a href="/builder" class="nav-link" :class="{ active: isActive }" @click.prevent="navigate">Build</a>
+          <a href="/builder" class="nav-link" :class="{ active: isActive }" @click="navigate">Build</a>
         </router-link>
       </nav>
 
