@@ -42,21 +42,7 @@
           </div>
         </div>
 
-        <!-- Server warming up -->
-        <v-card v-if="serverStatusStore.bracketsChecking" class="state-card">
-          <v-progress-circular indeterminate color="primary" class="mb-2"></v-progress-circular>
-          <p class="text-muted my-0">Warming up the brackets server, hang tight...</p>
-        </v-card>
-
-        <!-- Server failed to wake -->
-        <v-card v-else-if="serverStatusStore.bracketsError" class="state-card">
-          <v-icon color="error" size="32" class="mb-2">mdi-server-off</v-icon>
-          <p class="my-0">Could not reach the brackets server.</p>
-          <p class="text-muted my-0">Please refresh the page to try again.</p>
-        </v-card>
-
-        <!-- Ready -->
-        <div v-else class="card-grid">
+        <div class="card-grid">
           <v-card v-for="item in bracketCards" :key="item.id" class="bracket-card">
             <div class="card-head">
               <div class="card-title">
@@ -137,14 +123,13 @@
 
 <script setup>
 import TeamRow from '@/components/bracket/TeamRow.vue'
-import { useServerStatusStore } from '@/store/serverStatus'
 import { useUserStore } from '@/store/user'
 import { buildBracketModel } from '@/utils/bracketModel'
 import { baseTeamNames, formatTeamTitle } from '@/utils/bracketStruc'
 import { selectionSunday } from '@/utils/tournamentDates'
 import moment from 'moment'
 import { storeToRefs } from 'pinia'
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -152,7 +137,6 @@ const $brackets = inject('$bracketsApi')
 const $users = inject('$usersApi')
 
 const userStore = useUserStore()
-const serverStatusStore = useServerStatusStore()
 const { user } = storeToRefs(userStore)
 const isAdmin = computed(() => userStore.isAdmin)
 
@@ -208,21 +192,7 @@ const bracketYears = computed(() => [...new Set(brackets.value.map((item) => ite
 // ─── Lifecycle ───
 onMounted(async () => {
   fetchCredits()
-  // If server is already confirmed live (e.g. navigating back to dashboard
-  // mid-session), fetch immediately. Otherwise watch for the flag to flip.
-  if (serverStatusStore.bracketsReady) {
-    await Promise.all([fetchUserBrackets(), fetchNewsArticles(), fetchFieldYears()])
-  } else {
-    const unwatch = watch(
-      () => serverStatusStore.bracketsReady,
-      async (ready) => {
-        if (ready) {
-          unwatch()
-          await Promise.all([fetchUserBrackets(), fetchNewsArticles(), fetchFieldYears()])
-        }
-      }
-    )
-  }
+  await Promise.all([fetchUserBrackets(), fetchNewsArticles(), fetchFieldYears()])
 })
 
 // ─── Fetches ───
@@ -380,11 +350,6 @@ const pickRoute = async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.state-card {
-  padding: 32px;
-  text-align: center;
 }
 
 .card-grid {

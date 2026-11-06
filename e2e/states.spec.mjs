@@ -1,21 +1,11 @@
-// The states a page can be in beyond the happy path: a cold brackets
-// server, a breakdown before the tournament or without the AI recap, a
-// builder with no field yet, a boosted team, and the router's redirects.
+// The states a page can be in beyond the happy path: a breakdown before
+// the tournament or without the AI recap, a builder with no field yet, a
+// boosted team, and the router's redirects.
 import { expect, test } from '@playwright/test'
 import { logIn, snap } from './helpers.mjs'
 import { installMockApi } from './mock-api.mjs'
 
 const CHALK_ID = '6e2e0000000000000000b001'
-
-test('dashboard shows the warming card until the brackets server answers', async ({ page }) => {
-  await installMockApi(page, { pingDelayMs: 6000 })
-  await logIn(page)
-  await expect(page.getByText('Warming up the brackets server, hang tight...')).toBeVisible()
-  await expect(page.locator('.bracket-card')).toHaveCount(0)
-  await snap(page, 'dashboard-warming')
-  await expect(page.locator('.bracket-card')).toHaveCount(2, { timeout: 15_000 })
-  await expect(page.getByText('Warming up the brackets server, hang tight...')).toHaveCount(0)
-})
 
 test('breakdown before the tournament is a preview, and copes without the AI recap', async ({ page }) => {
   await installMockApi(page, {
