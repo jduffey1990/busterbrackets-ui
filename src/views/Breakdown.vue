@@ -1,19 +1,9 @@
 <template>
   <div class="breakdown-page">
-    <!-- Loading / warming up -->
+    <!-- Loading -->
     <div v-if="loading" class="text-center mt-10">
       <v-progress-circular indeterminate color="warning" class="mb-2"></v-progress-circular>
-      <p v-if="serverStatusStore.bracketsChecking" class="text-body-2 text-medium-emphasis">
-        Warming up the brackets server...
-      </p>
-      <p v-else>Analyzing your bracket...</p>
-    </div>
-
-    <!-- Server failed to wake -->
-    <div v-else-if="serverError" class="text-center mt-10">
-      <v-icon color="error" size="40" class="mb-2">mdi-server-off</v-icon>
-      <p class="text-body-1">Could not reach the brackets server.</p>
-      <p class="text-body-2 text-medium-emphasis">Please refresh the page to try again.</p>
+      <p>Analyzing your bracket...</p>
     </div>
 
     <div v-else-if="comparisonStats || breakdownDescription">
@@ -95,20 +85,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, inject } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useRoute } from 'vue-router'
-import { useServerStatusStore } from '@/store/serverStatus'
 
 const route = useRoute()
 const $brackets = inject('$bracketsApi')
 
-const serverStatusStore = useServerStatusStore()
-
 // ─── State ───
 const isPostTournament = ref(false)
 const bracketName = ref('')
-const loading = ref(true) // true from the start — covers both warm-up and data fetching
-const serverError = ref(false)
+const loading = ref(true)
 const breakdownDescription = ref('')
 const comparisonStats = ref(null)
 
@@ -130,9 +116,7 @@ const accuracyPct = computed(() => {
 const getBreakdown = async () => {
   loading.value = true
   try {
-    // Override the default 8s bracketsApi timeout: a first-time breakdown
-    // blocks on an OpenAI call, which can take longer than 8s.
-    const { data } = await $brackets.get(`/breakdown?id=${bracketId}`, { timeout: 30000 })
+    const { data } = await $brackets.get(`/breakdown?id=${bracketId}`)
     // content may be null if the AI recap couldn't be generated; stats still render.
     breakdownDescription.value = data.content || ''
     comparisonStats.value = data.stats
@@ -149,29 +133,7 @@ const getBreakdown = async () => {
 
 // ─── Lifecycle ───
 onMounted(() => {
-  // loading starts true — spinner shows immediately regardless of path below
-
-  if (serverStatusStore.bracketsReady) {
-    getBreakdown()
-  } else if (serverStatusStore.bracketsError) {
-    loading.value = false
-    serverError.value = true
-  } else {
-    // Server still warming up — watch for resolution
-    const unwatch = watch(
-      () => [serverStatusStore.bracketsReady, serverStatusStore.bracketsError],
-      ([ready, error]) => {
-        if (ready) {
-          unwatch()
-          getBreakdown()
-        } else if (error) {
-          unwatch()
-          loading.value = false
-          serverError.value = true
-        }
-      }
-    )
-  }
+  getBreakdown()
 })
 </script>
 
